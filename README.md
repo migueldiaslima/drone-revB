@@ -22,18 +22,18 @@ Not in the repo (size): odb, inp, par, cae, stl. Those live on nexus (`/tmp/mdia
 
 | Item | State |
 |---|---|
-| Journal | v0.52 (D-001 to D-082) |
-| Build log | items 1 to 42, DV-1 to DV-25 |
-| H4 (v04-B, 1.0 mm, G7b seat tie, member size 2.5 mm, caps 2.0 x cycle 0) | converged at cycle 31 (build log item 42) |
-| Cycle 31 files | frozen in `/tmp/mdias_H4/TH` on nexus (`c31.odb`, `TO_v04B_H4-Job.inp`, `tosca_distribution.inp`) |
+| Journal | v0.53 (D-001 to D-085) |
+| Build log | items 1 to 45, DV-1 to DV-25 |
+| H4 (v04-B rev 2) | converged at cycle 31; TH04b_ni passes, TH04a_ni fails as expected (N-06-17, N-06-18); antenna boss island F-036 |
+| v04-B revision 3 (D-084, antenna spine) | exported to `geometry/v04B_r3/`, gates G0 to G5 pass (`docs/stage6_v04B_r3_export_note.md`) |
 
 ## Open tasks
 
 | # | Task | Owner |
 |---|---|---|
-| 1 | TH04 (iso 0.4) with both lid connections, D-082 b: `cd /tmp/mdias_H4/TH && bash ~/drone_revB/stage6/scripts/run_TH04.sh 30` (`scripts/hpc/TH04`) | set-up chat |
-| 2 | H4 report: history, D-082 b seat densities, T-1 to T-7, restoration at iso 0.4 with fillet pass B | set-up chat |
-| 3 | Confirm DV-25 (H4c skipped, relative caps) | main chat |
+| 1 | Rebuild the model from revision 3, reference job, H4 rerun with D-083 caps; report the cycle 0 ALLSE in N mm | set-up chat |
+| 2 | TH at iso 0.4 with the island check (D-085); H4 report: history, seat densities, T-1 to T-7, restoration at iso 0.4 with fillet pass B and SPINE_fixed_v04B_r3.stl | set-up chat |
+| 3 | Tub print orientation (floor-down or rim-down, D-082 flatness) | Miguel |
 | 4 | Optional: ALLWK vs ALLSE check on an older odb (G7 report, "Also noted") | set-up chat |
 | 5 | Q-58 to Q-60 (GM10 wiring and plugs, FC heat-sink height) | Miguel |
 

@@ -1,0 +1,405 @@
+<title>Antenna Mount Options</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: engineering viewer, 3D canvas left, option and layer panel right; stacks on phones */
+:root {
+  --bg: #f3f4f2; --panel: #ffffff; --fg: #1d2420; --muted: #5d6862; --line: #d7dcd8;
+  --accent: #c2410c; --good: #2f7d4f; --warn: #a15c07; --bad: #b42318;
+  --scene: #e9ece9;
+  --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #151917; --panel: #1d2320; --fg: #e4e9e5; --muted: #9aa6a0; --line: #313a35;
+  --accent: #f08a4b; --good: #6cc48f; --warn: #e2a54a; --bad: #f07a6e; --scene: #1a1f1c; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #151917; --panel: #1d2320; --fg: #e4e9e5; --muted: #9aa6a0; --line: #313a35;
+  --accent: #f08a4b; --good: #6cc48f; --warn: #e2a54a; --bad: #f07a6e; --scene: #1a1f1c; color-scheme: dark }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--fg); font-family: var(--sans); font-size: 14px; line-height: 1.45; }
+.wrap { padding-inline: 16px; padding-block: 14px 20px; display: grid; gap: 12px; max-width: 1500px; margin: 0 auto; }
+header h1 { font-size: 1.25rem; font-weight: 600; margin: 0; text-wrap: balance; }
+header p { margin: 2px 0 0; color: var(--muted); max-width: 75ch; }
+.main { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 12px; }
+@media (max-width: 900px) { .main { grid-template-columns: minmax(0, 1fr); } }
+#view { position: relative; background: var(--scene); border: 1px solid var(--line); border-radius: 6px; height: min(72vh, 760px); min-height: 380px; overflow: hidden; }
+#view canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+.hint { position: absolute; left: 10px; bottom: 8px; font: 12px var(--mono); color: var(--muted); pointer-events: none; }
+.axes { position: absolute; right: 10px; bottom: 8px; font: 12px var(--mono); color: var(--muted); pointer-events: none; text-align: right; }
+aside { display: grid; gap: 12px; align-content: start; min-width: 0; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; display: grid; gap: 8px; min-width: 0; }
+.card h2 { font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin: 0; font-weight: 600; }
+.opts { display: grid; gap: 6px; }
+.opt { display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: start; padding: 8px 10px; border: 1px solid var(--line); border-radius: 5px; cursor: pointer; }
+.opt:has(input:checked) { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+.opt b { font-weight: 600; display: block; }
+.opt span { color: var(--muted); font-size: 12.5px; }
+.opt input { margin-top: 3px; accent-color: var(--accent); }
+.layers { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; }
+.layers label { display: flex; gap: 6px; align-items: center; cursor: pointer; }
+.layers input { accent-color: var(--accent); }
+.sw { width: 11px; height: 11px; border-radius: 2px; flex: none; border: 1px solid rgba(0,0,0,0.25); }
+.views { display: flex; flex-wrap: wrap; gap: 6px; }
+button { font: 500 12.5px var(--sans); color: var(--fg); background: transparent; border: 1px solid var(--line); border-radius: 4px; padding: 5px 10px; cursor: pointer; }
+button:hover { border-color: var(--accent); }
+button:focus-visible, input:focus-visible, .opt:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+dl { margin: 0; display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 6px 12px; }
+dt { color: var(--muted); min-width: 0; }
+dd { margin: 0; font-family: var(--mono); font-size: 12.5px; font-variant-numeric: tabular-nums; text-align: right; min-width: 0; }
+ol.steps { margin: 0; padding-left: 20px; display: grid; gap: 5px; font-size: 13px; }
+ol.steps b { font-weight: 600; }
+#holdercard[hidden] { display: none; }
+.verdict { font-size: 13px; padding: 8px 10px; border-radius: 5px; border: 1px solid var(--line); }
+.pill { display: inline-block; font: 600 11px var(--sans); letter-spacing: 0.04em; text-transform: uppercase; padding: 1px 7px; border-radius: 99px; border: 1px solid currentColor; margin-right: 6px; }
+.p-good { color: var(--good); } .p-warn { color: var(--warn); } .p-bad { color: var(--bad); }
+ul.notes { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.foot { color: var(--muted); font-size: 12px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Receiver antenna mount: three ways to hold the straight T</h1>
+    <p>Rear of the v04-B frame from the revision 2 generator dimensions. The tub and keel are drawn as the design space, not the optimised shape. Arms are approximate.</p>
+  </header>
+  <div class="main">
+    <div id="view">
+      <div class="hint">drag: rotate · right-drag: pan · wheel: zoom</div>
+      <div class="axes">x forward · y left · z up · mm</div>
+    </div>
+    <aside>
+      <div class="card">
+        <h2>Option</h2>
+        <div class="opts" id="opts">
+          <label class="opt"><input type="radio" name="opt" id="opt-now" value="now"><div><b>As exported (F-17)</b><span>Boss under the keel, 90 deg V, no link</span></div></label>
+          <label class="opt"><input type="radio" name="opt" id="opt-d" value="d"><div><b>D: on the GPS cap</b><span>Coax through the GPS channel, no frame feature</span></div></label>
+          <label class="opt"><input type="radio" name="opt" id="opt-f" value="f" checked><div><b>Under the keel: antenna spine</b><span>Revision 3: one smooth fixed spine, TPU holder, T hanging under the cable exit</span></div></label>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Key numbers</h2>
+        <dl id="nums"></dl>
+        <div class="verdict" id="verdict"></div>
+      </div>
+      <div class="card" id="holdercard">
+        <h2>How the holder attaches</h2>
+        <ol class="steps">
+          <li><b>Pad.</b> The spine ends in a pad in the keel underside (z = 0, 14 x 16 mm, 2.2 thick). The pad has a boss with a dia 3.2 x 4 hole for an M2 x 3 heat-set insert, pressed from below, and a dia 2 x 1.1 locating hole.</li>
+          <li><b>Antenna into the holder.</b> The moulded T is pushed up, stem first, between the two cheeks. It snaps past 1 mm lips under the bar. Each leg is pressed into a C-clip 3 mm from the moulding: the clip wraps 277 deg around the 1.4 mm leg and its opening is 1.06 mm, so the leg snaps in and stays.</li>
+          <li><b>Coax.</b> It drops straight out of the channel exit into the top of the stem. There is no bend at the moulding. The only bend is the channel's own R7.</li>
+          <li><b>Holder onto the pad.</b> The stem enters the slot in the top plate, the 0.9 mm peg goes into the locating hole, and one M2 x 5 screw goes in from below in front of the cradle.</li>
+          <li><b>Clamp.</b> The plate bears on the pad, and the bar is held between the lips and the plate. The screw only holds the holder up.</li>
+        </ol>
+      </div>
+      <div class="card">
+        <h2>Layers</h2>
+        <div class="layers" id="layers"></div>
+        <div class="views">
+          <button type="button" data-v="iso">Rear 3/4</button>
+          <button type="button" data-v="side">Side</button>
+          <button type="button" data-v="rear">Rear</button>
+          <button type="button" data-v="top">Top</button>
+          <button type="button" data-v="under">Below</button>
+        </div>
+      </div>
+      <p class="foot">Source: scripts/geometry_main/s06_f17_spine.py (revision 3 spine and holder from signed distance fields; checks in geometry/v04B_r3_f17/checks.json). Coax 60 to 62 mm, measured by Miguel. PET-CF 1.30, TPU 1.21 g/cm3.</p>
+    </aside>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function () {
+  "use strict";
+  var K8 = [[-18.5,3.5,7.0],[-22.5,3.5,7.0],[-26.5,3.5,7.0],[-30.5,3.5,7.0],[-33.0,3.5,7.0],[-33.8,3.5,6.94],[-34.58,3.5,6.74],[-35.32,3.5,6.43],[-36.0,3.5,6.0],[-36.61,3.5,5.46],[-37.11,3.5,4.84],[-37.52,3.5,4.14],[-37.8,3.5,3.39],[-37.96,3.5,2.6],[-38.0,3.5,2.0],[-38.0,3.5,0.5],[-38.0,3.5,-1.0]];
+  var K9 = [[-38.2,-1.5,22.0],[-38.2,-1.5,18.21],[-38.2,-1.5,14.42],[-38.2,-1.5,10.63],[-38.2,-1.5,10.0],[-38.14,-1.51,9.2],[-37.94,-1.53,8.42],[-37.63,-1.57,7.68],[-37.21,-1.63,7.0],[-36.68,-1.7,6.39],[-36.06,-1.78,5.89],[-35.37,-1.87,5.48],[-34.62,-1.97,5.2],[-33.84,-2.07,5.04],[-33.24,-2.15,5.0],[-30.19,-2.55,5.0],[-26.13,-3.09,5.0],[-22.06,-3.62,5.0],[-18.5,-4.09,5.0]];
+  var M = 52.5, RKEEP = 47.45, RPROP = 44.45;
+
+  var view = document.getElementById("view");
+  var css = getComputedStyle(document.documentElement);
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(35, 1, 1, 3000);
+  camera.up.set(0, 0, 1);
+  var renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  view.insertBefore(renderer.domElement, view.firstChild);
+  var controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true; controls.dampingFactor = 0.12;
+  var target = new THREE.Vector3(-36, 0, 6);
+  controls.target.copy(target);
+
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8f8a, 0.75));
+  var sun = new THREE.DirectionalLight(0xffffff, 0.55); sun.position.set(-60, 80, 120); scene.add(sun);
+  var sun2 = new THREE.DirectionalLight(0xffffff, 0.3); sun2.position.set(80, -60, -40); scene.add(sun2);
+
+  function mat(color, opacity, extra) {
+    var m = new THREE.MeshStandardMaterial({ color: color, roughness: 0.65, metalness: 0.0, transparent: opacity < 1, opacity: opacity, depthWrite: opacity >= 0.6, side: THREE.DoubleSide });
+    if (extra) Object.assign(m, extra);
+    return m;
+  }
+  var C = {
+    design: 0x9ec0e6, fixed: 0x2f5fa8, lid: 0xd77a3a, comp: 0x3f9c5c, compLight: 0x8fd19e, k8: 0xe0534a, k9: 0x9b6cd1,
+    link: 0xf59e0b, battery: 0x8a8f99, arm: 0xb9bdb8, motor: 0x6f7470, prop: 0xc026d3, tpu: 0x84cc16, coax: 0x222222, ghost: 0x9aa09c
+  };
+
+  var groups = {};
+  function G(name) { if (!groups[name]) { groups[name] = new THREE.Group(); scene.add(groups[name]); } return groups[name]; }
+
+  function box(g, x0, x1, y0, y1, z0, z1, m) {
+    var mesh = new THREE.Mesh(new THREE.BoxGeometry(x1 - x0, y1 - y0, z1 - z0), m);
+    mesh.position.set((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2); g.add(mesh); return mesh;
+  }
+  function cyl(g, cx, cy, r, z0, z1, m, seg) {
+    var mesh = new THREE.Mesh(new THREE.CylinderGeometry(r, r, z1 - z0, seg || 40), m);
+    mesh.rotation.x = Math.PI / 2; mesh.position.set(cx, cy, (z0 + z1) / 2); g.add(mesh); return mesh;
+  }
+  function rod(g, a, b, r, m) {
+    var A = new THREE.Vector3(a[0], a[1], a[2]), B = new THREE.Vector3(b[0], b[1], b[2]);
+    var d = new THREE.Vector3().subVectors(B, A), L = d.length();
+    var mesh = new THREE.Mesh(new THREE.CylinderGeometry(r, r, L, 20), m);
+    mesh.position.copy(A).add(B).multiplyScalar(0.5);
+    mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize());
+    g.add(mesh); return mesh;
+  }
+  function tube(g, pts, r, m) {
+    var v = pts.map(function (p) { return new THREE.Vector3(p[0], p[1], p[2]); });
+    var curve = new THREE.CatmullRomCurve3(v, false, "centripetal");
+    var mesh = new THREE.Mesh(new THREE.TubeGeometry(curve, 160, r, 28, false), m);
+    g.add(mesh);
+    [v[0], v[v.length - 1]].forEach(function (p) { var s = new THREE.Mesh(new THREE.SphereGeometry(r, 24, 16), m); s.position.copy(p); g.add(s); });
+    return mesh;
+  }
+  function prism(g, pts2, z0, z1, m) {
+    var sh = new THREE.Shape(); sh.moveTo(pts2[0][0], pts2[0][1]);
+    for (var i = 1; i < pts2.length; i++) sh.lineTo(pts2[i][0], pts2[i][1]);
+    sh.closePath();
+    var geo = new THREE.ExtrudeGeometry(sh, { depth: z1 - z0, bevelEnabled: false });
+    var mesh = new THREE.Mesh(geo, m); mesh.position.z = z0; g.add(mesh); return mesh;
+  }
+  function keelHalf(x, z) {
+    if (z < 10) return 9;
+    var d = Math.abs(x) - M;
+    return Math.min(9, M - Math.sqrt(Math.max(RKEEP * RKEEP - d * d, 0)));
+  }
+  function keel(g, m) {
+    var xs = [], n = 40;
+    for (var i = 0; i <= n; i++) xs.push(-54 + (31 * i) / n);
+    var sec = function (x) { var h = keelHalf(x, 15); return [[-9, 0], [9, 0], [9, 10], [h, 10], [h, 21.5], [-h, 21.5], [-h, 10], [-9, 10]]; };
+    var pos = [], idx = [], ns = 8;
+    xs.forEach(function (x) { sec(x).forEach(function (p) { pos.push(x, p[0], p[1]); }); });
+    for (var i = 0; i < n; i++) for (var j = 0; j < ns; j++) {
+      var a = i * ns + j, b = i * ns + (j + 1) % ns, c = (i + 1) * ns + (j + 1) % ns, d = (i + 1) * ns + j;
+      idx.push(a, b, c, a, c, d);
+    }
+    var capTri = [[0, 1, 2], [0, 2, 7], [7, 2, 3], [7, 3, 6], [6, 3, 4], [6, 4, 5]];
+    capTri.forEach(function (t) { idx.push(t[0], t[2], t[1]); var o = n * ns; idx.push(o + t[0], o + t[1], o + t[2]); });
+    var geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+    geo.setIndex(idx); geo.computeVertexNormals();
+    var mesh = new THREE.Mesh(geo, m); g.add(mesh); return mesh;
+  }
+  function edges(g, mesh, color) {
+    var e = new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry, 30), new THREE.LineBasicMaterial({ color: color, transparent: true, opacity: 0.35 }));
+    e.position.copy(mesh.position); e.rotation.copy(mesh.rotation); e.quaternion.copy(mesh.quaternion); g.add(e);
+  }
+
+  /* ---------- frame (common) ---------- */
+  var gT = G("tub"), mTub = mat(C.design, 0.28);
+  var t1 = box(gT, -23, 23, -23, 23, -15, 10, mTub); edges(gT, t1, 0x2f5fa8);
+  var ch = (M * Math.SQRT2 - RKEEP) * Math.SQRT2, c = ch - 23;
+  var oct = [[c, 23], [-c, 23], [-23, c], [-23, -c], [-c, -23], [c, -23], [23, -c], [23, c]];
+  var t2 = prism(gT, oct, 10, 21.5, mTub); edges(gT, t2, 0x2f5fa8);
+  var kl = keel(gT, mat(C.design, 0.38)); edges(gT, kl, 0x2f5fa8);
+
+  var gF = G("fixed"), mFix = mat(C.fixed, 1);
+  var bossRL = null;
+  [[21, 9.5], [21, -9.5], [-21, 5], [-21, -5], [-30, 0]].forEach(function (p) { var b = cyl(gF, p[0], p[1], 3, 15.5, 21.5, mFix); if (p[0] === -21 && p[1] === 5) bossRL = b; });
+  [[1, 1], [1, -1], [-1, 1], [-1, -1]].forEach(function (s) { cyl(gF, s[0] * 12.75, s[1] * 12.75, 3.2, -15, -6, mFix); });
+
+  var gC = G("channels");
+  var k8Now = new THREE.Group(); gC.add(k8Now);
+  tube(k8Now, K8, 1.75, mat(C.k8, 0.85));
+  var k9Now = new THREE.Group(); gC.add(k9Now);
+  tube(k9Now, K9, 2.0, mat(C.k9, 0.85));
+  var k9Moved = new THREE.Group(); gC.add(k9Moved);
+
+  var gL = G("lid"), mLid = mat(C.lid, 0.55);
+  box(gL, -32, 32, -17, 17, 21.5, 24, mLid);
+  box(gL, -54, -32, -10, 10, 21.5, 24, mLid);
+  box(gL, 32, 42, -9, 9, 21.5, 24, mLid);
+  box(gL, -44 - 8.5, -44 + 8.5, -6, 6, 24, 29, mat(C.comp, 0.9));
+  box(gL, -54, -34, -12, 12, 29, 30.2, mat(C.tpu, 0.55));
+
+  var gB = G("battery");
+  box(gB, -29.5, 29.5, -15, 15, 24, 56, mat(C.battery, 0.18));
+
+  var gA = G("arms"), mArm = mat(C.arm, 0.75), mMot = mat(C.motor, 0.9);
+  [[1, 1], [1, -1], [-1, 1], [-1, -1]].forEach(function (s) {
+    var u = new THREE.Vector3(s[0], s[1], 0).normalize();
+    var len = M * Math.SQRT2 - 33, mid = 33 + len / 2;
+    var arm = new THREE.Mesh(new THREE.BoxGeometry(len, 10, 8), mArm);
+    arm.position.set(u.x * mid, u.y * mid, -4); arm.rotation.z = Math.atan2(u.y, u.x); gA.add(arm);
+    cyl(gA, s[0] * M, s[1] * M, 10, 0, 15.5, mMot);
+  });
+  var gP = G("props");
+  [[1, 1], [1, -1], [-1, 1], [-1, -1]].forEach(function (s) { cyl(gP, s[0] * M, s[1] * M, RPROP, 13, 18.5, mat(C.prop, 0.08), 72); });
+
+  var grid = new THREE.GridHelper(200, 40, 0x999999, 0xbbbbbb);
+  grid.rotation.x = Math.PI / 2; grid.position.z = -15; grid.material.transparent = true; grid.material.opacity = 0.25;
+  G("ground").add(grid);
+
+  /* ---------- antenna parts ---------- */
+  function tAntenna(g, cx, cz, m) {
+    box(g, cx - 3.75, cx + 3.75, -7, 7, cz - 2, cz + 2, mat(0x111111, 1));
+    [1, -1].forEach(function (s) {
+      rod(g, [cx, s * 7, cz], [cx, s * 20, cz], 0.6, m);
+      rod(g, [cx, s * 20, cz], [cx, s * 25, cz], 1.5, mat(0x111111, 1));
+    });
+  }
+  function ring(g, x, y, z) {
+    var t = new THREE.Mesh(new THREE.TorusGeometry(1.4, 0.7, 12, 28), mat(C.tpu, 1));
+    t.position.set(x, y, z); t.rotation.x = Math.PI / 2; g.add(t);
+  }
+  var mLeg = mat(0x1b1b1b, 1), mCoax = mat(C.coax, 1);
+
+  // as exported
+  var gNow = G("opt-now");
+  cyl(gNow, -44, 0, 2.7, 0, 6.5, mat(0xb42318, 1));
+  box(gNow, -50, -38, -9, 9, -5.2, 0, mat(C.compLight, 0.45));
+  box(gNow, -47.75, -40.25, -7, 7, -4, 0, mat(0x111111, 1));
+  [1, -1].forEach(function (s) {
+    var a = [-44, s * 7, -2], ang = Math.PI / 4;
+    rod(gNow, a, [-44 - 18 * Math.cos(ang), s * (7 + 18 * Math.sin(ang)), -2], 0.6, mLeg);
+  });
+  tube(gNow, [[-9.2, 3.5, 7], [-18.5, 3.5, 7]].concat(K8.slice(1)).concat([[-38, 3.5, -2], [-40.2, 1, -2]]), 0.6, mCoax);
+
+  // D: on the GPS cap
+  var gD = G("opt-d");
+  tAntenna(gD, -57, 27, mLeg);
+  box(gD, -61, -54, -12, 12, 29, 30.2, mat(C.tpu, 0.75));
+  box(gD, -61, -59.5, -12, 12, 25, 30.2, mat(C.tpu, 0.75));
+  ring(gD, -57, 10, 27); ring(gD, -57, -10, 27);
+  cyl(gD, -44, 0, 2.7, 0, 6.5, mat(C.ghost, 0.35));
+  tube(gD, [[-9.2, 3.5, 7], [-15, 0, 6], [-18.5, -4.09, 5]].concat(K9.slice().reverse().slice(1)).concat([[-38.2, -1.5, 24.5], [-50, -6.5, 25], [-53.5, -6.5, 26.8], [-56, -2, 27], [-57, 0, 27]]), 0.6, mCoax);
+
+  // under the keel, revision 3: antenna spine + TPU holder, T hanging stem-up under the K8 exit (s06_f17_spine.py)
+  var gF2 = G("opt-f");
+  var k8Moved = new THREE.Group(); gC.add(k8Moved);
+  var spineNote = document.createElement("div");
+  spineNote.className = "hint"; spineNote.style.bottom = "28px"; spineNote.textContent = "loading revision 3 geometry...";
+  view.appendChild(spineNote);
+  function meshFrom(d, colorFn, m) {
+    var geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.Float32BufferAttribute(d.v, 3));
+    if (colorFn) {
+      var n = d.v.length / 3, col = new Float32Array(n * 3);
+      for (var i = 0; i < n; i++) { var c = colorFn(i); col[3 * i] = c.r; col[3 * i + 1] = c.g; col[3 * i + 2] = c.b; }
+      geo.setAttribute("color", new THREE.BufferAttribute(col, 3));
+    }
+    geo.setIndex(d.t); geo.computeVertexNormals();
+    return new THREE.Mesh(geo, m);
+  }
+  fetch("f17_r3_mesh.json").then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (d) {
+    var o = new THREE.Color(C.link), bl = new THREE.Color(C.fixed);
+    gF2.add(meshFrom(d.spine, function (i) { return d.spine.boss[i] ? bl : o; },
+      new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.55, side: THREE.DoubleSide })));
+    gF2.add(meshFrom(d.holder, null, mat(C.tpu, 0.6)));
+    var A = d.ant, bar = A.bar, st = A.stem, mBlk = mat(0x161616, 1);
+    box(gF2, bar[0][0], bar[0][1], bar[1][0], bar[1][1], bar[2][0], bar[2][1], mBlk);
+    box(gF2, st[0][0], st[0][1], st[1][0], st[1][1], st[2][0], st[2][1], mBlk);
+    [1, -1].forEach(function (s) {
+      var y0 = A.y + s * (bar[1][1] - bar[1][0]) / 2, y1 = A.y + s * A.span / 2, yc = y1 - s * A.cap_len;
+      rod(gF2, [A.x, y0, A.leg_z], [A.x, yc, A.leg_z], A.leg_d / 2, mLeg);
+      rod(gF2, [A.x, yc, A.leg_z], [A.x, y1, A.leg_z], A.cap_d / 2, mBlk);
+    });
+    cyl(gF2, d.screw.xy[0], d.screw.xy[1], 1.0, -1.5, 3.5, mat(0x8d949a, 1, { metalness: 0.6, roughness: 0.35 }));
+    cyl(gF2, d.screw.xy[0], d.screw.xy[1], 1.9, -2.8, -1.5, mat(0x8d949a, 1, { metalness: 0.6, roughness: 0.35 }));
+    tube(k8Moved, d.k8, 1.75, mat(C.k8, 0.85));
+    tube(k9Moved, d.k9, 2.0, mat(C.k9, 0.85));
+    // coax: receiver end, a gentle S of the 18 mm slack in the bay (R >= 7), K8, straight into the stem top
+    var coax = [[-9.2, 3.5, 6.5], [-11.5, 5.5, 9.0], [-15.0, 6.5, 12.0], [-18.4, 5.8, 10.2], [-19.6, 4.2, 7.0]];   // clear of the FC nut access columns
+    d.k8.forEach(function (p) { if (p[0] <= -20.0 && p[2] >= -0.5) coax.push(p); });
+    tube(gF2, coax, 0.6, mCoax);
+    spineNote.remove();
+    applyOpt(current);
+  }).catch(function (e) { spineNote.textContent = "Revision 3 geometry did not load (" + e.message + ")"; });
+
+  /* ---------- UI ---------- */
+  var LAYERS = [
+    ["tub", "Tub and keel (design)", "#9ec0e6"], ["fixed", "Fixed bosses", "#2f5fa8"],
+    ["channels", "Channels K8 / K9", "#e0534a"], ["lid", "Lid, GPS, cap", "#d77a3a"],
+    ["battery", "Battery", "#8a8f99"], ["arms", "Arms, motors", "#b9bdb8"],
+    ["props", "Prop discs", "#c026d3"], ["ground", "Landing plane", "#999999"]
+  ];
+  var defaults = { tub: true, fixed: true, channels: true, lid: true, battery: false, arms: true, props: false, ground: true };
+  var lay = document.getElementById("layers");
+  LAYERS.forEach(function (L) {
+    var id = "lay-" + L[0];
+    var lab = document.createElement("label");
+    lab.innerHTML = '<input type="checkbox" id="' + id + '"' + (defaults[L[0]] ? " checked" : "") + '><span class="sw" style="background:' + L[2] + '"></span>' + L[1];
+    lay.appendChild(lab);
+    var cb = lab.querySelector("input");
+    groups[L[0]].visible = cb.checked;
+    cb.addEventListener("change", function () { groups[L[0]].visible = cb.checked; });
+  });
+
+  var INFO = {
+    now: {
+      nums: [["Boss to nearest fixed (keel lid boss)", "8.3 plan / 9.0 up"], ["Boss at H4 cycle 31, iso 0.4", "loose (F-17)"], ["V bend at the moulding", "not possible"], ["Coax route / measured length", "about 40 / 62 mm"]],
+      verdict: '<span class="pill p-bad">Not buildable</span>The boss prints as a loose part, and the moulded T cannot be bent into the V.'
+    },
+    d: {
+      nums: [["New frame material", "0 g"], ["Coax route / measured length", "about 74 / 62 mm"], ["Legs behind the GPS module", "4.5 mm"], ["Legs above the blade plane", "8.5 mm"]],
+      verdict: '<span class="pill p-bad">Ruled out</span>With the measured 62 mm coax the antenna cannot reach the cap: the route through the GPS channel is about 74 mm.'
+    },
+    f: {
+      nums: [["New fixed material (spine)", "1,314 mm3 = 1.71 g"], ["Fixed chain", "pad, sleeve, web, rear lid boss"], ["Coax bend radius", "R7 in the channel, none at the stem"], ["Coax route / measured length", "44 / 62 mm"], ["Spine to GPS channel (moved 1.5 mm)", "1.19 mm"], ["Leg tips to rear arms (gate C-9), span 52", "5.3 mm"], ["Holder (TPU) mass / lowest point above landing", "0.94 g / 6.1 mm"]],
+      verdict: '<span class="pill p-good">Validated</span>All 35 geometry checks pass (s06_f17_spine.py), with the measured antenna (legs 1.4, span 52, moulding 14 x 7.5). Still open: the CAD build and gates G0 to G5 for revision 3.'
+    }
+  };
+  var nums = document.getElementById("nums"), verdict = document.getElementById("verdict"), current = "f";
+  function applyOpt(k) {
+    groups["opt-now"].visible = k === "now"; groups["opt-d"].visible = k === "d"; groups["opt-f"].visible = k === "f";
+    k9Now.visible = k !== "f" || k9Moved.children.length === 0; k9Moved.visible = k === "f";
+    if (k8Now) k8Now.visible = k !== "f" || k8Moved.children.length === 0; k8Moved.visible = k === "f";
+    if (bossRL) bossRL.visible = k !== "f";
+    document.getElementById("holdercard").hidden = k !== "f";
+  }
+  function setOpt(k) {
+    current = k;
+    applyOpt(k);
+    nums.innerHTML = INFO[k].nums.map(function (r) { return "<dt>" + r[0] + "</dt><dd>" + r[1] + "</dd>"; }).join("");
+    verdict.innerHTML = INFO[k].verdict;
+    target.set(k === "d" ? -44 : -36, 0, k === "d" ? 14 : 6);
+    controls.target.copy(target);
+    try { localStorage.setItem("f17opt", k); } catch (e) {}
+  }
+  document.querySelectorAll('input[name="opt"]').forEach(function (r) { r.addEventListener("change", function () { if (r.checked) setOpt(r.value); }); });
+  var start = "f";
+  try { start = localStorage.getItem("f17opt") || "f"; } catch (e) {}
+  document.getElementById("opt-" + start).checked = true;
+  setOpt(start);
+
+  var VIEWS = { iso: [-115, 95, 70], side: [0, 200, 0], rear: [-220, 0, 5], top: [0, 0.01, 220], under: [0, 0.01, -200] };
+  function setView(v) {
+    var p = VIEWS[v];
+    camera.position.set(controls.target.x + p[0], controls.target.y + p[1], controls.target.z + p[2]);
+    controls.update();
+  }
+  document.querySelectorAll("[data-v]").forEach(function (b) { b.addEventListener("click", function () { setView(b.dataset.v); }); });
+  setView("iso");
+
+  function themeBg() { css = getComputedStyle(document.documentElement); scene.background = new THREE.Color(css.getPropertyValue("--scene").trim() || "#e9ece9"); }
+  themeBg();
+  try { window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", themeBg); } catch (e) {}
+  new MutationObserver(themeBg).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+  function resize() {
+    var w = view.clientWidth, h = view.clientHeight;
+    renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+  }
+  new ResizeObserver(resize).observe(view); resize();
+  (function loop() { controls.update(); renderer.render(scene, camera); requestAnimationFrame(loop); })();
+})();
+</script>

@@ -1,12 +1,20 @@
 # -*- coding: ascii -*-
 """
-s06_geometry_v04B.py - v04-B geometry, revision 1 (2026-10-11): assemblable tub plus removable
+s06_geometry_v04B.py - v04-B geometry, revision 3 (2026-10-12, F-17): antenna spine replaces the
+antenna boss; antenna channel K8 rerouted (z 6.5, one R7 bend, exit at (-49, +3.5)); GPS channel K9
+and the lid GPS hole moved 1.5 mm to -y; straight T antenna hanging stem-up under the K8 exit in a
+TPU holder (components). Spine shape, clearances and the holder are defined and checked in
+s06_f17_spine.py (geometry/v04B_r3_f17/checks.json); this file builds the CAD version of the same
+primitives without the blend fillets (the restoration uses the filleted SPINE_fixed_v04B_r3.stl).
+Revision 2 (H4, TH04) is kept as git history and geometry/v04B/.
+
+Revision 1 (2026-10-11): assemblable tub plus removable
 lid (D-072 to D-078) with the 46 x 46 body and 148.5 mm wheelbase (D-079), the antenna channel
 through the keel at receiver height, the 11 x 7 pigtail window and the C cutout in the lid tab
 (D-080). Revision 0 (40 x 40 body) is kept in abaqus_v04B_r0/.
 
 Writes stage6/abaqus_v04B/:
-  TUB.step              TUB_DESIGN, TUB_FIXED (fin bosses, FC bosses, lid bosses, antenna boss)
+  TUB.step              TUB_DESIGN, TUB_FIXED (fin bosses, FC bosses, lid bosses, antenna spine)
   LID.step              LID_DESIGN, LID_FIXED (plate frame and strap band, GPS deck with pocket
                         rim and cap bosses, screw pads, front tab)
   ARM_xx.step           the v03-B arms (D-054, D-059), unchanged in shape, moved 3 mm in x and
@@ -37,13 +45,19 @@ import s06_reference_geometry_v03 as v3     # noqa: E402
 g, r = v3.g, v3.r
 OUT = os.path.join(HERE, "abaqus_v04B")
 SRC_ARMS = os.path.join(HERE, "abaqus_v03B")
+REFPTS_REV2 = None
+if not os.path.isdir(SRC_ARMS):                    # GitHub repo layout (drone-revB): inputs under geometry/
+    _ROOT = os.path.dirname(os.path.dirname(HERE))
+    SRC_ARMS = os.path.join(_ROOT, "geometry", "v03B_arms")
+    OUT = os.path.join(_ROOT, "geometry", "v04B_r3")
+    REFPTS_REV2 = os.path.join(_ROOT, "geometry", "v04B", "reference_points_v04B.csv")   # MOT / JNT already moved
 RHO = 1.30e-3
 SHIFT = 3.0                                   # per axis; 4.243 mm along each diagonal
 M_NEW = g.M + SHIFT                           # motor axis coordinate, 52.497
 R_KEEP = g.R_KEEP                             # 47.45, prop radius + 3 mm
 
 P = {
-    "version": "v04B rev 2",
+    "version": "v04B rev 3",
     "body_half": 23.0, "rim_z": 21.5, "floor_z": -15.0, "chamfer_z": 10.0,
     "motor_xy": M_NEW, "wheelbase": 2.0 * M_NEW * math.sqrt(2.0),
     "bay": {"xy": 20.5, "z": [-6.0, 21.5]},
@@ -56,7 +70,14 @@ P = {
                 "usb_window": 0.75, "strap_notch": 1.0, "lid_tab_root": 2.0, "lid_deck_root": 3.0,
                 },
     "keel": {"x": [-54.0, -22.0], "y_half": 9.0, "z": [0.0, 21.5]},
-    "ant_boss": {"xy": (-44.0, 0.0), "d": 5.4, "z": [0.0, 6.5], "insert_d": 3.2, "insert_depth": 4.5},
+    # F-17 (rev 3): antenna spine, TUB fixed. Sleeve wall 1.5 around K8 from the bay face to the exit, pad in the
+    # keel underside with an M2 x 3 heat-set insert and a locating hole, web up the rear wall into the rear lid boss
+    "ant_spine": {"wall": 1.5, "pad": [(-53.0, -41.0), (-8.0, 8.0), (0.0, 2.2)],
+                  "insert_xy": (-43.0, -1.0), "boss_d": 6.6, "boss_z": [0.0, 5.7], "insert_d": 3.2, "insert_depth": 4.0,
+                  "peg_xy": (-43.5, -5.3), "peg_d": 2.0, "peg_depth": 1.1,
+                  "web_z": [7.0, 15.5]},          # web = the rear lid boss (-21, +5) continued down to the sleeve
+    "antenna": {"x": -49.0, "y": 3.5, "bar": (4.0, 14.0, 4.5), "stem": (3.0, 3.2, 3.0), "stem_top": -0.5,
+                "leg_d": 1.4, "span": 52.0, "cap_d": 4.0, "cap_len": 5.0},
     "pigtail_window": {"y": [-10.0, 1.0], "z": [-1.8, 5.2]},
     "pigtail_low_run": {"x": [23.0, 33.0], "y": [-12.0, 3.0], "z": [-3.0, 3.0]},
     "pigtail_riser": {"x": [28.5, 33.0], "y": [-3.0, 3.0], "z": [0.0, 21.5]},
@@ -64,9 +85,9 @@ P = {
     "usb_window": {"x": [-1.1, 11.9], "z": [-2.0, 6.0]},
     "usb_plug": {"x_c": 5.4, "z_c": 1.5, "shell": [8.4, 2.6], "shell_y": [-16.5, -23.5],
                  "overmold": [12.0, 7.0], "overmold_y": [-23.5, -40.0]},
-    "ant_channel": {"d": 3.5, "y": 3.5, "z_h": 7.0, "x_bend": -33.0, "R": 5.0},
-    "gps_channel": {"d": 4.0, "x_v": -38.2, "y_v": -1.5, "z_bend": 10.0, "R": 5.0, "z_h": 5.0,
-                    "wall_hole": (-23.0, -3.5)},
+    "ant_channel": {"d": 3.5, "y": 3.5, "z_h": 6.5, "x_bend": -42.0, "R": 7.0},                 # rev 3 (rev 2: z 7, x -33, R 5)
+    "gps_channel": {"d": 4.0, "x_v": -38.2, "y_v": -3.0, "z_bend": 10.0, "R": 5.0, "z_h": 5.0,   # rev 3: y_v -3.0 (rev 2: -1.5)
+                    "wall_hole": (-23.0, -5.0)},                                       # rev 3 (rev 2: y -3.5)
     "strap_notch": {"x": [-9.0, 9.0], "z": [18.0, 21.5]},
     "nut_col": {"d": 8.0, "z": [1.6, 21.5]},
     "lid": {"plate": [64.0, 34.0], "z": [21.5, 24.0], "frame_w": 3.0, "band_half_x": 9.0,
@@ -74,7 +95,7 @@ P = {
             "pocket_in": {"x": [-52.8, -35.2], "y": 6.3}, "rim_t": 1.2, "rim_z": [24.0, 26.5],
             "cap_boss": {"d": 5.4, "y": 9.3, "x": -44.0, "z": [21.5, 26.5], "insert_d": 3.2, "insert_depth": 6.0},
             "pad_d": [6.0, 6.0, 6.0, 6.0, 6.0], "pad_hole_d": 2.2, "csk_d": 3.8,
-            "gps_hole": (-38.2, -1.5, 4.0),
+            "gps_hole": (-38.2, -3.0, 4.0),                                      # rev 3 (rev 2: y -1.5)
             "tab": {"x": [32.0, 42.0], "y": 9.0},
             "c_cut": {"pocket_x": [35.8, 39.2], "pocket_y": 3.2, "entry_half": 1.3}},
     "gps_cg": (-44.0, 0.0, 26.5),
@@ -282,10 +303,29 @@ def tub_fixed_tools():
     lb = P["lid_boss"]
     lid = union_all([zcyl(x, y, lb["d"] / 2.0, *lb["z"]) for x, y in lb["xy"]])
     lid_holes = union_all([zcyl(x, y, lb["insert_d"] / 2.0, lb["z"][1] - lb["insert_depth"], lb["z"][1] + 1.0) for x, y in lb["xy"]])
-    ab = P["ant_boss"]
-    ant = zcyl(ab["xy"][0], ab["xy"][1], ab["d"] / 2.0, *ab["z"])
-    ant_hole = zcyl(ab["xy"][0], ab["xy"][1], ab["insert_d"] / 2.0, ab["z"][0] - 1.0, ab["z"][0] + ab["insert_depth"])
-    return fc, lid, ant, union_all([lid_holes, ant_hole])
+    ant = antenna_spine()
+    sp = P["ant_spine"]
+    ant_holes = union_all([zcyl(sp["insert_xy"][0], sp["insert_xy"][1], sp["insert_d"] / 2.0, -1.0, sp["insert_depth"]),
+                           zcyl(sp["peg_xy"][0], sp["peg_xy"][1], sp["peg_d"] / 2.0, -1.0, sp["peg_depth"])])
+    return fc, lid, ant, union_all([lid_holes, ant_holes])
+
+
+def antenna_spine():
+    """F-17 (rev 3): sleeve around K8 (from x = -20 into the keel and down to the exit), pad, insert boss and web
+    into the rear lid boss (-21, +5). Clipped later by the TUB envelope and cut by the keep-outs and holes, so the
+    tools may overshoot the envelope. CAD version of s06_f17_spine.py without the blend fillets."""
+    c, sp = P["ant_channel"], P["ant_spine"]
+    ro = c["d"] / 2.0 + sp["wall"]
+    y, zh, xb, R = c["y"], c["z_h"], c["x_bend"], c["R"]
+    leg = cq.Workplane("YZ").workplane(offset=xb).center(y, zh).circle(ro).extrude(-20.0 - xb)
+    bend = torus_quarter((xb, y, zh - R), (0, -1, 0), (0, 0, 1), R, ro)
+    (px0, px1), (py0, py1), (pz0, pz1) = sp["pad"]
+    pad = box(px0, px1, py0, py1, pz0, pz1)
+    boss = zcyl(sp["insert_xy"][0], sp["insert_xy"][1], sp["boss_d"] / 2.0, *sp["boss_z"])
+    lb = P["lid_boss"]
+    bx, by = lb["xy"][2]                                     # rear-left lid boss (-21, +5)
+    web = zcyl(bx, by, lb["d"] / 2.0, sp["web_z"][0], sp["web_z"][1])   # coaxial, same diameter: no seam, no strip
+    return union_all([leg, bend, pad, boss, web])          # the bend ends at z = zh - R = -0.5, below the keel underside
 
 
 def build_tub(K, cko):
@@ -299,7 +339,7 @@ def build_tub(K, cko):
     design = env_cut.cut(tools).cut(fin_nd)
     fixed = env_cut.intersect(tools).union(fin_nd)
     regions = {"fixed_fin_bosses": fin_nd, "fixed_fc_bosses": env_cut.intersect(fc),
-               "fixed_lid_bosses": env_cut.intersect(lidb), "fixed_antenna_boss": env_cut.intersect(ant)}
+               "fixed_lid_bosses": env_cut.intersect(lidb), "fixed_antenna_spine": env_cut.intersect(ant)}
     return design, fixed, regions, env
 
 
@@ -409,21 +449,27 @@ def components():
     up = P["usb_plug"]; sw, sh = up["shell"]; ow, oh = up["overmold"]
     C["usb_plug"] = box(up["x_c"] - sw / 2, up["x_c"] + sw / 2, up["shell_y"][1], up["shell_y"][0], up["z_c"] - sh / 2, up["z_c"] + sh / 2).union(
         box(up["x_c"] - ow / 2, up["x_c"] + ow / 2, up["overmold_y"][1], up["overmold_y"][0], up["z_c"] - oh / 2, up["z_c"] + oh / 2))
-    # antenna: coax from the receiver -X end through K8 to the junction in the holder; V lying flat
+    # antenna (rev 3): coax from the receiver -X end through K8 straight into the stem of the T, which hangs
+    # stem-up under the K8 exit with the moulding vertical and the legs along y; TPU holder screwed to the spine pad
     a = P["ant_channel"]; xb, R = a["x_bend"], a["R"]
-    C["antenna_coax"] = union_all([box(-20.0, -9.2, 3.0, 4.0, 6.5, 7.5),
+    A = P["antenna"]
+    bx, by, bz = A["bar"]; sx, sy, sz = A["stem"]
+    zs0 = A["stem_top"] - sz; zb0 = zs0 - bz; zl = zb0 + bz / 2.0
+    C["antenna_coax"] = union_all([box(-20.0, -9.2, 3.0, 4.0, 6.0, 7.0),
                                    xcyl(a["y"], a["z_h"], 0.6, xb, -19.5),
-                                   torus_quarter((xb, a["y"], a["z_h"] - R), (0, -1, 0), (0, 0, 1), R, 0.6),
-                                   zcyl(xb - R, a["y"], 0.6, -2.0, a["z_h"] - R)])
-    ab = P["ant_boss"]["xy"]
-    C["antenna_holder"] = box(ab[0] - 6.0, ab[0] + 6.0, -9.0, 9.0, -5.2, 0.0)
-    C["antenna_junction"] = box(ab[0] - 3.75, ab[0] + 3.75, -7.0, 7.0, -4.0, 0.0)
+                                   torus_quarter((xb, a["y"], a["z_h"] - R), (0, -1, 0), (0, 0, 1), R, 0.6)])   # ends at the stem top
+    C["antenna_junction"] = union_all([box(A["x"] - bx / 2, A["x"] + bx / 2, A["y"] - by / 2, A["y"] + by / 2, zb0, zs0),
+                                       box(A["x"] - sx / 2, A["x"] + sx / 2, A["y"] - sy / 2, A["y"] + sy / 2, zs0, A["stem_top"])])
+    # holder envelope (the printable part is ANTENNA_HOLDER_v04B_r3_TPU.stl from s06_f17_spine.py)
+    C["antenna_holder"] = union_all([box(-52.2, -41.0, -7.5, 8.0, -1.5, 0.0),
+                                     box(-52.2, -45.7, A["y"] - by / 2 - 0.6, A["y"] + by / 2 + 0.6, zb0 - 1.0, -1.5),
+                                     box(-52.2, -45.7, A["y"] - by / 2 - 4.5, A["y"] + by / 2 + 4.5, zl - 0.9, zl + 2.6)])
     el = []
     for s in (1, -1):
-        e = (cq.Workplane("YZ").circle(0.6).extrude(18.0).rotate((0, 0, 0), (0, 0, 1), 180 - s * 45)
-             .translate((ab[0], s * 7.0, -2.0)))
-        el.append(e)
-    C["antenna_V"] = union_all(el)
+        y0 = A["y"] + s * by / 2; y1 = A["y"] + s * A["span"] / 2; yc = y1 - s * A["cap_len"]
+        el.append(cq.Workplane("XZ").workplane(offset=-min(y0, yc)).center(A["x"], zl).circle(A["leg_d"] / 2.0).extrude(-abs(yc - y0)))
+        el.append(cq.Workplane("XZ").workplane(offset=-min(yc, y1)).center(A["x"], zl).circle(A["cap_d"] / 2.0).extrude(-A["cap_len"]))
+    C["antenna_V"] = union_all(el)          # key kept for gate C-9: now the straight T legs
     gx = P["gps_cg"][0]
     C["gps_module"] = box(gx - 8.5, gx + 8.5, -6.0, 6.0, 24.0, 29.0)
     cb = P["lid"]["cap_boss"]
@@ -447,24 +493,43 @@ def export(objs, path):
     asm.export(path, exportType="STEP")
 
 
+# rev 3 point masses (g): parts moved out of the RP_FC lump to where they sit; total 199.58 (the TPU holder from the
+# STL, 0.94 g, is 0.42 g lighter than the 1.36 g estimate of the export note)
+MASS = {"ant": 0.9 + 0.94 + 0.23 + 0.17, "gps": 2.6 + 0.84 + 0.46 + 0.33}
+MASS["fc"] = 27.2 - (0.9 + 1.36 + 0.23 + 0.17) - (0.84 + 0.46 + 0.33)
+
+
 def write_refpoints(path):
-    rows = list(csv.reader(open(os.path.join(SRC_ARMS, "reference_points.csv"))))
+    src = os.path.join(SRC_ARMS, "reference_points.csv")
+    shifted = False
+    if not os.path.isfile(src) and REFPTS_REV2:
+        src, shifted = REFPTS_REV2, True
+    rows = [r_ for r_ in csv.reader(open(src)) if r_ and r_[0] != "RP_ANT"]
     out = [rows[0]]
     for row in rows[1:]:
         if row[0] == "RP_GPS":
             gx, gy, gz = P["gps_cg"]
-            row = ["RP_GPS", "GPS Flywoo GOKU GM10 Nano V3 with compass 2.6 g (D-076), CG 2.5 above the lid pocket floor",
-                   "%.1f" % gx, "%.1f" % gy, "%.1f" % gz, "2.6", "2.6e-06", "0", "0", "0",
+            m = MASS["gps"]
+            row = ["RP_GPS", "GPS GM10 Nano V3 2.6 g (D-076) + TPU cap 0.84 + 2 M2 screws 0.46 + 2 inserts 0.33 (rev 3; were in the 12 g lump)",
+                   "%.1f" % gx, "%.1f" % gy, "%.1f" % gz, "%.2f" % m, "%.3e" % (m * 1e-6), "0", "0", "0",
                    "S_GPS_SEAT: LID pocket floor (deck top inside the rim, z = 24)", "-"]
         elif row[0] == "RP_BATT":
             row[10] = "S_BATT_SEAT: LID top faces of plate frame + strap band (z = 24)"
         elif row[0] == "RP_FC":
+            m = MASS["fc"]
+            row[1] = "FC 13.6 + receiver 0.7 (antenna moved to RP_ANT) + hardware and wiring lump less the antenna and GPS parts (rev 3)"
+            row[5], row[6] = "%.2f" % m, "%.3e" % (m * 1e-6)
             row[10] = "S_FC_SEAT: TUB top faces of the 4 FC bosses (z = -6), rings dia 6.4 / 2.2"
-        elif row[0].startswith("RP_MOT") or row[0].startswith("RP_JNT"):
+        elif (row[0].startswith("RP_MOT") or row[0].startswith("RP_JNT")) and not shifted:
             x, y = float(row[2]), float(row[3])
             row[2] = "%.3f" % (x + SHIFT * (1 if x > 0 else -1))
             row[3] = "%.3f" % (y + SHIFT * (1 if y > 0 else -1))
         out.append(row)
+        if row[0] == "RP_GPS":
+            A = P["antenna"]
+            out.append(["RP_ANT", "antenna 0.9 + TPU holder 0.94 (STL) + M2 x 5 screw 0.23 + M2 insert 0.17 (rev 3, F-17)",
+                        "%.1f" % (A["x"] + 0.4), "%.1f" % A["y"], "-4.0", "%.2f" % MASS["ant"], "%.3e" % (MASS["ant"] * 1e-6),
+                        "0", "0", "0", "S_ANT_PAD: TUB spine pad underside (z = 0) inside x -53..-39, y -8..8, less the holes", "-"])
     with open(path, "w", newline="") as fh:
         csv.writer(fh).writerows(out)
 

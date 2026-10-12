@@ -1,0 +1,323 @@
+{
+ "parameters": {
+  "K8": {
+   "d": 3.5,
+   "y": 3.5,
+   "z": 6.5,
+   "x_entry": -18.5,
+   "x_bend": -42.0,
+   "R": 7.0,
+   "z_exit": -1.0
+  },
+  "K9_dy": -1.5,
+  "wall": 1.5,
+  "blend": 1.6,
+  "pad": {
+   "x": [
+    -53.0,
+    -41.0
+   ],
+   "y": [
+    -8.0,
+    8.0
+   ],
+   "z": [
+    0.0,
+    2.2
+   ],
+   "r": 0.6
+  },
+  "insert": {
+   "xy": [
+    -43.0,
+    -1.0
+   ],
+   "r": 1.6,
+   "z": [
+    0.0,
+    4.0
+   ]
+  },
+  "peg": {
+   "xy": [
+    -43.5,
+    -5.3
+   ],
+   "r": 1.0,
+   "z": [
+    0.0,
+    1.1
+   ]
+  },
+  "web": {
+   "xy": [
+    -21.0,
+    5.0
+   ],
+   "r": 3.0,
+   "z": [
+    7.0,
+    15.5
+   ]
+  },
+  "antenna": {
+   "x": -49.0,
+   "y": 3.5,
+   "bar": [
+    4.0,
+    14.0,
+    4.5
+   ],
+   "stem": [
+    3.0,
+    3.2,
+    3.0
+   ],
+   "stem_top": -0.5,
+   "leg_d": 1.4,
+   "span": 52.0,
+   "cap_d": 4.0,
+   "cap_len": 5.0
+  },
+  "holder": {
+   "plate_z": [
+    -1.5,
+    0.0
+   ],
+   "plate_x": [
+    -52.2,
+    -41.0
+   ],
+   "plate_y": [
+    -7.5,
+    8.0
+   ],
+   "gap_x": 0.1,
+   "gap_stem": 0.2,
+   "cheek_t": 1.2,
+   "lip": [
+    1.0,
+    1.0
+   ],
+   "clip_wall": 1.0,
+   "clip_gap": 0.1,
+   "screw_clear_d": 2.2,
+   "screw_head_d": 3.8,
+   "cb_d": 4.2,
+   "peg_d": 1.8,
+   "peg_h": 0.9
+  }
+ },
+ "checks": {
+  "K8 centreline minimum bend radius (mm)": {
+   "value": 6.999999999999924,
+   "limit": ">= 6.8 (6 x OD)",
+   "result": "PASS",
+   "note": ""
+  },
+  "coax route receiver -> bay entry -> K8 -> stem (mm)": {
+   "value": 43.73616906012769,
+   "limit": "<= 62 (measured)",
+   "result": "PASS",
+   "note": "slack 18 mm"
+  },
+  "K8 to K9 surface gap (mm)": {
+   "value": 2.898310002388092,
+   "limit": ">= 1.0",
+   "result": "PASS",
+   "note": ""
+  },
+  "K8 to keel side (mm)": {
+   "value": 3.75,
+   "limit": ">= 1.0 + wall",
+   "result": "PASS",
+   "note": ""
+  },
+  "K9 (moved) to keel side (mm)": {
+   "value": 2.0099117817630923,
+   "limit": ">= 1.0",
+   "result": "PASS",
+   "note": ""
+  },
+  "K8 opening above K11 in the rear wall (mm)": {
+   "value": 7.75,
+   "limit": ">= 1.0",
+   "result": "PASS",
+   "note": ""
+  },
+  "K9 opening above K11 in the rear wall (mm)": {
+   "value": 6.0,
+   "limit": ">= 1.0",
+   "result": "PASS",
+   "note": ""
+  },
+  "lid GPS hole moves to (x, y)": {
+   "value": "(-38.2, -3.0)",
+   "limit": "inside pocket",
+   "result": "PASS",
+   "note": "pocket inner half-width 6.3"
+  },
+  "spine connected components": {
+   "value": 1.0,
+   "limit": "== 1",
+   "result": "PASS",
+   "note": ""
+  },
+  "spine new fixed volume (mm^3) / mass (g)": {
+   "value": "1315 / 1.71",
+   "limit": "-",
+   "result": "PASS",
+   "note": ""
+  },
+  "spine to K9 (mm)": {
+   "value": 1.1887056062430812,
+   "limit": ">= 1.0",
+   "result": "PASS",
+   "note": "at [-39.9, -2.1, 5.6]"
+  },
+  "spine to keel side (mm)": {
+   "value": 1.0929000000000002,
+   "limit": ">= 1.0",
+   "result": "PASS",
+   "note": ""
+  },
+  "spine to keel rear end x = -54 (mm)": {
+   "value": 1.0863000000000014,
+   "limit": ">= 1.0",
+   "result": "PASS",
+   "note": ""
+  },
+  "K8 wall >= 1.0 mm all round (probe points solid)": {
+   "value": "2136/2136",
+   "limit": "all",
+   "result": "PASS",
+   "note": ""
+  },
+  "M2 insert hole: 1.5 mm wall and cap (probe points solid)": {
+   "value": "324/324",
+   "limit": "all",
+   "result": "PASS",
+   "note": ""
+  },
+  "locating hole: 1.0 mm wall and cap": {
+   "value": "324/324",
+   "limit": "all",
+   "result": "PASS",
+   "note": ""
+  },
+  "insert hole to K8 (mm)": {
+   "value": 1.7455107409031787,
+   "limit": ">= 1.0",
+   "result": "PASS",
+   "note": ""
+  },
+  "spine to keel lid boss (-30, 0) (mm)": {
+   "value": 4.366982971339085,
+   "limit": ">= 1.0 or merged",
+   "result": "PASS",
+   "note": ""
+  },
+  "spine joined to rear lid boss (-21, +5)": {
+   "value": "yes",
+   "limit": "yes",
+   "result": "PASS",
+   "note": ""
+  },
+  "spine STL closed (edges not shared by exactly 2 faces)": {
+   "value": 0.0,
+   "limit": "== 0",
+   "result": "PASS",
+   "note": "156648 triangles, mesh volume 1477 mm^3"
+  },
+  "C-9 antenna to rear arms, plan (mm)": {
+   "value": 5.316320999771821,
+   "limit": ">= 5.0",
+   "result": "PASS",
+   "note": "arm model within 0.05 mm of gate C-9 on the old V"
+  },
+  "antenna legs z (mm)": {
+   "value": -5.75,
+   "limit": "above -12, below 10",
+   "result": "PASS",
+   "note": ""
+  },
+  "C-clip opening / leg diameter (snap if < 1)": {
+   "value": 0.7559289460184544,
+   "limit": "0.6 .. 0.85",
+   "result": "PASS",
+   "note": "opening 1.06 mm, wraps 277 deg"
+  },
+  "holder connected components": {
+   "value": 1.0,
+   "limit": "== 1",
+   "result": "PASS",
+   "note": ""
+  },
+  "holder volume (mm^3) / mass TPU (g)": {
+   "value": "776 / 0.94",
+   "limit": "-",
+   "result": "PASS",
+   "note": ""
+  },
+  "holder lowest point to landing plane (mm)": {
+   "value": 6.088699999999999,
+   "limit": ">= 5",
+   "result": "PASS",
+   "note": ""
+  },
+  "holder top within the pad footprint": {
+   "value": "x -52.2..-41.0 y -7.5..8.0",
+   "limit": "inside pad",
+   "result": "PASS",
+   "note": ""
+  },
+  "holder thinnest feature away from the clip ends (mm)": {
+   "value": 0.8,
+   "limit": ">= 0.8 (2 lines)",
+   "result": "PASS",
+   "note": "at [-51.0, -3.7, -8.4]; clip ends taper to an edge by design"
+  },
+  "bar pocket clearance (holder material inside the bar)": {
+   "value": 0.0,
+   "limit": "== 0",
+   "result": "PASS",
+   "note": ""
+  },
+  "stem slot clearance (holder material inside the stem)": {
+   "value": 0.0,
+   "limit": "== 0",
+   "result": "PASS",
+   "note": ""
+  },
+  "stem top to K8 exit: coax goes straight up (offset mm)": {
+   "value": 0.0,
+   "limit": "== 0",
+   "result": "PASS",
+   "note": ""
+  },
+  "screw M2 x 5: engagement / tip below hole bottom (mm)": {
+   "value": "3.5 / 0.5",
+   "limit": ">= 3.0 / > 0",
+   "result": "PASS",
+   "note": "head under the 1.5 mm plate; hole 4.0 deep, M2 x 3 insert"
+  },
+  "screw head to front cheek (mm)": {
+   "value": 0.7999999999999958,
+   "limit": ">= 0.3",
+   "result": "PASS",
+   "note": ""
+  },
+  "holder STL closed": {
+   "value": 0.0,
+   "limit": "== 0",
+   "result": "PASS",
+   "note": "284088 triangles"
+  },
+  "holder/antenna to motor-lead passages K11 (x gap, mm)": {
+   "value": 12.190602486691017,
+   "limit": ">= 5",
+   "result": "PASS",
+   "note": ""
+  }
+ }
+}
