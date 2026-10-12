@@ -8,6 +8,12 @@
 #      nodes belong to, share of peak nodes that touch only air elements.
 # Run in /tmp/mdias_H4/TH:
 #   abaqus python ~/drone_revB/stage6/scripts/th04_islands.py c31.odb TH04b TH04a > TH04_islands.txt 2>&1
+# Options (D-085, build log item 46):
+#   part=TUB or part=LID   only the elements of that part (element set <part>-1_ALL_<part>, count checked)
+#   tol=0                  no node-proximity links (ties not counted); default tol=0.2
+#   With part=TUB the five lid bosses (top annulus at z 21.5, item 36) are located and their component reported.
+#   Job names are optional; without them the mesh is read from the cycle odb.
+#   abaqus python ~/drone_revB/stage6/scripts/th04_islands.py c31.odb part=TUB tol=0 > islands_TUB.txt 2>&1
 from __future__ import print_function
 import sys, os, re
 import numpy as np
@@ -19,10 +25,17 @@ RHO_MAT = 1.30e-3   # g/mm^3, PET-CF (as cyclecheck / item 15)
 NLIST = 15          # islands listed per iso
 
 args = [a for a in sys.argv[1:] if not a.endswith('.py')]
+opts = dict(a.split('=', 1) for a in args if '=' in a)
+args = [a for a in args if '=' not in a]
 c31 = [a for a in args if a.lower().endswith('.odb')]
 jobs = [a for a in args if not a.lower().endswith('.odb')]
-if len(c31) != 1 or not jobs:
-    raise SystemExit('usage: th04_islands.py c31.odb TH04b [TH04a]')
+if len(c31) != 1:
+    raise SystemExit('usage: th04_islands.py c31.odb [TH04b TH04a] [part=TUB|LID] [tol=0]')
+TOL = float(opts.get('tol', TOL))
+PART = opts.get('part', '').upper()
+NEXP = {'TUB': 382422, 'LID': 63398}          # production mesh element counts (item 37)
+LIDBOSS = [(21.0, 9.5), (21.0, -9.5), (-21.0, 5.0), (-21.0, -5.0), (-30.0, 0.0)]   # V1_build.py
+print('options: part=%s tol=%.3f mm' % (PART or 'all', TOL))
 
 # densities of cycle 31 (same reading as th04_build.py)
 o = openOdb(os.path.abspath(c31[0]), readOnly=True)
@@ -38,7 +51,7 @@ o.close()
 print('densities read: %d' % len(rho))
 
 # mesh from the first TH04 odb (same deck as cycle 31)
-o = openOdb(os.path.abspath(jobs[0] + '.odb'), readOnly=True)
+o = openOdb(os.path.abspath((jobs[0] + '.odb') if jobs else c31[0]), readOnly=True)
 insts = o.rootAssembly.instances
 print('instances: %s' % ', '.join(insts.keys()))
 nid = {}            # (inst, node label) -> index
@@ -48,10 +61,25 @@ for iname in insts.keys():
         nid[(iname, n.label)] = len(xyz)
         xyz.append(n.coordinates)
 xyz = np.asarray(xyz, dtype=float)
+keep = None
+if PART:
+    keep = set()
+    for iname in insts.keys():
+        ks = [k for k in insts[iname].elementSets.keys() if k.upper().replace('-1_', '_').endswith('_ALL_' + PART) or k.upper() == 'ALL_' + PART]
+        if not ks:
+            ks = [k for k in insts[iname].elementSets.keys() if k.upper().startswith(PART + '-1_')]
+        for k in ks:
+            keep.update(e.label for e in insts[iname].elementSets[k].elements)
+        print('part %s: element sets %s' % (PART, ', '.join(ks[:8])))
+    print('part %s: %d elements (expected %s)' % (PART, len(keep), NEXP.get(PART, '?')))
+    if PART in NEXP and len(keep) != NEXP[PART]:
+        raise SystemExit('element count of part %s does not match the production mesh: stop' % PART)
 elab, econ, einst = [], [], []
 for iname in insts.keys():
     for e in insts[iname].elements:
         if not e.type.upper().startswith('C3D'):
+            continue
+        if keep is not None and e.label not in keep:
             continue
         elab.append(e.label)
         einst.append(iname)
@@ -97,7 +125,7 @@ def components(iso):
                     par[ri] = rj
     # proximity links between nodes of solid elements (ties)
     cell = {}
-    for n in owner:
+    for n in (owner if TOL > 0 else []):
         k = tuple((xyz[n] // TOL).astype(int).tolist())
         cell.setdefault(k, []).append(n)
     nlink = 0
@@ -149,8 +177,28 @@ for iso in ISOS:
         print('%4d %10.1f %8.3f %24s %s' % (r + 1, cvol[k], cvol[k] * RHO_MAT,
               '(%.1f, %.1f, %.1f)' % tuple(cc.tolist()), ', '.join(sorted(touched)[:6]) or '-'))
     res[iso] = (main, node_comp, ids, order, inv)
+    if PART == 'TUB':
+        rk = dict((ids[k], r) for r, k in enumerate(order.tolist()))
+        print('lid bosses (top annulus z 21.5, r 1.6 to 3.0 mm):')
+        for bi, (bx, by) in enumerate(LIDBOSS):
+            r = np.hypot(xyz[:, 0] - bx, xyz[:, 1] - by)
+            top = np.nonzero((np.abs(xyz[:, 2] - 21.5) < 0.01) & (r > 1.55) & (r < 3.05))[0].tolist()
+            cs = {}
+            for n in top:
+                cmp_ = node_comp.get(n)
+                key = 'air' if cmp_ is None else rk[cmp_]
+                cs[key] = cs.get(key, 0) + 1
+            ok = (list(cs.keys()) == [0])
+            if not top:
+                print('  boss %d at (%.1f, %.1f): no top nodes found (check coordinates)' % (bi + 1, bx, by))
+                continue
+            print('  boss %d at (%.1f, %.1f): %d top nodes, components %s -> %s' % (bi + 1, bx, by, len(top),
+                  ' '.join('%s:%d' % (k, v) for k, v in sorted(cs.items(), key=lambda t: str(t[0]))) or '-',
+                  'in main tub component' if ok else 'NOT in the main tub component'))
 o.close()
 
+if not jobs:
+    raise SystemExit(0)
 # modes against components at iso 0.4
 main, node_comp, ids, order, inv = res[0.4]
 rank = dict((ids[k], r) for r, k in enumerate(order.tolist()))
