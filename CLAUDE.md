@@ -28,7 +28,18 @@ The project runs as two chats with separate records:
 ## 3. Sessions
 
 - Start: `git pull`; read journal Section 1 and changelog; read the last build log items (Phase H items) and any doc named in Miguel's message.
-- End: commit with a message naming the docs and scripts changed; push. Tell Miguel which project docs changed so he can copy them to the claude.ai project.
+- End: commit with a message naming the docs and scripts changed; push to the working branch and open a pull request (rules below). Tell Miguel which project docs changed so he can copy them to the claude.ai project.
+
+### Repository writes (Option C, Miguel 2026-10-12)
+
+- Reading the repo is free: pull and read whenever needed.
+- Never commit or push to `main`. `main` is protected on GitHub (pull request required, no force push, no deletion); Miguel alone merges.
+- Before any commit, tell Miguel which files change and why, and wait for his go.
+- Work on a branch named `<role>/<task>` (`setup/th04-fix`, `main-chat/v05B-export`), created from an up-to-date `main`. One branch and one pull request per task, grouping related changes; not one per small edit.
+- Open the pull request with `gh pr create`: title naming the task, body listing the docs and scripts changed and any new IDs (items, DV-xx, D-xxx). Then give Miguel the PR link.
+- Never force push, rewrite history, delete branches or files outside the task, or merge pull requests.
+- If `main` moved while the branch was open (the other account merged), rebase the branch on `main` before asking for the merge; report any conflict to Miguel instead of resolving it in the other role's records.
+- After Miguel merges, `git switch main && git pull` before starting the next branch.
 
 ## 4. Writing style (always)
 
