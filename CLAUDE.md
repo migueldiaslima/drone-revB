@@ -34,9 +34,9 @@ The project runs as two chats with separate records:
 
 - Reading the repo is free: pull and read whenever needed.
 - Never commit or push to `main`. `main` is protected on GitHub (pull request required, no force push, no deletion); Miguel alone merges.
-- Before any commit, tell Miguel which files change and why, and wait for his go.
+- Once a plan is agreed with Miguel, commit, push to the working branch and open the pull request without asking again; bugs found on the way may be fixed within the plan. Stop and ask before committing only when something will not work as agreed and the change needs his opinion. Always list the files changed and why when giving the PR link.
 - Work on a branch named `<role>/<task>` (`setup/th04-fix`, `main-chat/v05B-export`), created from an up-to-date `main`. One branch and one pull request per task, grouping related changes; not one per small edit.
-- Open the pull request with `gh pr create`: title naming the task, body listing the docs and scripts changed and any new IDs (items, DV-xx, D-xxx). Then give Miguel the PR link.
+- Open the pull request with `gh api repos/migueldiaslima/drone-revB/pulls -f title=... -f head=<branch> -f base=main -f body=...` (`gh pr create` uses GraphQL, which is blocked in Claude sessions): title naming the task, body listing the docs and scripts changed and any new IDs (items, DV-xx, D-xxx). Then give Miguel the PR link.
 - Never force push, rewrite history, delete branches or files outside the task, or merge pull requests.
 - If `main` moved while the branch was open (the other account merged), rebase the branch on `main` before asking for the merge; report any conflict to Miguel instead of resolving it in the other role's records.
 - After Miguel merges, `git switch main && git pull` before starting the next branch.
