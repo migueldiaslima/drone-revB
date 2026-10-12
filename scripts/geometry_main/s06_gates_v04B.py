@@ -101,7 +101,7 @@ def g0():
         parts, solids = by_name(os.path.join(D, f))
         for nm in WANT[f]:
             v = vol(parts.get(nm, []))
-            good = abs(v - ref[nm]) < TOL and len(parts.get(nm, [])) > 0
+            good = abs(v - ref[nm]) < max(TOL, 2e-6 * abs(ref[nm])) and len(parts.get(nm, [])) > 0   # STEP round trip: 1e-6 relative
             ok &= good
             rows.append({"file": f, "body": nm, "solids": len(parts.get(nm, [])), "vol_mm3": round(v, 3),
                          "expected": ref[nm], "pass": good})
@@ -115,6 +115,18 @@ def g0():
         b = wp(old["ARM_DESIGN"] + old["ARM_FIXED"])
         diff = vol(a.cut(b).solids().vals()) + vol(b.cut(a).solids().vals())
         same = diff < TOL
+        if not same:
+            # OCP 7.8 (CadQuery 2.8) returns garbage for Booleans of coincident solids; fall back to an exact
+            # comparison of the vertex sets and volumes, solid by solid (order-independent)
+            def sig(ss):
+                out = []
+                for x in ss:
+                    vs = sorted((round(v.X, 5), round(v.Y, 5), round(v.Z, 5)) for v in x.Vertices())
+                    out.append((round(x.Volume(), 4), tuple(vs)))
+                return sorted(out)
+            moved = [x.translate(back) for x in parts["ARM_DESIGN"] + parts["ARM_FIXED"]]
+            same = sig(moved) == sig(old["ARM_DESIGN"] + old["ARM_FIXED"])
+            diff = 0.0 if same else diff
         vd, vf = vol(parts.get("ARM_DESIGN", [])), vol(parts.get("ARM_FIXED", []))
         good = same and abs(vd - 8036.9) < 0.1 and abs(vf - 2933.5) < 0.1
         ok &= good
@@ -134,6 +146,7 @@ def g1():
     env_t = v4.tub_envelope(cko)
     fin_des, fin_nd = v4.fin_parts(cko)
     fc, lidb, ant, ins = v4.tub_fixed_tools()
+    ant = ant.intersect(env_t.union(fin_des).union(lidb))       # rev 3: the spine tool overshoots the envelope (as built in build_tub)
     exp_t = env_t.union(fin_des).union(lidb).union(fc).union(ant).cut(v4.union_all([K[k] for k in K]).union(ins)).union(fin_nd)
     lid_d, lid_f, _, _ = v4.build_lid()
     exp_l = lid_d.union(lid_f)
@@ -190,8 +203,8 @@ def features():
     fc, lidb, ant, ins = v4.tub_fixed_tools()
     lb = v4.P["lid_boss"]
     tub = {k: w for k, w in K.items() if k not in ("K4_components_above_fc", "K5_nut_columns", "K12_props_motors_arm_clearances")}
-    tub.update({"FC bosses dia 6.4": fc, "lid bosses dia 6": lidb, "antenna boss dia 5.4": ant,
-                "insert holes (lid bosses, antenna boss)": ins,
+    tub.update({"FC bosses dia 6.4": fc, "lid bosses dia 6": lidb, "antenna spine": ant,
+                "insert holes (lid bosses, antenna spine)": ins,
                 "boss support wedges": v4.boss_wedges()})
     L = v4.P["lid"]; z0, z1 = L["z"]
     cb = L["cap_boss"]
@@ -265,11 +278,17 @@ def g4():
                                         "clusters": [([round(float(c), 1) for c in p], k) for p, k in cl]}
             print("G4 %-10s h=%.1f tets %7d min gamma %.4f below 0.05: %d" % (f, h, n, qmin, nb))
     import math as _m
-    base = [p for p, k in rows["v03B_BODY_1.0"]["clusters"]]
     mv = lambda p: [p[0] + v4.SHIFT * _m.copysign(1, p[0]), p[1] + v4.SHIFT * _m.copysign(1, p[1]), p[2]]
-    same = all(any(_m.dist(p, mv(b)) < 1.5 for b in base) for p, k in rows["TUB_1.0"]["clusters"])
+    if "v03B_BODY_1.0" in rows:
+        base = [mv(p) for p, k in rows["v03B_BODY_1.0"]["clusters"]]
+        nbase = rows["v03B_BODY_1.0"]["below_0.05"]
+    else:                                   # repo layout: baseline = the revision 2 record (already in v04-B positions)
+        rec2 = json.load(open(os.path.join(os.path.dirname(v4.REFPTS_REV2), "gates_v04B.json")))["G4"]["TUB_1.0"]
+        base = [p for p, k in rec2["clusters"]]
+        nbase = rec2["below_0.05"]
+    same = all(any(_m.dist(p, b) < 1.5 for b in base) for p, k in rows["TUB_1.0"]["clusters"])
     ok = rows["TUB_1.5"]["below_0.05"] == 0 and rows["LID_1.5"]["below_0.05"] == 0 and rows["LID_1.0"]["below_0.05"] == 0 \
-        and rows["TUB_1.0"]["below_0.05"] <= rows["v03B_BODY_1.0"]["below_0.05"]
+        and rows["TUB_1.0"]["below_0.05"] <= nbase and same
     RES["G4"] = {"pass": ok, "TUB_1.0_low_tets_at_same_places_as_v03B": same, **rows}
     print("G4", "PASS" if ok else "FAIL", "(TUB 1.0 low tets at the v03-B places, moved with the corners: %s)" % same)
 

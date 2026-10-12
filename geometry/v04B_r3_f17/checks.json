@@ -15,7 +15,7 @@
   "pad": {
    "x": [
     -53.0,
-    -39.0
+    -41.0
    ],
    "y": [
     -8.0,
@@ -40,7 +40,7 @@
   },
   "peg": {
    "xy": [
-    -43.0,
+    -43.5,
     -5.3
    ],
    "r": 1.0,
@@ -50,17 +50,15 @@
    ]
   },
   "web": {
-   "a": [
-    -21.9,
-    4.6,
-    8.0
+   "xy": [
+    -21.0,
+    5.0
    ],
-   "b": [
-    -21.5,
-    5.0,
-    16.5
-   ],
-   "r": 1.75
+   "r": 3.0,
+   "z": [
+    7.0,
+    15.5
+   ]
   },
   "antenna": {
    "x": -49.0,
@@ -166,7 +164,7 @@
    "note": ""
   },
   "spine new fixed volume (mm^3) / mass (g)": {
-   "value": "1314 / 1.71",
+   "value": "1315 / 1.71",
    "limit": "-",
    "result": "PASS",
    "note": ""
@@ -214,7 +212,7 @@
    "note": ""
   },
   "spine to keel lid boss (-30, 0) (mm)": {
-   "value": 4.191517093075706,
+   "value": 4.366982971339085,
    "limit": ">= 1.0 or merged",
    "result": "PASS",
    "note": ""
@@ -229,7 +227,7 @@
    "value": 0.0,
    "limit": "== 0",
    "result": "PASS",
-   "note": "159960 triangles, mesh volume 1486 mm^3"
+   "note": "156648 triangles, mesh volume 1477 mm^3"
   },
   "C-9 antenna to rear arms, plan (mm)": {
    "value": 5.316320999771821,
@@ -313,7 +311,7 @@
    "value": 0.0,
    "limit": "== 0",
    "result": "PASS",
-   "note": "284052 triangles"
+   "note": "284088 triangles"
   },
   "holder/antenna to motor-lead passages K11 (x gap, mm)": {
    "value": 12.190602486691017,

@@ -72,10 +72,10 @@ P = {
     "keel": {"x": [-54.0, -22.0], "y_half": 9.0, "z": [0.0, 21.5]},
     # F-17 (rev 3): antenna spine, TUB fixed. Sleeve wall 1.5 around K8 from the bay face to the exit, pad in the
     # keel underside with an M2 x 3 heat-set insert and a locating hole, web up the rear wall into the rear lid boss
-    "ant_spine": {"wall": 1.5, "pad": [(-53.0, -39.0), (-8.0, 8.0), (0.0, 2.2)],
+    "ant_spine": {"wall": 1.5, "pad": [(-53.0, -41.0), (-8.0, 8.0), (0.0, 2.2)],
                   "insert_xy": (-43.0, -1.0), "boss_d": 6.6, "boss_z": [0.0, 5.7], "insert_d": 3.2, "insert_depth": 4.0,
-                  "peg_xy": (-43.0, -5.3), "peg_d": 2.0, "peg_depth": 1.1,
-                  "web": [(-21.9, 4.6, 8.0), (-21.5, 5.0, 16.5)], "web_d": 3.5},
+                  "peg_xy": (-43.5, -5.3), "peg_d": 2.0, "peg_depth": 1.1,
+                  "web_z": [7.0, 15.5]},          # web = the rear lid boss (-21, +5) continued down to the sleeve
     "antenna": {"x": -49.0, "y": 3.5, "bar": (4.0, 14.0, 4.5), "stem": (3.0, 3.2, 3.0), "stem_top": -0.5,
                 "leg_d": 1.4, "span": 52.0, "cap_d": 4.0, "cap_len": 5.0},
     "pigtail_window": {"y": [-10.0, 1.0], "z": [-1.8, 5.2]},
@@ -322,8 +322,9 @@ def antenna_spine():
     (px0, px1), (py0, py1), (pz0, pz1) = sp["pad"]
     pad = box(px0, px1, py0, py1, pz0, pz1)
     boss = zcyl(sp["insert_xy"][0], sp["insert_xy"][1], sp["boss_d"] / 2.0, *sp["boss_z"])
-    a, b = cq.Vector(*sp["web"][0]), cq.Vector(*sp["web"][1])
-    web = cq.Workplane("XY").add(cq.Solid.makeCylinder(sp["web_d"] / 2.0, (b - a).Length, a, (b - a).normalized()))
+    lb = P["lid_boss"]
+    bx, by = lb["xy"][2]                                     # rear-left lid boss (-21, +5)
+    web = zcyl(bx, by, lb["d"] / 2.0, sp["web_z"][0], sp["web_z"][1])   # coaxial, same diameter: no seam, no strip
     return union_all([leg, bend, pad, boss, web])          # the bend ends at z = zh - R = -0.5, below the keel underside
 
 

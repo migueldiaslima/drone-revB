@@ -49,11 +49,11 @@ K8P = dict(d=3.5, y=3.5, z=6.5, x_entry=-18.5, x_bend=-42.0, R=7.0, z_exit=-1.0)
 K9_DY = -1.5
 WALL = 1.5
 K_BLEND = 1.6
-PAD = dict(x=(-53.0, -39.0), y=(-8.0, 8.0), z=(0.0, 2.2), r=0.6)        # top 1.05 below the sleeve: no grazing intersection in CAD (G3)
+PAD = dict(x=(-53.0, -41.0), y=(-8.0, 8.0), z=(0.0, 2.2), r=0.6)        # top 1.05 below the sleeve: no grazing intersection in CAD (G3)
 BOSS_INS = dict(r=3.3, z=(0.0, 5.7))                                     # local boss around the insert: 1.7 wall, 1.7 cap
 INSERT = dict(xy=(-43.0, -1.0), r=1.6, z=(0.0, 4.0))           # dia 3.2 x 4.0 for an M2 x 3 heat-set insert (1 mm melt room)
-PEG = dict(xy=(-43.0, -5.3), r=1.0, z=(0.0, 1.1))              # locating hole dia 2 x 1.1, 1.1 cap
-WEB = dict(a=(-21.9, 4.6, 8.0), b=(-21.5, 5.0, 16.5), r=1.75)
+PEG = dict(xy=(-43.5, -5.3), r=1.0, z=(0.0, 1.1))              # locating hole dia 2 x 1.1, 1.1 cap
+WEB = dict(xy=(-21.0, 5.0), r=3.0, z=(7.0, 15.5))      # rear lid boss continued down to the sleeve (G3: no strip)
 # antenna (measured: moulding 14 x 7.5 x 4; split into bar and stem, leg diameter and span ASSUMED)
 ANT = dict(x=-49.0, y=3.5, bar=(4.0, 14.0, 4.5), stem=(3.0, 3.2, 3.0), stem_top=-0.5, leg_d=1.4,
            span=52.0, cap_d=4.0, cap_len=5.0)
@@ -157,10 +157,10 @@ def spine_sdf(P):
     sleeve_line = K8d[K8d[:, 0] <= -19.5]
     sleeve = cKDTree(sleeve_line).query(P)[0] - (K8P["d"] / 2.0 + WALL)
     pad = smin(sd_box(P, PAD["x"], PAD["y"], PAD["z"], PAD["r"]), sd_zcyl(P, INSERT["xy"], BOSS_INS["r"], *BOSS_INS["z"]), 1.0)
-    web = seg_dist(P, WEB["a"], WEB["b"]) - WEB["r"]
+    web = sd_zcyl(P, WEB["xy"], WEB["r"], *WEB["z"])
     boss = sd_zcyl(P, LIDB_RL["xy"], LIDB_RL["r"], *LIDB_RL["z"])
-    s = smin(smin(smin(sleeve, pad, K_BLEND), web, K_BLEND), boss, K_BLEND)
-    hw = keel_hw(P[:, 0], P[:, 2])
+    s = smin(smin(sleeve, pad, K_BLEND), np.minimum(web, boss), K_BLEND)     # web and boss coaxial, same radius
+    hw = np.where(P[:, 0] < WALL_X, keel_hw(P[:, 0], P[:, 2]), 23.0)
     s = np.maximum.reduce([s, -P[:, 2], np.minimum(P[:, 0] - BAY_X, boss), np.abs(P[:, 1]) - hw,
                            P[:, 2] - KEEL["z"][1], KEEL["x"][0] - P[:, 0]])
     s = np.maximum(s, -d8(P))
@@ -384,7 +384,8 @@ def main():
     rec("spine new fixed volume (mm^3) / mass (g)", "%.0f / %.2f" % (v_new, v_new * RHO_PET), "-", True)
     dd9 = d9(Pin); c9 = float(dd9.min())
     rec("spine to K9 (mm)", c9, ">= 1.0", c9 >= 1.0, "at %s" % np.round(Pin[dd9.argmin()], 1).tolist())
-    side = float((keel_hw(Pin[:, 0], Pin[:, 2]) - np.abs(Pin[:, 1])).min())
+    kk = Pin[:, 0] < WALL_X
+    side = float((keel_hw(Pin[kk, 0], Pin[kk, 2]) - np.abs(Pin[kk, 1])).min())
     rec("spine to keel side (mm)", side, ">= 1.0", side >= 1.0 - h)
     rec("spine to keel rear end x = -54 (mm)", float(Pin[:, 0].min() + 54.0), ">= 1.0", Pin[:, 0].min() + 54.0 >= 1.0 - h)
     # wall around K8: points 1.0 mm outside the channel surface must be solid (inside the keel and behind the bay face)

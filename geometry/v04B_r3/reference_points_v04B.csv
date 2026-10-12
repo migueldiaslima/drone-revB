@@ -1,0 +1,13 @@
+RP,role,x,y,z,mass_g,mass_t,I11_t_mm2,I22_t_mm2,I33_t_mm2,coupling_surface,loads
+RP_BATT,"battery 100 g, 59 x 30 x 32 box",0,0,40.0,100.0,9.999999999999999e-05,0.016033333333333333,0.03754166666666667,0.03650833333333334,S_BATT_SEAT: LID top faces of plate frame + strap band (z = 24),-
+RP_FC,FC 13.6 + receiver 0.7 (antenna moved to RP_ANT) + hardware and wiring lump less the antenna and GPS parts (rev 3),0,0,0.0,22.91,2.291e-05,0,0,0,"S_FC_SEAT: TUB top faces of the 4 FC bosses (z = -6), rings dia 6.4 / 2.2",-
+RP_GPS,GPS GM10 Nano V3 2.6 g (D-076) + TPU cap 0.84 + 2 M2 screws 0.46 + 2 inserts 0.33 (rev 3; were in the 12 g lump),-44.0,0.0,26.5,4.23,4.230e-06,0,0,0,"S_GPS_SEAT: LID pocket floor (deck top inside the rim, z = 24)",-
+RP_ANT,"antenna 0.9 + TPU holder 0.94 (STL) + M2 x 5 screw 0.23 + M2 insert 0.17 (rev 3, F-17)",-48.6,3.5,-4.0,2.24,2.240e-06,0,0,0,"S_ANT_PAD: TUB spine pad underside (z = 0) inside x -53..-39, y -8..8, less the holes",-
+RP_MOT_pp,motor + prop + screws 13.75 g (A-015),52.500,52.500,8.5,13.75,1.3749999999999999e-05,0,0,0,top faces of pad contact ring + 4 screw bosses (z = 0),thrust +z 5.04 N; reaction torque +1 x 40 N mm about z
+RP_JNT_pp,joint hardware 3.8 g (2 bolts 1.65 g + 2 inserts 0.25 g),26.335,26.335,-2.5,3.8,3.7999999999999996e-06,0,0,0,outer faces of the 4 prong bosses of this corner,-
+RP_MOT_pm,motor + prop + screws 13.75 g (A-015),52.500,-52.500,8.5,13.75,1.3749999999999999e-05,0,0,0,top faces of pad contact ring + 4 screw bosses (z = 0),thrust +z 5.04 N; reaction torque -1 x 40 N mm about z
+RP_JNT_pm,joint hardware 3.8 g (2 bolts 1.65 g + 2 inserts 0.25 g),26.335,-26.335,-2.5,3.8,3.7999999999999996e-06,0,0,0,outer faces of the 4 prong bosses of this corner,-
+RP_MOT_mp,motor + prop + screws 13.75 g (A-015),-52.500,52.500,8.5,13.75,1.3749999999999999e-05,0,0,0,top faces of pad contact ring + 4 screw bosses (z = 0),thrust +z 5.04 N; reaction torque -1 x 40 N mm about z
+RP_JNT_mp,joint hardware 3.8 g (2 bolts 1.65 g + 2 inserts 0.25 g),-26.335,26.335,-2.5,3.8,3.7999999999999996e-06,0,0,0,outer faces of the 4 prong bosses of this corner,-
+RP_MOT_mm,motor + prop + screws 13.75 g (A-015),-52.500,-52.500,8.5,13.75,1.3749999999999999e-05,0,0,0,top faces of pad contact ring + 4 screw bosses (z = 0),thrust +z 5.04 N; reaction torque +1 x 40 N mm about z
+RP_JNT_mm,joint hardware 3.8 g (2 bolts 1.65 g + 2 inserts 0.25 g),-26.335,-26.335,-2.5,3.8,3.7999999999999996e-06,0,0,0,outer faces of the 4 prong bosses of this corner,-

@@ -1,6 +1,6 @@
 # v04-B revision 3: F-17 fix (antenna spine), validation note
 
-Main chat, 2026-10-12. Proposal for Miguel's approval before the new H4. Nothing here is recorded in the journal yet.
+Main chat, 2026-10-12. Approved by Miguel; recorded as D-084 and D-085 (journal v0.53).
 
 ## Why revision 3
 
@@ -40,7 +40,7 @@ All 35 pass (antenna dimensions measured by Miguel: legs 1.4, tip-to-tip 52, mou
 | K9 opening above K11 in the rear wall (mm) | 6.00 | >= 1.0 | PASS |
 | lid GPS hole moves to (x, y) | (-38.2, -3.0) | inside pocket | PASS |
 | spine connected components | 1.00 | == 1 | PASS |
-| spine new fixed volume (mm^3) / mass (g) | 1314 / 1.71 | - | PASS |
+| spine new fixed volume (mm^3) / mass (g) | 1315 / 1.71 | - | PASS |
 | spine to K9 (mm) | 1.19 | >= 1.0 | PASS |
 | spine to keel side (mm) | 1.09 | >= 1.0 | PASS |
 | spine to keel rear end x = -54 (mm) | 1.09 | >= 1.0 | PASS |
@@ -48,7 +48,7 @@ All 35 pass (antenna dimensions measured by Miguel: legs 1.4, tip-to-tip 52, mou
 | M2 insert hole: 1.5 mm wall and cap (probe points solid) | 324/324 | all | PASS |
 | locating hole: 1.0 mm wall and cap | 324/324 | all | PASS |
 | insert hole to K8 (mm) | 1.75 | >= 1.0 | PASS |
-| spine to keel lid boss (-30, 0) (mm) | 4.19 | >= 1.0 or merged | PASS |
+| spine to keel lid boss (-30, 0) (mm) | 4.37 | >= 1.0 or merged | PASS |
 | spine joined to rear lid boss (-21, +5) | yes | yes | PASS |
 | spine STL closed (edges not shared by exactly 2 faces) | 0.00 | == 0 | PASS |
 | C-9 antenna to rear arms, plan (mm) | 5.32 | >= 5.0 | PASS |
@@ -90,7 +90,7 @@ Measured by Miguel (2026-10-12): legs dia 1.4, tip-to-tip 52, moulding 14 along 
 
 ## Not validated here
 
-1. The CAD build: CadQuery cannot be installed in this session (the package servers are blocked by the session's network policy), so the revision 3 generator was edited, syntax-checked and its reference-point writer exercised with the CAD kernel stubbed out, but not run. It now also runs from the GitHub repository layout (inputs from geometry/v03B_arms and geometry/v04B, output to geometry/v04B_r3); gates skip the v03-B BODY baseline when BODY.step is absent. Expected: TUB_FIXED changes by (spine CAD volume, about 1,300 mm^3 less the part inside the rear lid boss) minus 112.7 (old boss); no floating fixed solids; G3 with no new flags; C-7 K8 to K11 7.75, K9 to K11 6.0; C-9 about 5.7.
+1. The CAD build is done and gated: see claude/stage6_v04B_r3_export_note.md (G0 to G5 pass, C-9 5.49 mm on the real arms). Two details changed in the CAD to pass G3: the pad front moved to x -41 (the insert boss stood 0.7 mm inside it) and the web is now the rear lid boss continued down to the sleeve (a tilted web left a 0.7 mm strip); the locating hole moved to (-43.5, -5.3).
 2. The real arm geometry for C-9 (plan model, calibrated on the rev 2 gate).
 3. Print orientation of the tub. The pad underside (z = 0) is a downward face 15 mm above the bed if the tub prints floor-down, like the rest of the keel underside. Printing rim-down would give the flattest lid seat (D-082 asks for 0.1 mm), but then the floor and the fin bosses need support. Open decision.
 4. RF: a straight dipole under the keel, 12 mm from the motor-lead exits, is the standard arrangement; not tested.

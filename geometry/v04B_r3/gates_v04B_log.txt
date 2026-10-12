@@ -1,0 +1,74 @@
+G0 PASS
+   {'file': 'TUB.step', 'body': 'TUB_DESIGN', 'solids': 1, 'vol_mm3': 39368.839, 'expected': 39368.839, 'pass': True}
+   {'file': 'TUB.step', 'body': 'TUB_FIXED', 'solids': 17, 'vol_mm3': 11711.153, 'expected': 11711.143, 'pass': True}
+   {'file': 'LID.step', 'body': 'LID_DESIGN', 'solids': 2, 'vol_mm3': 2496.631, 'expected': 2496.631, 'pass': True}
+   {'file': 'LID.step', 'body': 'LID_FIXED', 'solids': 5, 'vol_mm3': 4599.131, 'expected': 4599.131, 'pass': True}
+   {'file': 'ARM_pp.step', 'identical_to_v03B_after_moving_back': True, 'boolean_difference_mm3': 0.0, 'design_mm3': 8036.91, 'fixed_mm3': 2933.5, 'solids': 6, 'pass': True}
+   {'file': 'ARM_pm.step', 'identical_to_v03B_after_moving_back': True, 'boolean_difference_mm3': 0.0, 'design_mm3': 8036.91, 'fixed_mm3': 2933.5, 'solids': 6, 'pass': True}
+   {'file': 'ARM_mp.step', 'identical_to_v03B_after_moving_back': True, 'boolean_difference_mm3': 0.0, 'design_mm3': 8036.91, 'fixed_mm3': 2933.5, 'solids': 6, 'pass': True}
+   {'file': 'ARM_mm.step', 'identical_to_v03B_after_moving_back': True, 'boolean_difference_mm3': 0.0, 'design_mm3': 8036.91, 'fixed_mm3': 2933.5, 'solids': 6, 'pass': True}
+G1 TUB.step PASS {"design_and_fixed_mm3": 0, "exported_minus_expected_mm3": 0, "expected_minus_exported_mm3": 0, "keepout_overlap_mm3": {"K1_fc_bay": 0, "K3_fc_screw_holes": 0, "K4_components_above_fc": 0, "K5_nut_columns": 0, "K6_pigtail": 0, "K7_usb": 0, "K8_antenna_channel": 0, "K9_gps_channel": 0, "K10_strap_passage": 0, "K11_motor_lead_passages": 0, "K12_props_motors_arm_clearances": 0}, "floating_fixed_solids": [], "pass": true}
+G1 LID.step PASS {"design_and_fixed_mm3": 0, "exported_minus_expected_mm3": 0, "expected_minus_exported_mm3": 0, "keepout_overlap_mm3": {"K1_fc_bay": 0, "K3_fc_screw_holes": 0, "K4_components_above_fc": 0, "K5_nut_columns": 0, "K6_pigtail": 0, "K7_usb": 0, "K8_antenna_channel": 0, "K9_gps_channel": 0, "K10_strap_passage": 0, "K11_motor_lead_passages": 0, "K12_props_motors_arm_clearances": 0}, "floating_fixed_solids": [], "pass": true}
+G1 arms vs new keep-outs {"pp": {"K1_fc_bay": 0, "K3_fc_screw_holes": 0, "K4_components_above_fc": 0, "K5_nut_columns": 0, "K6_pigtail": 0, "K7_usb": 0, "K8_antenna_channel": 0, "K9_gps_channel": 0, "K10_strap_passage": 0, "K11_motor_lead_passages": 0}, "pm": {"K1_fc_bay": 0, "K3_fc_screw_holes": 0, "K4_components_above_fc": 0, "K5_nut_columns": 0, "K6_pigtail": 0, "K7_usb": 0, "K8_antenna_channel": 0, "K9_gps_channel": 0, "K10_strap_passage": 0, "K11_motor_lead_passages": 0}, "mp": {"K1_fc_bay": 0, "K3_fc_screw_holes": 0, "K4_components_above_fc": 0, "K5_nut_columns": 0, "K6_pigtail": 0, "K7_usb": 0, "K8_antenna_channel": 0, "K9_gps_channel": 0, "K10_strap_passage": 0, "K11_motor_lead_passages": 0}, "mm": {"K1_fc_bay": 0, "K3_fc_screw_holes": 0, "K4_components_above_fc": 0, "K5_nut_columns": 0, "K6_pigtail": 0, "K7_usb": 0, "K8_antenna_channel": 0, "K9_gps_channel": 0, "K10_strap_passage": 0, "K11_motor_lead_passages": 0}}
+G2 TUB.step     solids 18 faces  280 smallest 2.866 mm^2 narrowest 0.651 mm failing 0
+G2 LID.step     solids  7 faces   86 smallest 2.750 mm^2 narrowest 0.764 mm failing 0
+G2 ARM_pp.step  solids  6 faces   88 smallest 2.500 mm^2 narrowest 0.400 mm failing 0
+G2 ARM_pm.step  solids  6 faces   88 smallest 2.500 mm^2 narrowest 0.400 mm failing 0
+G2 ARM_mp.step  solids  6 faces   88 smallest 2.500 mm^2 narrowest 0.400 mm failing 0
+G2 ARM_mm.step  solids  6 faces   88 smallest 2.500 mm^2 narrowest 0.400 mm failing 0
+G3 PASS {
+ "existing v03-B: fin boss dia 12 inside the fin nose R5 (fin nose, D-055)": 16,
+ "existing v03-B: fin root fillet end at z = 10 (watch item)": 8
+}
+   TUB K1_fc_bay                                faces  33  min angle 45.0  min dist 1.384  ok
+   TUB K3_fc_screw_holes                        faces  12  min angle 90.0  min dist 1.0  ok
+   TUB K6_pigtail                               faces   8  min angle 90.0  min dist 1.061  ok
+   TUB K7_usb                                   faces   8  min angle 90.0  min dist 1.0  ok
+   TUB K8_antenna_channel                       faces   2  min angle 84.5  min dist 1.5  ok
+   TUB K9_gps_channel                           faces   3  min angle 82.9  min dist 1.111  ok
+   TUB K10_strap_passage                        faces  10  min angle 90.0  min dist 1.414  ok
+   TUB K11_motor_lead_passages                  faces  20  min angle 45.0  min dist 1.0  ok
+   TUB FC bosses dia 6.4                        faces  16  min angle 90.0  min dist 1.1  ok
+   TUB lid bosses dia 6                         faces  31  min angle 48.2  min dist 1.384  ok
+   TUB antenna spine                            faces  25  min angle 80.4  min dist 1.0  ok
+   TUB insert holes (lid bosses, antenna spine) faces  14  min angle 90.0  min dist 1.1  ok
+   TUB boss support wedges                      faces  19  min angle 80.4  min dist 1.384  ok
+   LID screw pads                               faces  18  min angle 90.0  min dist 1.1  ok
+   LID pad holes and countersinks               faces  10  min angle 90.0  min dist 1.1  ok
+   LID GPS cap bosses                           faces   2  min angle 90.0  min dist 1.1  ok
+   LID GPS hole                                 faces   1  min angle 90.0  min dist 1.0  ok
+   LID C cutout                                 faces   3  min angle 90.0  min dist 1.131  ok
+   LID front tab                                faces   4  min angle 90.0  min dist 2.6  ok
+   LID pocket rim                               faces   8  min angle 90.0  min dist 1.1  ok
+   LID plate frame inner edge                   faces  28  min angle 90.0  min dist 1.1  ok
+G4 TUB        h=1.5 tets  137118 min gamma 0.1265 below 0.05: 0
+G4 LID        h=1.5 tets   21751 min gamma 0.1363 below 0.05: 0
+G4 TUB        h=1.0 tets  307709 min gamma 0.0227 below 0.05: 25
+G4 LID        h=1.0 tets   45868 min gamma 0.2487 below 0.05: 0
+G4 PASS (TUB 1.0 low tets at the v03-B places, moved with the corners: True)
+G5 interferences: []
+   C-1 FC + capacitor sweep to TUB (>= 0.25)                              0.958
+   C-2 lid bosses and support wedges to the FC insertion path (+-16.5 prism) (>= 0.25) 1.5
+   C-2 lid bosses to K5 (>= 1.0)                                          1.867
+   C-2 lid bosses to prop sweep + 3 (>= 1.0)                              2.85
+   C-3 pigtail to ARM_pm (>= 1.0)                                         7.762
+   C-3 pigtail to the pm fin and the front bosses (TUB outside x = 23) (>= 1.0) 5.174
+   C-3 pigtail to the front window edges (> 0)                            0.3
+   C-4 XT30 to prop sweep + 3 (> 0)                                       2.921
+   C-4 pigtail riser to prop sweep + 3 (> 0)                              4.257
+   C-5 capacitor to pm lock nut (>= 1.0)                                  2.676
+   C-5 capacitor to receiver cradle (>= 1.0)                              1.75
+   C-5 capacitor to LID (>= 1.0)                                          6.0
+   C-6 cradle floor to FC parts (>= 0.3; parts assumed <= z 3.8, Q-60)    0.3
+   C-7 K8 (antenna) to K11 openings in the rear wall (>= 1.0)             7.75
+   C-7 K8 (antenna) to K9 openings in the rear wall (>= 1.0)              4.865
+   C-7 K9 to K11 openings in the rear wall (>= 1.0)                       7.584
+   C-8 USB plug to ARM_pm (>= 0.5)                                        3.161
+   C-8 USB plug to TUB (> 0)                                              0.5
+   C-9 antenna V to ARM_mp (>= 5)                                         5.489
+   C-9 antenna V to ARM_mm (>= 5)                                         8.425
+   C-9 antenna V to prop sweep + 3 (> 0)                                  13.75
+   lid placement: LID to bay contents (> 0)                               6.0
+   C-9 antenna V z range (above -12, below 10)                            (-7.75, -3.75)
+   lid placement: nearest bay item                                        capacitor
+done
