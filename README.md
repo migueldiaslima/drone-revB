@@ -20,7 +20,21 @@ Not in the repo (size): odb, inp, par, cae, stl. Those live on nexus (`/tmp/mdia
 
 ## Status (2026-10-12)
 
-- H4 (v04-B, 1.0 mm mesh, G7b seat tie, member size 2.5 mm) converged at cycle 31.
-- Next: TH04 (thresholded check at iso 0.4 with both lid connections, D-082), then the H4 report.
+| Item | State |
+|---|---|
+| Journal | v0.52 (D-001 to D-082) |
+| Build log | items 1 to 42, DV-1 to DV-25 |
+| H4 (v04-B, 1.0 mm, G7b seat tie, member size 2.5 mm, caps 2.0 x cycle 0) | converged at cycle 31 (build log item 42) |
+| Cycle 31 files | frozen in `/tmp/mdias_H4/TH` on nexus (`c31.odb`, `TO_v04B_H4-Job.inp`, `tosca_distribution.inp`) |
+
+## Open tasks
+
+| # | Task | Owner |
+|---|---|---|
+| 1 | TH04 (iso 0.4) with both lid connections, D-082 b: `cd /tmp/mdias_H4/TH && bash ~/drone_revB/stage6/scripts/run_TH04.sh 30` (`scripts/hpc/TH04`) | set-up chat |
+| 2 | H4 report: history, D-082 b seat densities, T-1 to T-7, restoration at iso 0.4 with fillet pass B | set-up chat |
+| 3 | Confirm DV-25 (H4c skipped, relative caps) | main chat |
+| 4 | Optional: ALLWK vs ALLSE check on an older odb (G7 report, "Also noted") | set-up chat |
+| 5 | Q-58 to Q-60 (GM10 wiring and plugs, FC heat-sink height) | Miguel |
 
 See `CLAUDE.md` for the working rules.
