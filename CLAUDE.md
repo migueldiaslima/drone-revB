@@ -48,6 +48,7 @@ The project runs as two chats with separate records:
 - No rhetorical closing sentences that wrap up without adding information. Stop when the point is made.
 - Chat replies: short bold or table headings, decisions listed compactly, open questions stated plainly at the end.
 - Alternative routes to the same goal are labelled as mutually exclusive options (Option A / B / C), never mixed into one numbered sequence.
+- When Miguel launches a run or process, always give the commands to follow its progress (what to tail, what each stage prints, how to tell it finished or failed) and what to send back.
 - Setup and run instructions: anticipate whether each step will actually work for Miguel's situation (software version, machine, disk, licence) before listing it; say what output to expect and what to send back.
 - Units mm, N, tonne, s in the model; x forward, y left, z up, origin at the frame centre, z = 0 on the arm top; corners pp (+x+y), pm (+x-y), mp (-x+y), mm (-x-y).
 
