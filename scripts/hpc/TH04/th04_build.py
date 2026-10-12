@@ -11,6 +11,9 @@ from odbAccess import openOdb
 
 ISO = 0.4
 odbp = [a for a in sys.argv[1:] if a.lower().endswith('.odb')][0]
+NOISL = 'noislands' in sys.argv          # item 44: solid pieces not connected to the main frame -> air
+SUF = '_ni' if NOISL else ''
+TOL = 0.2                                    # mm, node proximity counted as a connection (ties), as th04_islands.py
 MODEL = 'TO_v04B_H4-Job.inp'
 DIST = 'tosca_distribution.inp'
 
@@ -23,8 +26,79 @@ for b in fr.fieldOutputs[key].bulkDataBlocks:
     d = np.asarray(b.data).reshape(len(b.elementLabels), -1)[:, 0]
     for l, v in zip(np.asarray(b.elementLabels).tolist(), d.tolist()):
         rho[l] = max(v, rho.get(l, -1.0))
-o.close()
 print('densities read: %d elements' % len(rho))
+
+def find(par, i):
+    while par[i] != i:
+        par[i] = par[par[i]]
+        i = par[i]
+    return i
+
+island = set()
+if NOISL:
+    insts = o.rootAssembly.instances
+    nid, xyz, elab, econ = {}, [], [], []
+    for iname in insts.keys():
+        for n in insts[iname].nodes:
+            nid[(iname, n.label)] = len(xyz)
+            xyz.append(n.coordinates)
+        for e in insts[iname].elements:
+            if e.type.upper().startswith('C3D'):
+                elab.append(e.label)
+                econ.append([nid[(iname, c)] for c in e.connectivity])
+    xyz = np.asarray(xyz, dtype=float)
+    nel = len(elab)
+    solid = [rho.get(l, 1.0) >= ISO for l in elab]
+    par = list(range(nel))
+    owner = {}
+    for i in range(nel):
+        if not solid[i]:
+            continue
+        for n in econ[i]:
+            j = owner.get(n)
+            if j is None:
+                owner[n] = i
+            else:
+                ri, rj = find(par, i), find(par, j)
+                if ri != rj:
+                    par[ri] = rj
+    cell = {}
+    for n in owner:
+        cell.setdefault(tuple((xyz[n] // TOL).astype(int).tolist()), []).append(n)
+    for k, ns in cell.items():
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                for dz in (-1, 0, 1):
+                    m = cell.get((k[0] + dx, k[1] + dy, k[2] + dz))
+                    if not m:
+                        continue
+                    for n1 in ns:
+                        for n2 in m:
+                            if n2 <= n1:
+                                continue
+                            d = xyz[n1] - xyz[n2]
+                            if d[0] * d[0] + d[1] * d[1] + d[2] * d[2] <= TOL * TOL:
+                                ri, rj = find(par, owner[n1]), find(par, owner[n2])
+                                if ri != rj:
+                                    par[ri] = rj
+    size = {}
+    for i in range(nel):
+        if solid[i]:
+            r = find(par, i)
+            size[r] = size.get(r, 0) + 1
+    main = max(size, key=lambda r: size[r])
+    comps = {}
+    for i in range(nel):
+        if solid[i]:
+            r = find(par, i)
+            if r != main:
+                island.add(elab[i])
+                comps.setdefault(r, []).append(i)
+    print('islands: %d components, %d elements set to air (main frame %d elements)' % (len(comps), len(island), size[main]))
+    for r, mem in sorted(comps.items(), key=lambda t: -len(t[1])):
+        c = xyz[[econ[i][0] for i in mem]].mean(axis=0)
+        print('  %6d elements, centroid about (%.1f, %.1f, %.1f)' % (len(mem), c[0], c[1], c[2]))
+o.close()
 
 tab, head, cur = {}, {}, None
 for ln in open(DIST).read().splitlines():
@@ -93,17 +167,18 @@ for k in range(1, 6):
 variants = {'TH04b': base, 'TH04a': base.replace(m.group(0), five)}
 print('TH04a ties:\n' + five)
 
-dname = 'dist_TH04.inp'
+dname = 'dist_TH04%s.inp' % SUF
 nsol = 0
 with open(dname, 'w') as f:
     for k, lo in (('S', 1e-6), ('M', 1e-9)):
         f.write('\n'.join(head[k]) + '\n')
         for l in sorted(tab[k]):
-            solid = rho.get(l, 1.0) >= ISO
+            solid = rho.get(l, 1.0) >= ISO and l not in island
             if k == 'S' and solid:
                 nsol += 1
             f.write('%d, %.6e, %.6e\n' % (l, 1.0 if solid else lo, tab[k][l][1]))
-for tag, t in variants.items():
+for tag0, t in variants.items():
+    tag = tag0 + SUF
     t2 = re.sub(r'^(\*Include, input=)' + re.escape(DIST), r'\g<1>' + dname, t, flags=re.M | re.I)
     open(tag + '.inp', 'w').write(t2)
     print('%s.inp written (%d ties named TIE_LID)' % (tag, len(re.findall(r'name=TIE_LID', t2, flags=re.I))))
