@@ -277,7 +277,7 @@ def side(ax, link=False, title=""):
     ax.set_title(title, fontsize=9)
 
 
-def plan(ax, link=False, title=""):
+def plan(ax, link=False, title="", vee=True):
     xs = np.linspace(KEEL["x"][0], -23.0, 200)
     hw = np.array([keel_half_width(x, 15.0) for x in xs])
     ax.fill_between(xs, -9, 9, color=C["design"], lw=0)
@@ -304,7 +304,7 @@ def plan(ax, link=False, title=""):
     rect(ax, *HOLDER["x"], *HOLDER["y"], fc=C["comp"], ec="k", lw=0.5, alpha=0.35)
     rect(ax, *JUNC["x"], *JUNC["y"], fc=C["comp"], ec="k", lw=0.5, alpha=0.9)
     ax.add_patch(Circle((ANT["x"], ANT["y"]), ANT["r"], fc=C["fixed"], ec="k", lw=0.8))
-    for sy in (1, -1):
+    for sy in ((1, -1) if vee else ()):
         x0, y0 = ANT["x"], sy * V_START
         ax.plot([x0, x0 - V_LEN * math.cos(math.radians(45))], [y0, y0 + sy * V_LEN * math.sin(math.radians(45))],
                 color="#1b5e20", lw=2.5)
@@ -360,12 +360,12 @@ def rear(ax, link=False, title=""):
     ax.set_title(title, fontsize=9)
 
 
-def legend(fig, link=False):
+def legend(fig, link=False, link_label="proposed fixed link L1"):
     items = [(C["design"], "tub design region (Tosca decides)"), (C["fixed"], "tub fixed region (always kept)"),
              (C["lidfix"], "lid (separate part)"), (C["comp"], "components and retainers"),
              ("#f2a3a3", "K8 antenna channel dia 3.5 (keep-out)"), ("#cdb5e6", "K9 GPS channel dia 4 (keep-out)")]
     if link:
-        items.append((C["link"], "proposed fixed link L1"))
+        items.append((C["link"], link_label))
     h = [Rectangle((0, 0), 1, 1, fc=c, ec="k", lw=0.4) for c, _ in items]
     fig.legend(h, [t for _, t in items], loc="lower center", ncol=4, fontsize=8, frameon=False)
 
@@ -443,3 +443,59 @@ if __name__ == "__main__":
     fig_link()
     fig_antenna()
     print("figures written to", OUT)
+
+
+# ---------------- concept C2 (Miguel, 2026-10-12): fixed conduit around both channels ----------------
+WALL_C = 1.5
+
+
+def fig_conduit():
+    """Fixed conduit: 1.5 mm wall around K8 and K9 inside the keel (they are 1.5 mm apart, so the walls merge
+    into one arm), joined to the keel lid boss at the top and to the antenna boss at the bottom; straight T antenna."""
+    f, axs = plt.subplots(1, 2, figsize=(15, 7.0))
+    for ax, view in zip(axs, ("side", "plan")):
+        if view == "side":
+            side(ax, title="(a) side (channels projected): conduit = fixed wall 1.5 mm around both channels")
+            i, j = 0, 2
+        else:
+            plan(ax, vee=False, title="(b) plan: conduit, webs, antenna boss; straight T antenna with TPU rings")
+            i, j = 0, 1
+        k9 = K9[K9[:, 2] <= RIM_Z]
+        k8 = K8[K8[:, 2] >= 0.0]
+        k8 = k8[k8[:, 0] <= -20.5]
+        k9 = k9[k9[:, 0] <= -20.5]
+        tube_2d(ax, k9, R9 + WALL_C, i, j, fc=C["link"])
+        tube_2d(ax, k8, R8 + WALL_C, i, j, fc=C["link"])
+        tube_2d(ax, k9, R9, i, j, fc="#cdb5e6")
+        tube_2d(ax, k8, R8, i, j, fc="#f2a3a3")
+        if view == "side":
+            rect(ax, -33.5, -27.0, 15.5, 21.5, fc=C["link"], ec="k", lw=0.5)          # web to the keel lid boss
+            rect(ax, -30 - LIDB_R, -30 + LIDB_R, *LIDB_Z, fc=C["fixed"], ec="k", lw=0.6)
+            rect(ax, -44.0, -37.0, 0.0, 4.0, fc=C["link"], ec="k", lw=0.5)            # web: antenna boss to conduit
+            rect(ax, ANT["x"] - ANT["r"], ANT["x"] + ANT["r"], *ANT["z"], fc=C["fixed"], ec="k", lw=0.8)
+            rect(ax, ANT["x"] - ANT["ins_r"], ANT["x"] + ANT["ins_r"], ANT["z"][0], ANT["ins_z"][1], fc="w", ec="k", lw=0.4)
+        else:
+            rect(ax, -33.5, -27.0, -3.0, 1.5, fc=C["link"], ec="k", lw=0.5)
+            ax.add_patch(Circle((-30.0, 0.0), LIDB_R, fc=C["fixed"], ec="k", lw=0.5))
+            rect(ax, -44.0, -37.0, -1.5, 3.5, fc=C["link"], ec="k", lw=0.5)
+            ax.add_patch(Circle((ANT["x"], 0.0), ANT["r"], fc=C["fixed"], ec="k", lw=0.8))
+            # straight T: elements along y from the moulding ends; TPU rings next to the moulding
+            for sy in (1, -1):
+                ax.plot([ANT["x"], ANT["x"]], [sy * 7.0, sy * 25.0], color="#1b5e20", lw=3, zorder=5)
+                ax.add_patch(Circle((ANT["x"], sy * 10.0), 2.2, fc="#9ccc65", ec="k", lw=0.6, zorder=6))
+            ax.annotate("TPU rings on each leg,\nnext to the moulding", (ANT["x"], 10.0), (-63, 33), fontsize=7,
+                        arrowprops=dict(arrowstyle="->", lw=0.6))
+    axs[0].annotate("web to the keel lid boss\n(fixed-to-fixed chain)", (-30.5, 17), (-26, 30), fontsize=7,
+                    arrowprops=dict(arrowstyle="->", lw=0.6))
+    axs[0].annotate("web joining the antenna boss\n(gap to the conduit was 0.5 mm)", (-40.5, 2.0), (-35, -9), fontsize=7,
+                    arrowprops=dict(arrowstyle="->", lw=0.6))
+    legend(f, link=True, link_label="new fixed material (conduit and webs)")
+    f.suptitle("Concept C2: one fixed conduit around the antenna and GPS channels (wall 1.5 mm, about 1.7 g), from the rear wall\n"
+               "to the keel exits, chained to the keel lid boss; the antenna boss hangs from it. Orange = new fixed material",
+               fontsize=11)
+    f.tight_layout(rect=(0, 0.06, 1, 0.93))
+    f.savefig(os.path.join(OUT, "f17_4_conduit.png"), dpi=150)
+
+
+if __name__ == "__main__":
+    fig_conduit()
