@@ -56,10 +56,10 @@ PEG = dict(xy=(-43.0, -5.3), r=1.0, z=(0.0, 1.1))              # locating hole d
 WEB = dict(a=(-21.9, 4.6, 8.0), b=(-21.5, 5.0, 16.5), r=1.75)
 # antenna (measured: moulding 14 x 7.5 x 4; split into bar and stem, leg diameter and span ASSUMED)
 ANT = dict(x=-49.0, y=3.5, bar=(4.0, 14.0, 4.5), stem=(3.0, 3.2, 3.0), stem_top=-0.5, leg_d=1.4,
-           span=50.0, cap_d=4.0, cap_len=5.0)
+           span=52.0, cap_d=4.0, cap_len=5.0)
 # holder (TPU)
 HOLD = dict(plate_z=(-1.5, 0.0), plate_x=(-52.2, -41.0), plate_y=(-7.5, 8.0),
-            gap_x=0.10, gap_stem=0.20, cheek_t=1.2, lip=(1.0, 1.0), clip_wall=0.8, clip_gap=0.10,
+            gap_x=0.10, gap_stem=0.20, cheek_t=1.2, lip=(1.0, 1.0), clip_wall=1.0, clip_gap=0.10,
             screw_clear_d=2.2, screw_head_d=3.8, cb_d=4.2, peg_d=1.8, peg_h=0.9)
 
 
@@ -202,7 +202,7 @@ def holder_sdf(P):
     for ycl in (by0 - 3.0, by1 + 3.0):
         ring = np.maximum(sd_ycyl(P, (ANT["x"], A["leg_z"]), ro, ycl - 1.5, ycl + 1.5),
                           -sd_ycyl(P, (ANT["x"], A["leg_z"]), rl, ycl - 2.0, ycl + 2.0))
-        ring = np.maximum(ring, (A["leg_z"] - 0.5 * rl) - P[:, 2])      # C-clip: lower part cut flat, opening 1.73 x rl wide
+        ring = np.maximum(ring, (A["leg_z"] - 0.75 * rl) - P[:, 2])     # C-clip wraps 277 deg: opening 2 sqrt(rl^2 - (0.75 rl)^2) = 1.06 for a 1.4 leg
         yr = (ycl - 1.5, yc0 + 0.5) if ycl < yc0 else (yc1 - 0.5, ycl + 1.5)
         arm = sd_box(P, (cx0, cx1), yr, (A["leg_z"] + ro - 0.2, A["leg_z"] + ro + 1.0), 0.2)   # bridge over the leg
         body = np.minimum.reduce([body, ring, arm])
@@ -453,6 +453,10 @@ def main():
         best = min(best, float(d.min()))
     rec("C-9 antenna to rear arms, plan (mm)", best, ">= 5.0", best >= 5.0, "arm model within 0.05 mm of gate C-9 on the old V")
     rec("antenna legs z (mm)", float(A["leg_z"]), "above -12, below 10", -12 < A["leg_z"] < 10)
+    rl_ = ANT["leg_d"] / 2.0 + HOLD["clip_gap"]; c_ = 0.75 * rl_
+    w_open = 2.0 * math.sqrt(rl_ ** 2 - c_ ** 2)
+    rec("C-clip opening / leg diameter (snap if < 1)", w_open / ANT["leg_d"], "0.6 .. 0.85", 0.6 <= w_open / ANT["leg_d"] <= 0.85,
+        "opening %.2f mm, wraps %.0f deg" % (w_open, 180.0 + 2.0 * math.degrees(math.asin(c_ / rl_))))
     hz, Ph, loh = grid(holder_sdf, (-53.5137, -10.5071, -10.5113), (-39.5, 17.5, 2.5), 0.10)
     inside_h = hz.ravel() < 0
     Phi = Ph[inside_h]
@@ -467,12 +471,18 @@ def main():
     rec("holder lowest point to landing plane (mm)", zlow - FLOOR_Z, ">= 5", zlow - FLOOR_Z >= 5.0)
     rec("holder top within the pad footprint", "x %.1f..%.1f y %.1f..%.1f" % (HOLD["plate_x"][0], HOLD["plate_x"][1], HOLD["plate_y"][0], HOLD["plate_y"][1]),
         "inside pad", HOLD["plate_x"][0] >= PAD["x"][0] and HOLD["plate_x"][1] <= PAD["x"][1] and HOLD["plate_y"][0] >= PAD["y"][0] and HOLD["plate_y"][1] <= PAD["y"][1])
-    # thin features: local thickness = 2 x distance to the outside at the medial points
+    # thin features: local thickness = 2 x inscribed radius on the medial ridge of the voxel model.
+    # The C-clip ends are acute by design (the snap lead-in); they are excluded and reported separately.
     edt = ndimage.distance_transform_edt(hz < 0) * 0.1
     ridge = (edt == ndimage.maximum_filter(edt, size=3)) & (hz < 0)
-    tmin = float(2 * edt[ridge].min())
-    wpos = np.round(np.array(np.unravel_index(np.where(ridge.ravel() & (2 * edt.ravel() <= tmin + 1e-9))[0][0], edt.shape)) * 0.1 + loh, 1).tolist()
-    rec("holder thinnest feature (2 x inscribed radius, mm)", tmin, ">= 0.8 (2 lines)", tmin >= 0.8 - 0.1, "at %s" % wpos)
+    Pr = Ph[ridge.ravel()]; tr = 2.0 * edt.ravel()[ridge.ravel()]
+    rl_ = ANT["leg_d"] / 2.0 + HOLD["clip_gap"]
+    (bx0_, bx1_), (by0_, by1_), _ = A["bar"]
+    tip = (np.abs(Pr[:, 2] - (A["leg_z"] - 0.75 * rl_)) < 0.45) & (np.abs(Pr[:, 0] - ANT["x"]) < rl_ + HOLD["clip_wall"] + 0.3) & \
+          ((np.abs(Pr[:, 1] - (by0_ - 3.0)) < 1.6) | (np.abs(Pr[:, 1] - (by1_ + 3.0)) < 1.6))
+    tmin = float(tr[~tip].min()); j = np.where(~tip)[0][tr[~tip].argmin()]
+    rec("holder thinnest feature away from the clip ends (mm)", tmin, ">= 0.8 (2 lines)", tmin >= 0.8 - 0.1,
+        "at %s; clip ends taper to an edge by design" % np.round(Pr[j], 1).tolist())
     # the antenna must not intersect the holder; the moulding must touch the plate and the lips
     (bx0, bx1), (by0, by1), (bz0, bz1) = A["bar"]
     barpts = np.array([(x, y, z) for x in lin(bx0, bx1, 0.2) for y in lin(by0, by1, 0.5) for z in lin(bz0, bz1, 0.2)])

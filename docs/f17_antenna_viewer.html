@@ -85,7 +85,7 @@ ul.notes { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
         <h2>How the holder attaches</h2>
         <ol class="steps">
           <li><b>Pad.</b> The spine ends in a pad in the keel underside (z = 0, 14 x 16 mm, 2.2 thick). The pad has a boss with a dia 3.2 x 4 hole for an M2 x 3 heat-set insert, pressed from below, and a dia 2 x 1.1 locating hole.</li>
-          <li><b>Antenna into the holder.</b> The moulded T is pushed up, stem first, between the two cheeks. It snaps past 1 mm lips under the bar. Each leg is pressed into a C-clip 3 mm from the moulding.</li>
+          <li><b>Antenna into the holder.</b> The moulded T is pushed up, stem first, between the two cheeks. It snaps past 1 mm lips under the bar. Each leg is pressed into a C-clip 3 mm from the moulding: the clip wraps 277 deg around the 1.4 mm leg and its opening is 1.06 mm, so the leg snaps in and stays.</li>
           <li><b>Coax.</b> It drops straight out of the channel exit into the top of the stem. There is no bend at the moulding. The only bend is the channel's own R7.</li>
           <li><b>Holder onto the pad.</b> The stem enters the slot in the top plate, the 0.9 mm peg goes into the locating hole, and one M2 x 5 screw goes in from below in front of the cradle.</li>
           <li><b>Clamp.</b> The plate bears on the pad, and the bar is held between the lips and the plate. The screw only holds the holder up.</li>
@@ -354,8 +354,8 @@ ul.notes { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
       verdict: '<span class="pill p-bad">Ruled out</span>With the measured 62 mm coax the antenna cannot reach the cap: the route through the GPS channel is about 74 mm.'
     },
     f: {
-      nums: [["New fixed material (spine)", "1,314 mm3 = 1.71 g"], ["Fixed chain", "pad, sleeve, web, rear lid boss"], ["Coax bend radius", "R7 in the channel, none at the stem"], ["Coax route / measured length", "44 / 62 mm"], ["Spine to GPS channel (moved 1.5 mm)", "1.19 mm"], ["Leg tips to rear arms (gate C-9)", "5.7 mm"], ["Holder (TPU) mass / lowest point above landing", "0.93 g / 6.1 mm"]],
-      verdict: '<span class="pill p-good">Validated</span>All 34 geometry checks pass (s06_f17_spine.py). Still open: measure the antenna (leg diameter, stem, total span), then run the CAD generator and gates G0 to G5 for revision 3.'
+      nums: [["New fixed material (spine)", "1,314 mm3 = 1.71 g"], ["Fixed chain", "pad, sleeve, web, rear lid boss"], ["Coax bend radius", "R7 in the channel, none at the stem"], ["Coax route / measured length", "44 / 62 mm"], ["Spine to GPS channel (moved 1.5 mm)", "1.19 mm"], ["Leg tips to rear arms (gate C-9), span 52", "5.3 mm"], ["Holder (TPU) mass / lowest point above landing", "0.94 g / 6.1 mm"]],
+      verdict: '<span class="pill p-good">Validated</span>All 35 geometry checks pass (s06_f17_spine.py), with the measured antenna (legs 1.4, span 52, moulding 14 x 7.5). Still open: the CAD build and gates G0 to G5 for revision 3.'
     }
   };
   var nums = document.getElementById("nums"), verdict = document.getElementById("verdict"), current = "f";

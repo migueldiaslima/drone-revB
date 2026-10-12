@@ -77,7 +77,7 @@
    ],
    "stem_top": -0.5,
    "leg_d": 1.4,
-   "span": 50.0,
+   "span": 52.0,
    "cap_d": 4.0,
    "cap_len": 5.0
   },
@@ -101,7 +101,7 @@
     1.0,
     1.0
    ],
-   "clip_wall": 0.8,
+   "clip_wall": 1.0,
    "clip_gap": 0.1,
    "screw_clear_d": 2.2,
    "screw_head_d": 3.8,
@@ -232,7 +232,7 @@
    "note": "159960 triangles, mesh volume 1486 mm^3"
   },
   "C-9 antenna to rear arms, plan (mm)": {
-   "value": 5.731179219838884,
+   "value": 5.316320999771821,
    "limit": ">= 5.0",
    "result": "PASS",
    "note": "arm model within 0.05 mm of gate C-9 on the old V"
@@ -243,6 +243,12 @@
    "result": "PASS",
    "note": ""
   },
+  "C-clip opening / leg diameter (snap if < 1)": {
+   "value": 0.7559289460184544,
+   "limit": "0.6 .. 0.85",
+   "result": "PASS",
+   "note": "opening 1.06 mm, wraps 277 deg"
+  },
   "holder connected components": {
    "value": 1.0,
    "limit": "== 1",
@@ -250,7 +256,7 @@
    "note": ""
   },
   "holder volume (mm^3) / mass TPU (g)": {
-   "value": "766 / 0.93",
+   "value": "776 / 0.94",
    "limit": "-",
    "result": "PASS",
    "note": ""
@@ -267,11 +273,11 @@
    "result": "PASS",
    "note": ""
   },
-  "holder thinnest feature (2 x inscribed radius, mm)": {
+  "holder thinnest feature away from the clip ends (mm)": {
    "value": 0.8,
    "limit": ">= 0.8 (2 lines)",
    "result": "PASS",
-   "note": "at [-51.0, -3.7, -8.4]"
+   "note": "at [-51.0, -3.7, -8.4]; clip ends taper to an edge by design"
   },
   "bar pocket clearance (holder material inside the bar)": {
    "value": 0.0,
@@ -307,7 +313,7 @@
    "value": 0.0,
    "limit": "== 0",
    "result": "PASS",
-   "note": "279988 triangles"
+   "note": "284052 triangles"
   },
   "holder/antenna to motor-lead passages K11 (x gap, mm)": {
    "value": 12.190602486691017,

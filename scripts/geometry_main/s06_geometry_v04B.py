@@ -45,6 +45,12 @@ import s06_reference_geometry_v03 as v3     # noqa: E402
 g, r = v3.g, v3.r
 OUT = os.path.join(HERE, "abaqus_v04B")
 SRC_ARMS = os.path.join(HERE, "abaqus_v03B")
+REFPTS_REV2 = None
+if not os.path.isdir(SRC_ARMS):                    # GitHub repo layout (drone-revB): inputs under geometry/
+    _ROOT = os.path.dirname(os.path.dirname(HERE))
+    SRC_ARMS = os.path.join(_ROOT, "geometry", "v03B_arms")
+    OUT = os.path.join(_ROOT, "geometry", "v04B_r3")
+    REFPTS_REV2 = os.path.join(_ROOT, "geometry", "v04B", "reference_points_v04B.csv")   # MOT / JNT already moved
 RHO = 1.30e-3
 SHIFT = 3.0                                   # per axis; 4.243 mm along each diagonal
 M_NEW = g.M + SHIFT                           # motor axis coordinate, 52.497
@@ -71,7 +77,7 @@ P = {
                   "peg_xy": (-43.0, -5.3), "peg_d": 2.0, "peg_depth": 1.1,
                   "web": [(-21.9, 4.6, 8.0), (-21.5, 5.0, 16.5)], "web_d": 3.5},
     "antenna": {"x": -49.0, "y": 3.5, "bar": (4.0, 14.0, 4.5), "stem": (3.0, 3.2, 3.0), "stem_top": -0.5,
-                "leg_d": 1.4, "span": 50.0, "cap_d": 4.0, "cap_len": 5.0},
+                "leg_d": 1.4, "span": 52.0, "cap_d": 4.0, "cap_len": 5.0},
     "pigtail_window": {"y": [-10.0, 1.0], "z": [-1.8, 5.2]},
     "pigtail_low_run": {"x": [23.0, 33.0], "y": [-12.0, 3.0], "z": [-3.0, 3.0]},
     "pigtail_riser": {"x": [28.5, 33.0], "y": [-3.0, 3.0], "z": [0.0, 21.5]},
@@ -486,14 +492,18 @@ def export(objs, path):
     asm.export(path, exportType="STEP")
 
 
-# rev 3 point masses (g): parts moved out of the RP_FC lump to where they sit; total 199.57 (the TPU holder from the
-# STL, 0.93 g, is 0.43 g lighter than the 1.36 g estimate of the export note)
-MASS = {"ant": 0.9 + 0.93 + 0.23 + 0.17, "gps": 2.6 + 0.84 + 0.46 + 0.33}
+# rev 3 point masses (g): parts moved out of the RP_FC lump to where they sit; total 199.58 (the TPU holder from the
+# STL, 0.94 g, is 0.42 g lighter than the 1.36 g estimate of the export note)
+MASS = {"ant": 0.9 + 0.94 + 0.23 + 0.17, "gps": 2.6 + 0.84 + 0.46 + 0.33}
 MASS["fc"] = 27.2 - (0.9 + 1.36 + 0.23 + 0.17) - (0.84 + 0.46 + 0.33)
 
 
 def write_refpoints(path):
-    rows = list(csv.reader(open(os.path.join(SRC_ARMS, "reference_points.csv"))))
+    src = os.path.join(SRC_ARMS, "reference_points.csv")
+    shifted = False
+    if not os.path.isfile(src) and REFPTS_REV2:
+        src, shifted = REFPTS_REV2, True
+    rows = [r_ for r_ in csv.reader(open(src)) if r_ and r_[0] != "RP_ANT"]
     out = [rows[0]]
     for row in rows[1:]:
         if row[0] == "RP_GPS":
@@ -509,14 +519,14 @@ def write_refpoints(path):
             row[1] = "FC 13.6 + receiver 0.7 (antenna moved to RP_ANT) + hardware and wiring lump less the antenna and GPS parts (rev 3)"
             row[5], row[6] = "%.2f" % m, "%.3e" % (m * 1e-6)
             row[10] = "S_FC_SEAT: TUB top faces of the 4 FC bosses (z = -6), rings dia 6.4 / 2.2"
-        elif row[0].startswith("RP_MOT") or row[0].startswith("RP_JNT"):
+        elif (row[0].startswith("RP_MOT") or row[0].startswith("RP_JNT")) and not shifted:
             x, y = float(row[2]), float(row[3])
             row[2] = "%.3f" % (x + SHIFT * (1 if x > 0 else -1))
             row[3] = "%.3f" % (y + SHIFT * (1 if y > 0 else -1))
         out.append(row)
         if row[0] == "RP_GPS":
             A = P["antenna"]
-            out.append(["RP_ANT", "antenna 0.9 + TPU holder 0.93 (STL) + M2 x 5 screw 0.23 + M2 insert 0.17 (rev 3, F-17)",
+            out.append(["RP_ANT", "antenna 0.9 + TPU holder 0.94 (STL) + M2 x 5 screw 0.23 + M2 insert 0.17 (rev 3, F-17)",
                         "%.1f" % (A["x"] + 0.4), "%.1f" % A["y"], "-4.0", "%.2f" % MASS["ant"], "%.3e" % (MASS["ant"] * 1e-6),
                         "0", "0", "0", "S_ANT_PAD: TUB spine pad underside (z = 0) inside x -53..-39, y -8..8, less the holes", "-"])
     with open(path, "w", newline="") as fh:

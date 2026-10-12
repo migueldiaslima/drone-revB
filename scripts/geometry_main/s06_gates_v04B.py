@@ -212,7 +212,8 @@ def features():
 def g3():
     import s06_tangency_audit as ta
     tubf, lidf = features()
-    base = ta.run(os.path.join(v4.SRC_ARMS, "BODY.step"), verbose=False)
+    bpath = os.path.join(v4.SRC_ARMS, "BODY.step")
+    base = ta.run(bpath, verbose=False) if os.path.isfile(bpath) else {"wedges": [], "strips": []}   # v03-B baseline only if present
     rt = ta.run(os.path.join(D, "TUB.step"), tubf, verbose=False)
     rl = ta.run(os.path.join(D, "LID.step"), lidf, verbose=False)
     def key(x):
@@ -257,6 +258,8 @@ def g4():
     for h in (1.5, 1.0):
         for f, path in (("TUB", os.path.join(D, "TUB.step")), ("LID", os.path.join(D, "LID.step")),
                         ("v03B_BODY", os.path.join(v4.SRC_ARMS, "BODY.step"))):
+            if not os.path.isfile(path):
+                continue
             n, qmin, nb, cl, nv = gm.run(path, h)
             rows["%s_%.1f" % (f, h)] = {"tets": n, "min_gamma": round(qmin, 4), "below_0.05": nb,
                                         "clusters": [([round(float(c), 1) for c in p], k) for p, k in cl]}
