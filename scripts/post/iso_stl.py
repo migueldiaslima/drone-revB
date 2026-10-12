@@ -34,7 +34,7 @@ if PART:
     if not keep:
         raise SystemExit('no elements found for part %s' % PART)
 st = o.steps['FREQ']
-fr = st.frames[0]
+fr = [f for f in st.frames if any('MAT_PROP_NORMALIZED' in k.upper() for k in f.fieldOutputs.keys())][-1]   # as iso_mt.py; frame 0 has none in c31.odb
 key = [k for k in fr.fieldOutputs.keys() if 'MAT_PROP_NORMALIZED' in k.upper()][0]
 dens = {}
 for b in fr.fieldOutputs[key].bulkDataBlocks:
