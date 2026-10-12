@@ -44,9 +44,12 @@ aside { display: grid; gap: 12px; align-content: start; min-width: 0; }
 button { font: 500 12.5px var(--sans); color: var(--fg); background: transparent; border: 1px solid var(--line); border-radius: 4px; padding: 5px 10px; cursor: pointer; }
 button:hover { border-color: var(--accent); }
 button:focus-visible, input:focus-visible, .opt:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
-dl { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 5px 12px; }
-dt { color: var(--muted); }
-dd { margin: 0; font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right; }
+dl { margin: 0; display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 6px 12px; }
+dt { color: var(--muted); min-width: 0; }
+dd { margin: 0; font-family: var(--mono); font-size: 12.5px; font-variant-numeric: tabular-nums; text-align: right; min-width: 0; }
+ol.steps { margin: 0; padding-left: 20px; display: grid; gap: 5px; font-size: 13px; }
+ol.steps b { font-weight: 600; }
+#holdercard[hidden] { display: none; }
 .verdict { font-size: 13px; padding: 8px 10px; border-radius: 5px; border: 1px solid var(--line); }
 .pill { display: inline-block; font: 600 11px var(--sans); letter-spacing: 0.04em; text-transform: uppercase; padding: 1px 7px; border-radius: 99px; border: 1px solid currentColor; margin-right: 6px; }
 .p-good { color: var(--good); } .p-warn { color: var(--warn); } .p-bad { color: var(--bad); }
@@ -70,13 +73,23 @@ ul.notes { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
         <div class="opts" id="opts">
           <label class="opt"><input type="radio" name="opt" id="opt-now" value="now"><div><b>As exported (F-17)</b><span>Boss under the keel, 90 deg V, no link</span></div></label>
           <label class="opt"><input type="radio" name="opt" id="opt-d" value="d"><div><b>D: on the GPS cap</b><span>Coax through the GPS channel, no frame feature</span></div></label>
-          <label class="opt"><input type="radio" name="opt" id="opt-f" value="f" checked><div><b>Under the keel, sleeve and web</b><span>Fixed sleeve on the antenna channel, web to the rear lid boss</span></div></label>
+          <label class="opt"><input type="radio" name="opt" id="opt-f" value="f" checked><div><b>Under the keel: antenna spine</b><span>One smooth fixed feature: holder pad, sleeve on the antenna channel, web into the rear lid boss</span></div></label>
         </div>
       </div>
       <div class="card">
         <h2>Key numbers</h2>
         <dl id="nums"></dl>
         <div class="verdict" id="verdict"></div>
+      </div>
+      <div class="card" id="holdercard">
+        <h2>How the holder attaches</h2>
+        <ol class="steps">
+          <li><b>Pad.</b> The spine ends in a flat pad in the keel underside (z = 0), 13.5 x 10 mm, with an M2 heat-set insert and a 2 mm locating hole.</li>
+          <li><b>Antenna into the holder.</b> The moulded T drops into a pocket open at the top. Each leg snaps into a TPU C-clip 3 mm from the moulding.</li>
+          <li><b>Coax.</b> It leaves the channel exit straight down and turns rearward into the stem with a bend radius of about 2 mm, inside the holder.</li>
+          <li><b>Holder onto the pad.</b> The peg goes into the locating hole, and one M2 x 8 screw from below, its head recessed in the holder, goes into the insert. Peg and screw are 4.5 mm apart, so the holder cannot rotate.</li>
+          <li><b>Clamp.</b> The top of the moulding bears on the pad. The T is clamped between the pocket floor and the pad, not held by the screw alone.</li>
+        </ol>
       </div>
       <div class="card">
         <h2>Layers</h2>
@@ -89,7 +102,7 @@ ul.notes { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
           <button type="button" data-v="under">Below</button>
         </div>
       </div>
-      <p class="foot">Source: s06_geometry_v04B.py parameters, K8 and K9 centrelines, scripts/figures/f17_antenna_link.py. Coax 79 mm (receiver listing). Masses are gross solid volume x 1.30 g/cm3.</p>
+      <p class="foot">Source: s06_geometry_v04B.py parameters, K8 and K9 centrelines, scripts/figures/f17_antenna_spine.py (spine surface from a signed distance field). Coax 60 to 62 mm, measured by Miguel. Mass = solid volume x 1.30 g/cm3.</p>
     </aside>
   </div>
 </div>
@@ -200,12 +213,15 @@ ul.notes { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
   var kl = keel(gT, mat(C.design, 0.38)); edges(gT, kl, 0x2f5fa8);
 
   var gF = G("fixed"), mFix = mat(C.fixed, 1);
-  [[21, 9.5], [21, -9.5], [-21, 5], [-21, -5], [-30, 0]].forEach(function (p) { cyl(gF, p[0], p[1], 3, 15.5, 21.5, mFix); });
+  var bossRL = null;
+  [[21, 9.5], [21, -9.5], [-21, 5], [-21, -5], [-30, 0]].forEach(function (p) { var b = cyl(gF, p[0], p[1], 3, 15.5, 21.5, mFix); if (p[0] === -21 && p[1] === 5) bossRL = b; });
   [[1, 1], [1, -1], [-1, 1], [-1, -1]].forEach(function (s) { cyl(gF, s[0] * 12.75, s[1] * 12.75, 3.2, -15, -6, mFix); });
 
   var gC = G("channels");
   tube(gC, K8, 1.75, mat(C.k8, 0.85));
-  tube(gC, K9, 2.0, mat(C.k9, 0.85));
+  var k9Now = new THREE.Group(); gC.add(k9Now);
+  tube(k9Now, K9, 2.0, mat(C.k9, 0.85));
+  var k9Moved = new THREE.Group(); gC.add(k9Moved);
 
   var gL = G("lid"), mLid = mat(C.lid, 0.55);
   box(gL, -32, 32, -17, 17, 21.5, 24, mLid);
@@ -220,7 +236,7 @@ ul.notes { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
   var gA = G("arms"), mArm = mat(C.arm, 0.75), mMot = mat(C.motor, 0.9);
   [[1, 1], [1, -1], [-1, 1], [-1, -1]].forEach(function (s) {
     var u = new THREE.Vector3(s[0], s[1], 0).normalize();
-    var len = M * Math.SQRT2 - 30, mid = 30 + len / 2;
+    var len = M * Math.SQRT2 - 33, mid = 33 + len / 2;
     var arm = new THREE.Mesh(new THREE.BoxGeometry(len, 10, 8), mArm);
     arm.position.set(u.x * mid, u.y * mid, -4); arm.rotation.z = Math.atan2(u.y, u.x); gA.add(arm);
     cyl(gA, s[0] * M, s[1] * M, 10, 0, 15.5, mMot);
@@ -266,17 +282,54 @@ ul.notes { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
   cyl(gD, -44, 0, 2.7, 0, 6.5, mat(C.ghost, 0.35));
   tube(gD, [[-9.2, 3.5, 7], [-15, 0, 6], [-18.5, -4.09, 5]].concat(K9.slice().reverse().slice(1)).concat([[-38.2, -1.5, 24.5], [-50, -6.5, 25], [-53.5, -6.5, 26.8], [-56, -2, 27], [-57, 0, 27]]), 0.6, mCoax);
 
-  // fallback: under the keel with sleeve and web
-  var gF2 = G("opt-f"), mLink = mat(C.link, 0.8);
-  cyl(gF2, -44, 0, 2.7, 0, 6.5, mFix);
-  tube(gF2, K8.filter(function (p) { return p[0] <= -20.5 && p[2] >= 0; }), 3.25, mLink);
-  tube(gF2, K9.filter(function (p) { return p[0] < -32 && p[2] < 11; }), 3.5, mLink);
-  box(gF2, -23, -19.5, 1.5, 6, 10, 15.5, mLink);
-  box(gF2, -44, -37, -1.5, 3.5, 0, 4, mLink);
-  tAntenna(gF2, -44, -2, mLeg);
-  box(gF2, -48, -40, -11, 11, -5.2, -4, mat(C.tpu, 0.8));
-  ring(gF2, -44, 10, -2); ring(gF2, -44, -10, -2);
-  tube(gF2, [[-9.2, 3.5, 7], [-18.5, 3.5, 7]].concat(K8.slice(1)).concat([[-38, 3.5, -2], [-40.2, 1, -2]]), 0.6, mCoax);
+  // under the keel: antenna spine (smooth fixed feature) + TPU holder + T stem-forward under the exit
+  var gF2 = G("opt-f");
+  var EX = [-38, 3.5];                      // K8 exit on the keel underside
+  var YC = 3.5;                             // T centred on the exit
+  // moulding: bar 4 x 14 x 4, stem 3 x 3.2 x 3 pointing +x
+  box(gF2, -47.5, -43.5, YC - 7, YC + 7, -4.0, 0.0, mat(0x161616, 1));
+  box(gF2, -43.5, -40.5, YC - 1.6, YC + 1.6, -3.5, -0.5, mat(0x161616, 1));
+  [1, -1].forEach(function (s) {
+    rod(gF2, [-45.5, YC + s * 7, -2.0], [-45.5, YC + s * 20, -2.0], 0.7, mLeg);
+    rod(gF2, [-45.5, YC + s * 20, -2.0], [-45.5, YC + s * 25, -2.0], 2.0, mat(0x161616, 1));
+  });
+  // TPU holder (translucent so the antenna inside shows)
+  var mT = mat(C.tpu, 0.55), mTs = mat(C.tpu, 1);
+  box(gF2, -52.0, -48.0, YC - 4.5, YC + 4.5, -5.2, 0, mT);            // rear block: screw and peg
+  box(gF2, -48.0, -43.0, YC - 7.6, YC + 7.6, -5.2, -4.0, mT);           // pocket floor under the bar
+  box(gF2, -48.0, -47.5, YC - 7.6, YC + 7.6, -4.0, 0, mT);              // pocket rear wall
+  box(gF2, -43.5, -40.0, YC - 2.4, YC + 2.4, -5.2, -3.5, mT);           // stem cradle
+  [1, -1].forEach(function (s) {
+    box(gF2, -47.0, -44.0, YC + s * 7.6 + (s > 0 ? 0 : -3.4), YC + s * 7.6 + (s > 0 ? 3.4 : 0), -5.2, -4.0, mT);   // arm to the clip
+    var clip = new THREE.Mesh(new THREE.TorusGeometry(1.25, 0.6, 14, 40, Math.PI * 1.5), mTs);
+    clip.rotation.set(Math.PI / 2, 0, Math.PI * 0.75);   // opening faces up: the leg is pressed in from above
+    clip.position.set(-45.5, YC + s * 10, -2.0); gF2.add(clip);
+    box(gF2, -46.1, -44.9, YC + s * 10 - 0.6, YC + s * 10 + 0.6, -4.0, -3.1, mTs);                                  // clip post
+  });
+  // screw (M2 x 8 from below) and peg
+  cyl(gF2, -50.0, 5.0, 1.0, -4.0, 4.0, mat(0x8d949a, 1, { metalness: 0.6, roughness: 0.35 }));   // M2 x 8 shank, 4 mm into the insert
+  cyl(gF2, -50.0, 5.0, 1.9, -5.2, -4.0, mat(0x8d949a, 1, { metalness: 0.6, roughness: 0.35 }));  // head, recessed in a counterbore
+  cyl(gF2, -50.0, 0.5, 0.95, 0, 1.8, mTs);
+  // coax: receiver, slack loop in the bay against the rear wall, K8, exit, 90 deg bend into the stem
+  var loop = [];
+  for (var i = 0; i <= 24; i++) { var t = -Math.PI / 2 + (2 * Math.PI * i) / 24; loop.push([-18.6, 7 + 3.5 * Math.cos(t), 11.5 + 3.5 * Math.sin(t)]); }
+  tube(gF2, [[-9.2, 3.5, 7], [-14, 5.5, 7.2], [-18.6, 7, 8]].concat(loop.slice(1)).concat([[-18.6, 5, 7.5], [-19.5, 3.5, 7]]).concat(K8.slice(1, -1)).concat([[-38, 3.5, 0], [-38.1, 3.5, -0.9], [-38.55, 3.5, -1.5], [-39.3, 3.5, -1.9], [-40.5, 3.5, -2.0]]), 0.6, mCoax);
+  var spineMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.55, metalness: 0.0, side: THREE.DoubleSide });
+  var spineNote = document.createElement("div");
+  spineNote.className = "hint"; spineNote.style.bottom = "28px"; spineNote.textContent = "loading spine surface...";
+  view.appendChild(spineNote);
+  fetch("f17_spine_mesh.json").then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (d) {
+    var geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.Float32BufferAttribute(d.v, 3));
+    var col = new Float32Array(d.boss.length * 3), o = new THREE.Color(C.link), bl = new THREE.Color(C.fixed);
+    d.boss.forEach(function (b, i) { var c = b ? bl : o; col[3 * i] = c.r; col[3 * i + 1] = c.g; col[3 * i + 2] = c.b; });
+    geo.setAttribute("color", new THREE.BufferAttribute(col, 3));
+    geo.setIndex(d.t); geo.computeVertexNormals();
+    gF2.add(new THREE.Mesh(geo, spineMat));
+    tube(k9Moved, d.k9, 2.0, mat(C.k9, 0.85));
+    spineNote.remove();
+    applyOpt(current);
+  }).catch(function (e) { spineNote.textContent = "Spine surface did not load (" + e.message + ")"; });
 
   /* ---------- UI ---------- */
   var LAYERS = [
@@ -299,21 +352,28 @@ ul.notes { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
 
   var INFO = {
     now: {
-      nums: [["Boss to nearest fixed (keel lid boss)", "8.3 plan / 9.0 up"], ["Boss at H4 cycle 31, iso 0.4", "loose (F-17)"], ["V bend at the moulding", "not possible"], ["Coax used / available", "about 40 / 79 mm"]],
+      nums: [["Boss to nearest fixed (keel lid boss)", "8.3 plan / 9.0 up"], ["Boss at H4 cycle 31, iso 0.4", "loose (F-17)"], ["V bend at the moulding", "not possible"], ["Coax route / measured length", "about 40 / 62 mm"]],
       verdict: '<span class="pill p-bad">Not buildable</span>The boss prints as a loose part, and the moulded T cannot be bent into the V.'
     },
     d: {
-      nums: [["New frame material", "0 g"], ["Removed", "boss, insert, K8"], ["Coax route / available", "about 74 / 79 mm"], ["Slack to lift the lid", "about 5 mm"], ["Legs behind the GPS module", "4.5 mm"], ["Legs above the blade plane", "8.5 mm"]],
-      verdict: '<span class="pill p-warn">Weak points</span>The coax is nearly taut, so the IPEX plug at the receiver would have to come off every time the lid is lifted. The 2.4 GHz legs sit 4.5 mm from the GPS module. The coax also needs a notch in the pocket rim and space in K9 next to the GPS cable (Q-59).'
+      nums: [["New frame material", "0 g"], ["Coax route / measured length", "about 74 / 62 mm"], ["Legs behind the GPS module", "4.5 mm"], ["Legs above the blade plane", "8.5 mm"]],
+      verdict: '<span class="pill p-bad">Ruled out</span>With the measured 62 mm coax the antenna cannot reach the cap: the route through the GPS channel is about 74 mm.'
     },
     f: {
-      nums: [["New fixed material (gross)", "about 1.4 g"], ["Fixed chain", "boss, sleeve, web, rear lid boss"], ["Coax route / available", "about 40 / 79 mm"], ["Lid removal", "antenna not involved"], ["Holder above landing plane", "9.8 mm"], ["Leg tips from the rear arm axes", "about 13 mm"]],
-      verdict: '<span class="pill p-good">Recommended</span>The antenna and the lid stay independent and the coax has slack. The sleeve has to wrap the GPS channel locally, where the two channels are 1.5 mm apart. The arm clearance needs the C-9 gate on the real arm geometry.'
+      nums: [["New fixed material", "1,040 mm3 = 1.35 g"], ["Fixed chain", "pad, sleeve, web, rear lid boss"], ["Spine to GPS channel (moved 1.5 mm)", "1.51 mm"], ["Spine to keel side", "1.20 mm"], ["Coax: route + slack loop", "about 38 + 22 mm"], ["Holder bottom above landing plane", "9.8 mm"], ["Leg tip to rear-left arm axis (approx.)", "12.0 mm"]],
+      verdict: '<span class="pill p-good">Recommended</span>The T sits centred under the cable exit, at the forward limit set by the rear arms. The GPS channel gets no fixed material: it moves 1.5 mm to -y so the spine clears it. The arm clearance still needs gate C-9 on the real arm geometry.'
     }
   };
-  var nums = document.getElementById("nums"), verdict = document.getElementById("verdict");
-  function setOpt(k) {
+  var nums = document.getElementById("nums"), verdict = document.getElementById("verdict"), current = "f";
+  function applyOpt(k) {
     groups["opt-now"].visible = k === "now"; groups["opt-d"].visible = k === "d"; groups["opt-f"].visible = k === "f";
+    k9Now.visible = k !== "f" || k9Moved.children.length === 0; k9Moved.visible = k === "f";
+    if (bossRL) bossRL.visible = k !== "f";
+    document.getElementById("holdercard").hidden = k !== "f";
+  }
+  function setOpt(k) {
+    current = k;
+    applyOpt(k);
     nums.innerHTML = INFO[k].nums.map(function (r) { return "<dt>" + r[0] + "</dt><dd>" + r[1] + "</dd>"; }).join("");
     verdict.innerHTML = INFO[k].verdict;
     target.set(k === "d" ? -44 : -36, 0, k === "d" ? 14 : 6);
