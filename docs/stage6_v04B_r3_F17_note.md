@@ -67,6 +67,8 @@ All 34 pass. Values in mm unless stated; output also in geometry/v04B_r3_f17/che
 | holder/antenna to motor-lead passages K11 (x gap, mm) | 12.19 | >= 5 | PASS |
 ## Antenna holder (print file ANTENNA_HOLDER_v04B_r3_TPU.stl)
 
+The STL files are git-ignored (repository rule for *.stl). Regenerate both with `python3 scripts/geometry_main/s06_f17_spine.py` (numpy and scipy only, about 1 min); it writes geometry/v04B_r3_f17/ANTENNA_HOLDER_v04B_r3_TPU.stl (binary, about 280,000 triangles, closed) and SPINE_fixed_v04B_r3.stl (about 160,000 triangles, closed).
+
 | Item | Value |
 |---|---|
 | Material | TPU 95A (density 1.21 g/cm3 assumed); 0.93 g |
