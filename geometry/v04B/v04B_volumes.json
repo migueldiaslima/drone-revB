@@ -1,0 +1,358 @@
+{
+ "volumes_mm3": {
+  "ARM_pp_DESIGN": 8036.92,
+  "ARM_pp_FIXED": 2933.504,
+  "ARM_pm_DESIGN": 8036.92,
+  "ARM_pm_FIXED": 2933.504,
+  "ARM_mp_DESIGN": 8036.92,
+  "ARM_mp_FIXED": 2933.504,
+  "ARM_mm_DESIGN": 8036.92,
+  "ARM_mm_FIXED": 2933.504,
+  "TUB_DESIGN": 40676.096,
+  "TUB_FIXED": 10496.081,
+  "LID_DESIGN": 2496.631,
+  "LID_FIXED": 4599.131,
+  "tub_fixed_fin_bosses": 8755.183,
+  "tub_fixed_fc_bosses": 960.95,
+  "tub_fixed_lid_bosses": 667.274,
+  "tub_fixed_antenna_boss": 112.673,
+  "lid_fixed_plate_frame_band": 2628.548,
+  "lid_fixed_gps_deck_rim_bosses": 1418.169,
+  "lid_fixed_screw_pads": 292.173,
+  "lid_fixed_front_tab": 378.773,
+  "keepout_K1_fc_bay": 44633.287,
+  "keepout_K3_fc_screw_holes": 260.187,
+  "keepout_K4_components_above_fc": 4786.738,
+  "keepout_K5_nut_columns": 4001.132,
+  "keepout_K6_pigtail": 1739.031,
+  "keepout_K7_usb": 1748.31,
+  "keepout_K8_antenna_channel": 243.934,
+  "keepout_K9_gps_channel": 436.352,
+  "keepout_K10_strap_passage": 3003.398,
+  "keepout_K11_motor_lead_passages": 1400.0,
+  "keepout_K12_props_motors_arm_clearances": 349043.874,
+  "component_fc_board": 1742.4,
+  "component_fc_heatsink_and_parts_under_cradle_max": 1196.62,
+  "component_damping_ring_pp": 25.133,
+  "component_grommet_pp": 108.856,
+  "component_screw_pp": 79.698,
+  "component_nut_lock_pp": 26.805,
+  "component_nut_nylon_pp": 17.155,
+  "component_damping_ring_pm": 25.133,
+  "component_grommet_pm": 108.856,
+  "component_screw_pm": 73.415,
+  "component_nut_lock_pm": 26.805,
+  "component_damping_ring_mp": 25.133,
+  "component_grommet_mp": 108.856,
+  "component_screw_mp": 79.698,
+  "component_nut_lock_mp": 26.805,
+  "component_nut_nylon_mp": 17.155,
+  "component_damping_ring_mm": 25.133,
+  "component_grommet_mm": 108.856,
+  "component_screw_mm": 73.415,
+  "component_nut_lock_mm": 26.805,
+  "component_receiver_cradle": 682.431,
+  "component_receiver": 765.44,
+  "component_capacitor": 1818.393,
+  "component_pigtail": 780.223,
+  "component_xt30_female_on_tab": 861.0,
+  "component_usb_plug": 1538.88,
+  "component_antenna_coax": 38.999,
+  "component_antenna_holder": 1123.2,
+  "component_antenna_junction": 420.0,
+  "component_antenna_V": 40.715,
+  "component_gps_module": 1020.0,
+  "component_gps_cap": 690.511,
+  "component_battery": 56640.0,
+  "component_strap": 1150.4,
+  "component_lid_screw_1": 22.125,
+  "component_lid_screw_2": 22.125,
+  "component_lid_screw_3": 22.125,
+  "component_lid_screw_4": 22.125,
+  "component_lid_screw_5": 22.125
+ },
+ "params": {
+  "version": "v04B rev 2",
+  "body_half": 23.0,
+  "rim_z": 21.5,
+  "floor_z": -15.0,
+  "chamfer_z": 10.0,
+  "motor_xy": 52.49747468305832,
+  "wheelbase": 148.48528137423855,
+  "bay": {
+   "xy": 20.5,
+   "z": [
+    -6.0,
+    21.5
+   ]
+  },
+  "fc_boss": {
+   "pitch": 25.5,
+   "d": 6.4,
+   "hole_d": 2.2,
+   "cb_d": 4.2,
+   "cb_depth": 1.5
+  },
+  "lid_boss": {
+   "d": 6.0,
+   "z": [
+    15.5,
+    21.5
+   ],
+   "insert_d": 3.2,
+   "insert_depth": 4.5,
+   "xy": [
+    [
+     21.0,
+     9.5
+    ],
+    [
+     21.0,
+     -9.5
+    ],
+    [
+     -21.0,
+     5.0
+    ],
+    [
+     -21.0,
+     -5.0
+    ],
+    [
+     -30.0,
+     0.0
+    ]
+   ]
+  },
+  "boss_wedge_z": [
+   11.5,
+   15.5
+  ],
+  "inner_chamfer_wall": 2.5,
+  "fillets": {
+   "keel_root": 2.0,
+   "bay_corner": 2.0,
+   "pigtail_window": 0.75,
+   "usb_window": 0.75,
+   "strap_notch": 1.0,
+   "lid_tab_root": 2.0,
+   "lid_deck_root": 3.0
+  },
+  "keel": {
+   "x": [
+    -54.0,
+    -22.0
+   ],
+   "y_half": 9.0,
+   "z": [
+    0.0,
+    21.5
+   ]
+  },
+  "ant_boss": {
+   "xy": [
+    -44.0,
+    0.0
+   ],
+   "d": 5.4,
+   "z": [
+    0.0,
+    6.5
+   ],
+   "insert_d": 3.2,
+   "insert_depth": 4.5
+  },
+  "pigtail_window": {
+   "y": [
+    -10.0,
+    1.0
+   ],
+   "z": [
+    -1.8,
+    5.2
+   ]
+  },
+  "pigtail_low_run": {
+   "x": [
+    23.0,
+    33.0
+   ],
+   "y": [
+    -12.0,
+    3.0
+   ],
+   "z": [
+    -3.0,
+    3.0
+   ]
+  },
+  "pigtail_riser": {
+   "x": [
+    28.5,
+    33.0
+   ],
+   "y": [
+    -3.0,
+    3.0
+   ],
+   "z": [
+    0.0,
+    21.5
+   ]
+  },
+  "pigtail_under_plate": {
+   "x": [
+    28.5,
+    41.0
+   ],
+   "y": [
+    -1.75,
+    1.75
+   ],
+   "z": [
+    18.0,
+    21.5
+   ]
+  },
+  "usb_window": {
+   "x": [
+    -1.1,
+    11.9
+   ],
+   "z": [
+    -2.0,
+    6.0
+   ]
+  },
+  "usb_plug": {
+   "x_c": 5.4,
+   "z_c": 1.5,
+   "shell": [
+    8.4,
+    2.6
+   ],
+   "shell_y": [
+    -16.5,
+    -23.5
+   ],
+   "overmold": [
+    12.0,
+    7.0
+   ],
+   "overmold_y": [
+    -23.5,
+    -40.0
+   ]
+  },
+  "ant_channel": {
+   "d": 3.5,
+   "y": 3.5,
+   "z_h": 7.0,
+   "x_bend": -33.0,
+   "R": 5.0
+  },
+  "gps_channel": {
+   "d": 4.0,
+   "x_v": -38.2,
+   "y_v": -1.5,
+   "z_bend": 10.0,
+   "R": 5.0,
+   "z_h": 5.0,
+   "wall_hole": [
+    -23.0,
+    -3.5
+   ]
+  },
+  "strap_notch": {
+   "x": [
+    -9.0,
+    9.0
+   ],
+   "z": [
+    18.0,
+    21.5
+   ]
+  },
+  "nut_col": {
+   "d": 8.0,
+   "z": [
+    1.6,
+    21.5
+   ]
+  },
+  "lid": {
+   "plate": [
+    64.0,
+    34.0
+   ],
+   "z": [
+    21.5,
+    24.0
+   ],
+   "frame_w": 3.0,
+   "band_half_x": 9.0,
+   "deck_x": [
+    -54.0,
+    -30.0
+   ],
+   "deck_y": 10.0,
+   "pocket_in": {
+    "x": [
+     -52.8,
+     -35.2
+    ],
+    "y": 6.3
+   },
+   "rim_t": 1.2,
+   "rim_z": [
+    24.0,
+    26.5
+   ],
+   "cap_boss": {
+    "d": 5.4,
+    "y": 9.3,
+    "x": -44.0,
+    "z": [
+     21.5,
+     26.5
+    ],
+    "insert_d": 3.2,
+    "insert_depth": 6.0
+   },
+   "pad_d": [
+    6.0,
+    6.0,
+    6.0,
+    6.0,
+    6.0
+   ],
+   "pad_hole_d": 2.2,
+   "csk_d": 3.8,
+   "gps_hole": [
+    -38.2,
+    -1.5,
+    4.0
+   ],
+   "tab": {
+    "x": [
+     32.0,
+     42.0
+    ],
+    "y": 9.0
+   },
+   "c_cut": {
+    "pocket_x": [
+     35.8,
+     39.2
+    ],
+    "pocket_y": 3.2,
+    "entry_half": 1.3
+   }
+  },
+  "gps_cg": [
+   -44.0,
+   0.0,
+   26.5
+  ]
+ }
+}

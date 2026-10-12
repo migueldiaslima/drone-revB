@@ -1,0 +1,19 @@
+# Abaqus / Tosca results and large generated files stay on nexus or the laptop
+*.odb
+*.inp
+*.par
+*.cae
+*.jnl
+*.rpy*
+*.dat
+*.msg
+*.sta
+*.prt
+*.sim
+*.stl
+*.zip
+*.lck
+TOSCA_POST/
+SAVE.*/
+__pycache__/
+*.pyc

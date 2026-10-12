@@ -1,0 +1,869 @@
+{
+ "G0": {
+  "pass": true,
+  "rows": [
+   {
+    "file": "TUB.step",
+    "body": "TUB_DESIGN",
+    "solids": 1,
+    "vol_mm3": 40676.096,
+    "expected": 40676.096,
+    "pass": true
+   },
+   {
+    "file": "TUB.step",
+    "body": "TUB_FIXED",
+    "solids": 18,
+    "vol_mm3": 10496.087,
+    "expected": 10496.081,
+    "pass": true
+   },
+   {
+    "file": "LID.step",
+    "body": "LID_DESIGN",
+    "solids": 2,
+    "vol_mm3": 2496.631,
+    "expected": 2496.631,
+    "pass": true
+   },
+   {
+    "file": "LID.step",
+    "body": "LID_FIXED",
+    "solids": 5,
+    "vol_mm3": 4599.131,
+    "expected": 4599.131,
+    "pass": true
+   },
+   {
+    "file": "ARM_pp.step",
+    "identical_to_v03B_after_moving_back": true,
+    "boolean_difference_mm3": 0,
+    "design_mm3": 8036.92,
+    "fixed_mm3": 2933.5,
+    "solids": 6,
+    "pass": true
+   },
+   {
+    "file": "ARM_pm.step",
+    "identical_to_v03B_after_moving_back": true,
+    "boolean_difference_mm3": 0,
+    "design_mm3": 8036.92,
+    "fixed_mm3": 2933.5,
+    "solids": 6,
+    "pass": true
+   },
+   {
+    "file": "ARM_mp.step",
+    "identical_to_v03B_after_moving_back": true,
+    "boolean_difference_mm3": 0,
+    "design_mm3": 8036.92,
+    "fixed_mm3": 2933.5,
+    "solids": 6,
+    "pass": true
+   },
+   {
+    "file": "ARM_mm.step",
+    "identical_to_v03B_after_moving_back": true,
+    "boolean_difference_mm3": 0,
+    "design_mm3": 8036.92,
+    "fixed_mm3": 2933.5,
+    "solids": 6,
+    "pass": true
+   }
+  ]
+ },
+ "G1": {
+  "pass": true,
+  "TUB.step": {
+   "design_and_fixed_mm3": 0,
+   "exported_minus_expected_mm3": 0,
+   "expected_minus_exported_mm3": 0,
+   "keepout_overlap_mm3": {
+    "K1_fc_bay": 0,
+    "K3_fc_screw_holes": 0,
+    "K4_components_above_fc": 0,
+    "K5_nut_columns": 0,
+    "K6_pigtail": 0,
+    "K7_usb": 0,
+    "K8_antenna_channel": 0,
+    "K9_gps_channel": 0,
+    "K10_strap_passage": 0,
+    "K11_motor_lead_passages": 0,
+    "K12_props_motors_arm_clearances": 0
+   },
+   "floating_fixed_solids": [],
+   "pass": true
+  },
+  "LID.step": {
+   "design_and_fixed_mm3": 0,
+   "exported_minus_expected_mm3": 0,
+   "expected_minus_exported_mm3": 0,
+   "keepout_overlap_mm3": {
+    "K1_fc_bay": 0,
+    "K3_fc_screw_holes": 0,
+    "K4_components_above_fc": 0,
+    "K5_nut_columns": 0,
+    "K6_pigtail": 0,
+    "K7_usb": 0,
+    "K8_antenna_channel": 0,
+    "K9_gps_channel": 0,
+    "K10_strap_passage": 0,
+    "K11_motor_lead_passages": 0,
+    "K12_props_motors_arm_clearances": 0
+   },
+   "floating_fixed_solids": [],
+   "pass": true
+  },
+  "ARM_vs_new_keepouts": {
+   "pp": {
+    "K1_fc_bay": 0,
+    "K3_fc_screw_holes": 0,
+    "K4_components_above_fc": 0,
+    "K5_nut_columns": 0,
+    "K6_pigtail": 0,
+    "K7_usb": 0,
+    "K8_antenna_channel": 0,
+    "K9_gps_channel": 0,
+    "K10_strap_passage": 0,
+    "K11_motor_lead_passages": 0
+   },
+   "pm": {
+    "K1_fc_bay": 0,
+    "K3_fc_screw_holes": 0,
+    "K4_components_above_fc": 0,
+    "K5_nut_columns": 0,
+    "K6_pigtail": 0,
+    "K7_usb": 0,
+    "K8_antenna_channel": 0,
+    "K9_gps_channel": 0,
+    "K10_strap_passage": 0,
+    "K11_motor_lead_passages": 0
+   },
+   "mp": {
+    "K1_fc_bay": 0,
+    "K3_fc_screw_holes": 0,
+    "K4_components_above_fc": 0,
+    "K5_nut_columns": 0,
+    "K6_pigtail": 0,
+    "K7_usb": 0,
+    "K8_antenna_channel": 0,
+    "K9_gps_channel": 0,
+    "K10_strap_passage": 0,
+    "K11_motor_lead_passages": 0
+   },
+   "mm": {
+    "K1_fc_bay": 0,
+    "K3_fc_screw_holes": 0,
+    "K4_components_above_fc": 0,
+    "K5_nut_columns": 0,
+    "K6_pigtail": 0,
+    "K7_usb": 0,
+    "K8_antenna_channel": 0,
+    "K9_gps_channel": 0,
+    "K10_strap_passage": 0,
+    "K11_motor_lead_passages": 0
+   }
+  }
+ },
+ "G2": {
+  "pass": true,
+  "rows": [
+   {
+    "file": "TUB.step",
+    "solids": 19,
+    "faces": 271,
+    "smallest_mm2": 2.945,
+    "narrowest_mm": 0.651,
+    "failing": 0
+   },
+   {
+    "file": "LID.step",
+    "solids": 7,
+    "faces": 86,
+    "smallest_mm2": 2.75,
+    "narrowest_mm": 0.764,
+    "failing": 0
+   },
+   {
+    "file": "ARM_pp.step",
+    "solids": 6,
+    "faces": 88,
+    "smallest_mm2": 2.5,
+    "narrowest_mm": 0.4,
+    "failing": 0
+   },
+   {
+    "file": "ARM_pm.step",
+    "solids": 6,
+    "faces": 88,
+    "smallest_mm2": 2.5,
+    "narrowest_mm": 0.4,
+    "failing": 0
+   },
+   {
+    "file": "ARM_mp.step",
+    "solids": 6,
+    "faces": 88,
+    "smallest_mm2": 2.5,
+    "narrowest_mm": 0.4,
+    "failing": 0
+   },
+   {
+    "file": "ARM_mm.step",
+    "solids": 6,
+    "faces": 88,
+    "smallest_mm2": 2.5,
+    "narrowest_mm": 0.4,
+    "failing": 0
+   }
+  ]
+ },
+ "G3": {
+  "pass": true,
+  "baseline_v03B_BODY": {
+   "wedges": 16,
+   "strips": 30
+  },
+  "TUB_flags_by_cause": {
+   "existing v03-B: fin boss dia 12 inside the fin nose R5 (fin nose, D-055)": 16,
+   "existing v03-B: fin root fillet end at z = 10 (watch item)": 8
+  },
+  "new_flags": [],
+  "TUB_features": {
+   "K1_fc_bay": {
+    "faces": 33,
+    "min_interior_angle_deg": 45.0,
+    "min_dist_to_untouched_face_mm": 1.384,
+    "at": [
+     20.66,
+     -12.48,
+     21.5
+    ],
+    "note": "",
+    "pass": true
+   },
+   "K3_fc_screw_holes": {
+    "faces": 12,
+    "min_interior_angle_deg": 90.0,
+    "min_dist_to_untouched_face_mm": 1.0,
+    "at": [
+     -10.65,
+     -12.75,
+     -13.5
+    ],
+    "note": "",
+    "pass": true
+   },
+   "K6_pigtail": {
+    "faces": 8,
+    "min_interior_angle_deg": 90.0,
+    "min_dist_to_untouched_face_mm": 1.061,
+    "at": [
+     20.5,
+     -9.25,
+     5.2
+    ],
+    "note": "",
+    "pass": true
+   },
+   "K7_usb": {
+    "faces": 8,
+    "min_interior_angle_deg": 90.0,
+    "min_dist_to_untouched_face_mm": 1.0,
+    "at": [
+     -0.35,
+     -20.5,
+     -2.0
+    ],
+    "note": "",
+    "pass": true
+   },
+   "K8_antenna_channel": {
+    "faces": 3,
+    "min_interior_angle_deg": 90.0,
+    "min_dist_to_untouched_face_mm": 1.497,
+    "at": [
+     -36.4,
+     0.27,
+     6.1
+    ],
+    "note": "",
+    "pass": true
+   },
+   "K9_gps_channel": {
+    "faces": 3,
+    "min_interior_angle_deg": 82.9,
+    "min_dist_to_untouched_face_mm": 1.497,
+    "at": [
+     -36.4,
+     0.27,
+     6.1
+    ],
+    "note": "",
+    "pass": true
+   },
+   "K10_strap_passage": {
+    "faces": 10,
+    "min_interior_angle_deg": 90.0,
+    "min_dist_to_untouched_face_mm": 1.414,
+    "at": [
+     -8.0,
+     -20.5,
+     18.0
+    ],
+    "note": "",
+    "pass": true
+   },
+   "K11_motor_lead_passages": {
+    "faces": 20,
+    "min_interior_angle_deg": 45.0,
+    "min_dist_to_untouched_face_mm": 1.0,
+    "at": [
+     -23.0,
+     9.56,
+     -3.0
+    ],
+    "note": "",
+    "pass": true
+   },
+   "FC bosses dia 6.4": {
+    "faces": 16,
+    "min_interior_angle_deg": 90.0,
+    "min_dist_to_untouched_face_mm": 1.1,
+    "at": [
+     14.85,
+     -12.75,
+     -15.0
+    ],
+    "note": "",
+    "pass": true
+   },
+   "lid bosses dia 6": {
+    "faces": 35,
+    "min_interior_angle_deg": 48.2,
+    "min_dist_to_untouched_face_mm": 1.384,
+    "at": [
+     20.66,
+     -12.48,
+     21.5
+    ],
+    "note": "",
+    "pass": true
+   },
+   "antenna boss dia 5.4": {
+    "faces": 5,
+    "min_interior_angle_deg": 90.0,
+    "min_dist_to_untouched_face_mm": 1.1,
+    "at": [
+     -42.4,
+     0.0,
+     0.0
+    ],
+    "note": "",
+    "pass": true
+   },
+   "insert holes (lid bosses, antenna boss)": {
+    "faces": 12,
+    "min_interior_angle_deg": 90.0,
+    "min_dist_to_untouched_face_mm": 1.1,
+    "at": [
+     -42.4,
+     0.0,
+     0.0
+    ],
+    "note": "",
+    "pass": true
+   },
+   "boss support wedges": {
+    "faces": 20,
+    "min_interior_angle_deg": 90.0,
+    "min_dist_to_untouched_face_mm": 1.384,
+    "at": [
+     20.66,
+     -12.48,
+     15.5
+    ],
+    "note": "",
+    "pass": true
+   }
+  },
+  "LID_features": {
+   "screw pads": {
+    "faces": 18,
+    "min_interior_angle_deg": 90.0,
+    "min_dist_to_untouched_face_mm": 1.1,
+    "at": [
+     -29.0,
+     -2.83,
+     24.0
+    ],
+    "note": "",
+    "pass": true
+   },
+   "pad holes and countersinks": {
+    "faces": 10,
+    "min_interior_angle_deg": 90.0,
+    "min_dist_to_untouched_face_mm": 1.1,
+    "at": [
+     -29.0,
+     -2.83,
+     24.0
+    ],
+    "note": "",
+    "pass": true
+   },
+   "GPS cap bosses": {
+    "faces": 2,
+    "min_interior_angle_deg": 90.0,
+    "min_dist_to_untouched_face_mm": 1.1,
+    "at": [
+     -42.4,
+     9.3,
+     26.5
+    ],
+    "note": "",
+    "pass": true
+   },
+   "GPS hole": {
+    "faces": 1,
+    "min_interior_angle_deg": 90.0,
+    "min_dist_to_untouched_face_mm": 1.0,
+    "at": [
+     -35.2,
+     -1.5,
+     24.0
+    ],
+    "note": "",
+    "pass": true
+   },
+   "C cutout": {
+    "faces": 3,
+    "min_interior_angle_deg": 90.0,
+    "min_dist_to_untouched_face_mm": 1.131,
+    "at": [
+     36.6,
+     3.2,
+     21.5
+    ],
+    "note": "",
+    "pass": true
+   },
+   "front tab": {
+    "faces": 4,
+    "min_interior_angle_deg": 90.0,
+    "min_dist_to_untouched_face_mm": 2.6,
+    "at": [
+     42.0,
+     1.3,
+     24.0
+    ],
+    "note": "",
+    "pass": true
+   },
+   "pocket rim": {
+    "faces": 8,
+    "min_interior_angle_deg": 90.0,
+    "min_dist_to_untouched_face_mm": 1.1,
+    "at": [
+     -42.81,
+     -8.23,
+     26.5
+    ],
+    "note": "",
+    "pass": true
+   },
+   "plate frame inner edge": {
+    "faces": 28,
+    "min_interior_angle_deg": 90.0,
+    "min_dist_to_untouched_face_mm": 1.1,
+    "at": [
+     -29.0,
+     -2.83,
+     24.0
+    ],
+    "note": "",
+    "pass": true
+   }
+  },
+  "LID_flags": 0
+ },
+ "G4": {
+  "pass": true,
+  "TUB_1.0_low_tets_at_same_places_as_v03B": true,
+  "TUB_1.5": {
+   "tets": 136496,
+   "min_gamma": 0.1265,
+   "below_0.05": 0,
+   "clusters": []
+  },
+  "LID_1.5": {
+   "tets": 21824,
+   "min_gamma": 0.1363,
+   "below_0.05": 0,
+   "clusters": []
+  },
+  "v03B_BODY_1.5": {
+   "tets": 111749,
+   "min_gamma": 0.1265,
+   "below_0.05": 0,
+   "clusters": []
+  },
+  "TUB_1.0": {
+   "tets": 304369,
+   "min_gamma": 0.0227,
+   "below_0.05": 25,
+   "clusters": [
+    [
+     [
+      -24.5,
+      29.9,
+      -2.5
+     ],
+     1
+    ],
+    [
+     [
+      29.9,
+      24.5,
+      -2.5
+     ],
+     1
+    ],
+    [
+     [
+      23.6,
+      -28.9,
+      -2.5
+     ],
+     1
+    ],
+    [
+     [
+      -30.5,
+      30.7,
+      -8.4
+     ],
+     2
+    ],
+    [
+     [
+      -14.4,
+      23.0,
+      9.8
+     ],
+     1
+    ],
+    [
+     [
+      -14.4,
+      -23.0,
+      9.8
+     ],
+     1
+    ],
+    [
+     [
+      -30.4,
+      -30.7,
+      3.4
+     ],
+     1
+    ],
+    [
+     [
+      -30.4,
+      -30.7,
+      -8.4
+     ],
+     2
+    ],
+    [
+     [
+      -23.0,
+      14.4,
+      9.8
+     ],
+     1
+    ],
+    [
+     [
+      -30.7,
+      30.4,
+      3.4
+     ],
+     2
+    ],
+    [
+     [
+      -23.0,
+      -14.4,
+      9.8
+     ],
+     1
+    ],
+    [
+     [
+      23.0,
+      -14.4,
+      9.8
+     ],
+     1
+    ],
+    [
+     [
+      14.4,
+      -23.0,
+      9.8
+     ],
+     1
+    ],
+    [
+     [
+      14.4,
+      23.0,
+      9.8
+     ],
+     1
+    ],
+    [
+     [
+      23.0,
+      14.4,
+      9.8
+     ],
+     1
+    ],
+    [
+     [
+      30.4,
+      30.7,
+      3.4
+     ],
+     2
+    ],
+    [
+     [
+      30.7,
+      30.5,
+      -8.4
+     ],
+     2
+    ],
+    [
+     [
+      30.7,
+      -30.4,
+      3.4
+     ],
+     1
+    ],
+    [
+     [
+      30.7,
+      -30.4,
+      -8.4
+     ],
+     2
+    ]
+   ]
+  },
+  "LID_1.0": {
+   "tets": 45617,
+   "min_gamma": 0.2487,
+   "below_0.05": 0,
+   "clusters": []
+  },
+  "v03B_BODY_1.0": {
+   "tets": 299754,
+   "min_gamma": 0.0227,
+   "below_0.05": 25,
+   "clusters": [
+    [
+     [
+      -21.5,
+      26.9,
+      -2.5
+     ],
+     1
+    ],
+    [
+     [
+      26.9,
+      21.5,
+      -2.5
+     ],
+     1
+    ],
+    [
+     [
+      20.6,
+      -25.9,
+      -2.5
+     ],
+     1
+    ],
+    [
+     [
+      11.4,
+      -20.0,
+      9.8
+     ],
+     1
+    ],
+    [
+     [
+      -27.7,
+      -27.5,
+      -8.4
+     ],
+     2
+    ],
+    [
+     [
+      -27.5,
+      27.7,
+      -8.4
+     ],
+     2
+    ],
+    [
+     [
+      -11.4,
+      20.0,
+      9.8
+     ],
+     1
+    ],
+    [
+     [
+      -20.0,
+      -11.4,
+      9.8
+     ],
+     1
+    ],
+    [
+     [
+      -11.4,
+      -20.0,
+      9.8
+     ],
+     1
+    ],
+    [
+     [
+      20.0,
+      -11.4,
+      9.8
+     ],
+     1
+    ],
+    [
+     [
+      -27.4,
+      -27.7,
+      3.4
+     ],
+     1
+    ],
+    [
+     [
+      -27.7,
+      27.4,
+      3.4
+     ],
+     2
+    ],
+    [
+     [
+      -20.0,
+      11.4,
+      9.8
+     ],
+     1
+    ],
+    [
+     [
+      11.4,
+      20.0,
+      9.8
+     ],
+     1
+    ],
+    [
+     [
+      20.0,
+      11.4,
+      9.8
+     ],
+     1
+    ],
+    [
+     [
+      27.7,
+      27.5,
+      3.4
+     ],
+     2
+    ],
+    [
+     [
+      27.7,
+      27.5,
+      -8.4
+     ],
+     2
+    ],
+    [
+     [
+      27.7,
+      -27.4,
+      3.4
+     ],
+     1
+    ],
+    [
+     [
+      27.7,
+      -27.4,
+      -8.4
+     ],
+     2
+    ]
+   ]
+  }
+ },
+ "G5": {
+  "interferences": [],
+  "clearances": {
+   "C-1 FC + capacitor sweep to TUB (>= 0.25)": 0.958,
+   "C-2 lid bosses and support wedges to the FC insertion path (+-16.5 prism) (>= 0.25)": 1.5,
+   "C-2 lid bosses to K5 (>= 1.0)": 1.867,
+   "C-2 lid bosses to prop sweep + 3 (>= 1.0)": 2.85,
+   "C-3 pigtail to ARM_pm (>= 1.0)": 7.762,
+   "C-3 pigtail to the pm fin and the front bosses (TUB outside x = 23) (>= 1.0)": 5.174,
+   "C-3 pigtail to the front window edges (> 0)": 0.3,
+   "C-4 XT30 to prop sweep + 3 (> 0)": 2.921,
+   "C-4 pigtail riser to prop sweep + 3 (> 0)": 4.257,
+   "C-5 capacitor to pm lock nut (>= 1.0)": 2.676,
+   "C-5 capacitor to receiver cradle (>= 1.0)": 1.75,
+   "C-5 capacitor to LID (>= 1.0)": 6.0,
+   "C-6 cradle floor to FC parts (>= 0.3; parts assumed <= z 3.8, Q-60)": 0.3,
+   "C-7 K8 (antenna) to K11 openings in the rear wall (>= 1.0)": 8.25,
+   "C-7 K8 (antenna) to K9 openings in the rear wall (>= 1.0)": 3.514,
+   "C-7 K9 to K11 openings in the rear wall (>= 1.0)": 6.852,
+   "C-8 USB plug to ARM_pm (>= 0.5)": 3.161,
+   "C-8 USB plug to TUB (> 0)": 0.5,
+   "C-9 antenna V to ARM_mp (>= 5)": 15.413,
+   "C-9 antenna V to ARM_mm (>= 5)": 15.413,
+   "C-9 antenna V to prop sweep + 3 (> 0)": 11.4,
+   "lid placement: LID to bay contents (> 0)": 6.0,
+   "C-9 antenna V z range (above -12, below 10)": [
+    -2.6,
+    -1.4
+   ],
+   "lid placement: nearest bay item": "capacitor"
+  },
+  "pass": true
+ }
+}

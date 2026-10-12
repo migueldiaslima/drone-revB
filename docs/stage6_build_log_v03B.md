@@ -1,0 +1,496 @@
+# Stage 6 build log: Abaqus model v03-B
+
+Running record of the hand build of `revB_v03B` in Abaqus/CAE 2022, following `claude/stage6_model_setup_part1.md` (the sheet) and `claude/stage6_abaqus_handover.md`. Updated at the end of every phase. It is the source for the summary that goes back to the main chat and for the Stage 6 section of the report.
+
+Model file: `D:\Miguel\Drone\Drone Project\Project files\Stage 6\Abaqus_v03B\revB_v03B.cae` (with `abaqus.rpy` in the same folder, D-043).
+
+## Status
+
+| Phase | Content | Status |
+|---|---|---|
+| 1 | Model database, part import, geometry checks | done |
+| 2 | Material, section, orientation | done |
+| 3A | Assembly, design/fixed cell sets | done |
+| 3B | Face partitions, surfaces | done |
+| 4 | Reference points, couplings, point masses | done |
+| 5 | Joint ties | done |
+| 6 | Steps, inertia relief, outputs, loads | done |
+| 7 | Mesh | BODY meshed on the old geometry, arms failed (F-8); superseded by 7R |
+| 7R | Re-import of the D-054/D-055 export, scripted rebuild of parts, surfaces, connections and mesh | done (`revB_v03B_D055.cae`, 145,750 C3D10) |
+| 8 | Reference job and checks | done; mode 7 below 417 Hz (F-12), resolved by D-056 |
+| T1 | Handover 2 step 1: D-056 BODY re-import, identical arms (D-059) | done (`revB_v03B_D056.cae`) |
+| T2 | Tosca mesh choice (data check) | done: target mesh over the limit, fallback 2.5 / 1.5 chosen (D-058) |
+| T3 | Reference job on the Tosca mesh | done; all pass criteria met (Phase T3) |
+| T4 | Inertia relief smoke test | done, pass |
+| T5 | Caps | done (Phase T3 item 4) |
+| T6 | Tosca task | CHECK items researched; build in progress |
+| T7 | First Tosca run | local chain test without inertia relief done, 3 cycles (Phase T7, DV-16); run with inertia relief moves to the HPC |
+| T8 | Report | done (`claude/stage6_tosca_chain_test_report.md`) |
+| H0, H1 | HPC reference job and Tosca smoke test (D-060, D-061) | both PASS; report `claude/stage6_hpc_H1_report.md`; stopped before H2 |
+| H2 | Full run 2.5 / 1.5 mm, nemix (D-065, DV-19, DV-20) | stopped at cycle 10 by the D-066 rule |
+| H3 | Reference and production 1.0 mm with member size, nexus (DV-21) | stopped after cycle 40; feasible from cycle 28 |
+| TH | D-066 items 1 to 3 on cycle 40 | closed: thresholded iso 0.3 and 0.5 pass |
+| P | Print set v03-B (iso 0.4, restored) | done, 76.8 g; not assemblable (F-16) |
+| v04-B | Assemblable redesign (tub + lid) | brief `claude/stage6_v04B_design_brief.md`; update `claude/stage6_update_since_H1.md`; waiting for the main chat export |
+
+## Deviations from the sheet
+
+| # | Deviation | Reason | Effect |
+|---|---|---|---|
+| DV-1 | All four arm parts auto-repaired on import (CAE prompt "invalid geometry") | The merge with "retain intersecting boundaries" leaves sliver faces at the prong bosses, from the 0.15 mm joint offset; CAE flags their edges invalid | None on geometry: volumes and cell counts unchanged after repair (10970.42 mm^3, 6 cells each); diagnostics then clean. Side effect on display only, see F-5 |
+| DV-2 | Four Ø3.2 x 7 mm holes cut into BODY in CAE (Shape > Cut > Extrude, projected edges, blind 7 mm down from z = -6) | The generator did not subtract the FC bosses or their screw holes from `body_design`; after the merge, design material filled each FC-boss hole as an isolated plug cell (BODY had 27 cells instead of 23) | Geometry now matches the real part; BODY 23 cells, 45951.8 mm^3; 0.29 g of non-existent material removed |
+| DV-3 | Expected total mass 322.2 g, not 323.5 g | The sheet's frame mass (118.1 g) counted the FC-boss overlap with the design solid twice (792.7 mm^3, 1.03 g) and included the plugs (DV-2, 0.29 g) | Phase 8 mass check uses 322.2 g |
+| DV-4 | Design sets created with `SetByBoolean` from the command line (needs `from abaqusConstants import *` first) | CAE 2022 Set Manager has no Boolean option in the GUI | None; the command is recorded in `abaqus.rpy` |
+| DV-5 | BODY floor bottom face partitioned with datum planes x = +-20, y = +-20 to bound `S_FLOOR` | The sheet asks for the 40 x 40 square but gives no partition; the floor face is larger (bbox +-26.9 mm). Datum planes avoid local sketch coordinates | `S_FLOOR` = 1600 mm^2 exactly (F-2) |
+| DV-7 | The outer piece of each lower prong inner boss face (37.74 mm^2) added to `S_PRONG_BOSS_xx_L/_R` from the command line (`getClosest` at the piece centroid, accepted only if on the face and 37.74 mm^2) | The piece is drawn badly (same cause as F-5) and cannot be picked with the mouse | All 8 prong surfaces complete: 3 faces, 204.7 mm^2 |
+| DV-8 | Ties with main (master) = prong boss (`S_PRONG_BOSS_xx_L/_R`), secondary (slave) = fin boss (`S_FIN_BOSS_xx_L/_R`); the sheet had the reverse | Each fin face (61.5 mm^2) lies within its prong face (99.7 / 105.1 mm^2); with similar mesh density in the joint (1.0 mm both sides) Abaqus recommends the smaller surface as slave. All slave nodes then find a master, so a clean 'no unconstrained slave nodes' message becomes a real check that every joint is connected; with the sheet's choice about 40 % of each prong face would be reported untied by design, which would hide a genuinely broken tie | Tied area = slave (flat fin face) where a master lies within 0.3 mm: upper boss 61.5 mm^2, lower 59.0 mm^2 = the flat-on-flat contact patch; the prong disk area facing the curved fin end gets no slave node and stays free, the curved fin face is not in the slave surface. Expected in Phase 8: a few unconstrained slave nodes only along the bottom strip of each lower fin boss (z = -15 to -14.5, 2.5 mm^2, no arm material opposite since the arm ends at z = -14.5); untied nodes anywhere else indicate a fault |
+| DV-9 | The five parts replaced by the D-054/D-055 export (`stage6_abaqus_v03B.zip`, note `claude/stage6_v03B_export_note.md`) and rebuilt by script (R1 to R4) instead of by hand | The tangency slivers (F-8, F-10) were removed at the source; redoing Phases 1 to 3B and the connections by hand would repeat an afternoon of picking. The scripts apply the same rules that were validated by hand, and check every count and area against values computed from the STEP files | DV-2 (FC-boss hole cut) and DV-7 (hidden prong piece) no longer apply. Material, RPs, point masses, steps, inertia relief, outputs and RP loads are kept; couplings, ties and `LC3a_P` are recreated with the same names and settings |
+| DV-10 | Single arm part named `ARM` (renamed from `ARM_pp`) with generic surface names `S_PRONG_BOSS_L/_R`, `S_JNT`, `S_MOT_SEAT`; instances keep the names `ARM_xx-1` | Tosca sheet section 2 says keep `ARM_pp`; with four instances of one part, corner-tagged part surface names would read `ARM_pm-1.S_MOT_SEAT_pp`, which invites mistakes. L/R stays correct on every instance: the L/R rule (t > 0 across the arm, looking outward) is unchanged by a rotation about z | Names only; geometry, sets and the four positions as the sheet. Couplings and ties keep their corner names (`CP_MOT_pm`, `TIE_pm_L`, ...) |
+| DV-11 | Inertia relief smoke test run as LC1 with inertia relief **plus** 3-2-1 supports (copy model `revB_v03B_IR321`), compared with the free LC1 | The journal (D-041) describes a manually balanced load set on 3-2-1 supports; building that set by hand (inertial body load on every element, rotational terms) is long and error prone. With inertia relief active the solver itself balances the loads; on statically determinate supports the reactions are then fixed by global equilibrium alone and must be zero, and the strain energy must equal the free run. This tests both D-041 claims (load balance and no effect of the supports) with the solver's own inertia relief loads | The independent hand-balanced check is not done; the Tosca smoke test (sheet section 8, item 1) adds the in-Tosca part |
+| DV-12 | Arm symmetry with the **Rotational symmetry** restriction (90 deg segment about global z), not 'Cyclic symmetry' as named in the Tosca sheet | In Abaqus/CAE 'Cyclic symmetry' repeats a region by translation along an axis; the rotational pattern of D-059 is 'Rotational symmetry' (C-1) | Same intent as the sheet |
+| DV-13 | Initial density specified as 1.0 | With volume as the objective and no volume constraint, Tosca's default start density is 0.5 (C-6): the strain energies of cycle 1 would be far above the caps and the run would start infeasible. Starting solid makes cycle 1 equal the T3 reference, which is also what the sheet's smoke test (section 8 item 1) compares against | Cycle 1 strain energies = ALLSE_i,0 |
+| DV-14 | First local Tosca run limited to 3 design cycles (sheet: 30) | Each cycle is a full Abaqus run (FREQ + 4 static steps, about 4 min on this laptop) plus sensitivities and the Tosca update, so 30 cycles would take about 2.5 to 3.5 h; Miguel's limit for the local trial is about 30 min. Three cycles cover the sheet's smoke test (section 8 item 1: cycles 1 and 2 complete, inertia relief inside Tosca, cycle 1 strain energies = ALLSE_i,0) and answer C-3, C-4 and the symmetry check; the shape-finding runs move to the HPC | Trend and convergence items of section 8 (items 3, 5) are checked on the HPC run |
+| DV-15 | Member size restriction left out of the first run (Q-T1, Miguel) | C-5: minimum member size must exceed twice the element size; 2.5 mm against 2.5 / 1.5 mm elements is mesh-dependent, and the restriction is expensive | Applied in the HPC runs at 0.8 mm |
+| DV-16 | Q-T2 option B (Miguel): local Tosca chain test on copy model `revB_v03B_NOIR` without inertia relief; 3-2-1 supports (`RP_JNT_pp` U1 U2 U3, `RP_JNT_pm` U1 U3, `RP_JNT_mp` U3) in each static step only (FREQ stays free-free); RF output added; strain energy caps as fraction of the initial value (2.0) because the absolute caps come from the inertia relief model; `GR_FROZEN` deleted in both models (redundant, F-13); process `TO_v03B_noIR`, 3 cycles. Set up by `R11_noIR_setup.py` | Tosca 2022 rejects inertia relief with the sensitivity-based algorithm (F-13). The test checks everything else in the chain (frequency units, PEDE switch, solid start, rotational symmetry, low-density modes) in about 20 min; the inertia relief part moves to the HPC (Abaqus 2023 or later) | Shapes from this run are not meaningful (unbalanced 20 N thrust reacted at the supports); `revB_v03B` keeps inertia relief and absolute caps for the HPC |
+| DV-17 | HPC runs on `nemix.fe.up.pt` (2 x Xeon Gold 6130, 32 cores / 64 threads, 125 GB RAM, no scheduler, single user at the time) with Abaqus/Tosca 2025 (`abq2025`, build 2024_09_20 RELr427): jobs started from the shell with `nohup`, 16 CPUs, memory cap 35 % (about 44 GB); `.par` line `driver.Solver.AddCallArgs` changed from `memory=90%` to `cpus=16, memory=35%` | No SLURM/PBS on the machine; 90 % of a shared server's RAM would crowd out other users; the model needs about 10.5 GB | Physics unchanged |
+| DV-18 | 3-2-1 supports added to every static step of `revB_v03B` (`BC_A_s` on `SET_RP_JNT_pp` U1 U2 U3, `BC_B_s` on `SET_RP_JNT_pm` U1 U3, `BC_C_s` on `SET_RP_JNT_mp` U3, s = LC1, LC2a, LC2b, LC3a), inertia relief kept; FREQ stays free-free; RF added to `F-STATIC` (`R12_IR321_all.py`) | F-14: without supports Abaqus 2025 returns wrong results in steps that reuse a factorisation. Inertia relief with determinate supports is the arrangement the solver asks for and the one D-041 describes; T4 showed it gives zero reactions and the same strain energy as the free run, with no singularities | None on the physics (reactions must be about 0, checked in H0); caps unchanged if H0 reproduces the 2022 strain energies |
+| DV-19 | H2 resources raised from 16 CPUs / memory 35 % (D-065) to 32 CPUs (all physical cores, 2 x 16) in thread mode / memory 90 %: `.par` line `driver.Solver.AddCallArgs = [ 'cpus=32', 'memory=90%', 'mp_mode=threads',]` | Miguel: nemix free and cleared for full use. Bench B32 (H0 input, 32 cores): 88 s against 137 s at 16 cores (-36 %), results identical to H0 (PASS, reactions below 2.5e-11 N). Thread mode required by F-15. Memory does not speed the run (peak 9 GB) | Physics unchanged |
+| DV-20 | H2 saves the odb of every cycle (the H1 `.par` save rule, EVER) instead of every 5 plus the last (D-065) | The every-N syntax of the Tosca 2025 save rule is not confirmed; a wrong rule edit could lose the results. Disk is not a limit (2.8 TB free, about 45 GB expected). Mode check (D-066 item 2) still runs at cycles 5, 10, ... and the last | None on the results; non-multiple-of-5 odbs can be deleted after the report |
+| DV-21 | H3 (1.0 mm production) started on nexus before the main chat reviewed H2 | Miguel: deadline; risk of a wasted run accepted | None on the physics; the run became the v03-B result |
+| DV-22 | v04-B lid ties: main = lid pad bottom (LID), secondary = tub boss top annulus dia 6 / 3.2 (TUB), no partition; export note asked for main = tub annulus, secondary = lid pad partitioned at dia 3.2 | The keel pad (-30, 0) is not a separate face: it lies inside the fixed lid bottom face (1644.31 mm^2), and a dia 6 partition circle there would coincide with the existing fixed / design edge where the pad enters the plate interior (x > -29), a near-coincidence the tangency rule forbids. With the smaller tub annulus as secondary every secondary node has a main, so "0 untied nodes" stays a valid check; the tub boss edges are seeded at 1.5 mm (debug) like the lid pads | Same constraint (rigid tie over the 20.23 mm^2 annulus); no partition on the lid |
+| DV-23 | G7b built as one tie TIE_LIDRIM (main = all lid bottom faces at z = 21.5, 2740.84 mm^2; secondary = tub top faces under the lid, 625.98 mm^2 incl. the 5 boss annuli) instead of the 5 boss ties plus a rim tie | Two ties sharing the boss nodes would chain constraints; one tie over the whole seat is the same physical assumption. The tub top faces are partitioned at y = +-17 (lid plate edge) so that only faces under the lid are secondary: area 625.98 = note 626 | G7b untied nodes expected 0 |
+| DV-24 | H4c restarted with a negative Lanczos shift point in FREQ (data line `20, , , -100., ,`, edited in the Tosca job input by `run_H4c.sh`) and run in `/tmp/mdias_H4c` | First H4c start (23:00, 59 cores, /home) stopped in cycle 11: Lanczos Sturm-count error ('number of eigenvalues found in the interval is different from the number expected ... may happen if a system has rigid body modes and no shift is given'), 6 rigid-body modes at 1e-4 next to the shift at 0. /home is 100 % full (16 GB free) | Frequencies and mode numbering unchanged (shift below all modes); the run restarts from cycle 0 |
+| DV-25 | H4c skipped after its first start failed; H4 (1.0 mm, member size 2.5 mm) started directly, with the strain-energy caps set as RELATIVE <= 2.0 x cycle 0 instead of absolute values from a separate H4 reference job (`W2_H4.py`, `run_H4.sh` with the DV-24 shift, /tmp) | Miguel, 2026-10-12 00:05: H4 must run overnight; no time for the H4c restart (about 4 h) plus H4_ref before H4. Cycle 0 of a solid-start run (DV-13) is the solid reference on the same mesh with the same tie, so 2.0 x cycle 0 is the D-063 cap exactly | D-082 sequence changed: no H4c report; the cycle 0 values of H4 are the H4 reference (recorded from the run); lid and seat behaviour reported from the H4 saved cycles. To be confirmed in the main chat |
+| DV-6 | BODY top face partitioned with datum plane x = -32 to split `S_BATT_SEAT` from `S_GPS_SEAT` | The plate frame, strap band and GPS frame form one single face at z = 24 (1220 mm^2); without a split the two couplings would share faces | `S_BATT_SEAT` 1056 mm^2 (plate frame and strap band), `S_GPS_SEAT` 164 mm^2 (GPS frame ring) |
+
+## Open items
+
+| # | Item | Phase |
+|---|---|---|
+| O-1 | RESOLVED in Phase 5 (DV-8): slave = fin boss (smaller surface), master = prong boss. Tie master/slave choice. Each fin boss side face (61.5 mm^2) lies almost entirely inside the facing prong boss face (99.7 lower, 105.1 upper mm^2; overlap 59.0 and 61.5 mm^2). With the sheet's choice (master fin, slave prong) about 40 % of each prong face has no master opposite, so those slave nodes stay untied (dat-file warning, physically consistent with a clamp that only acts where the bosses overlap). Alternative: slave = fin (the smaller surface), which Abaqus recommends when the two meshes are of similar size (both 1.0 mm in the joint). Decide in Phase 5 | 5 |
+| O-2 | Sliver faces at the prong bosses (F-3) | 7 |
+
+## For the main chat
+
+1. Generator fix before variant C: subtract the FC bosses (including their Ø3.2 x 7 holes) from `body_design` (DV-2).
+2. Sheet mass expectation should read frame 116.8 g, total 322.2 g (DV-3).
+3. Possible generator improvement if Phase 7 meshing struggles: cut the arm design region with the boss solids themselves, so the faceted Ø12 boss outlines coincide and no sliver faces form (see F-3).
+5. Decision on the new arm fixed-boss rule (F-9, `claude/stage6_arm_geometry_fix_request.md`): through-fork Ø12 bolt bosses, upper boss extended to the arm top, +1.41 g fixed in total; if accepted, record it, update N-06-05 and Q-53, and adopt the rule in the generator for variant C. The debugging model meshes the imported geometry as is, with local refinement around the notch. Post-processing the STEP was tested and rejected: enlarging the notch radius to 5.3 / 5.4 / 5.6 mm removes the tangency but cuts new thin faces (0.26 to 0.56 mm^2, 0.1 to 0.17 mm wide) where the notch meets the Ø12 boss cylinders. Acceptance test for the regenerated arms: after merging design and fixed solids, no face below 0.5 mm^2 and no face narrower than 0.3 mm (2 x area / perimeter); the same test applies to BODY.
+6. Q-55 (F-12): the GPS overhang mode (365 Hz) sits inside the modes 7 to 12 band. Options: (a) stiffen the GPS mount in the geometry (thicker or ribbed fixed GPS frame, shorter overhang, support from below), (b) keep the band for global modes and treat the GPS mount as a component checked separately (needs a way to exclude local modes, e.g. a constraint on selected modes after a MAC check), (c) accept 365 Hz against the 290 Hz minimum. Check also whether the GPS mass at z = 28 (4 mm above the pad) and 8 g are realistic.
+4. Sheet section 4 should note the face partitions needed for `S_FLOOR` and for splitting the battery and GPS seats (DV-5, DV-6).
+
+## Findings during the build
+
+| # | Finding |
+|---|---|
+| F-1 | Pre-flight check of the STEP files: units mm; arms identical (design 8307.9, fixed 2662.5 mm^3); joint gap 0.15 mm on all 8 boss pairs; fin and arm design regions also face each other at 0.15 mm (not tied, as intended) |
+| F-2 | Floor bottom face (z = -15) inside the 40 x 40 square is exactly 1600 mm^2 only when the four FC-boss bottom disks (28.3 mm^2 each) are included; leaving them out of `S_FLOOR` would give 52.4 N instead of 56.4 N in LC3a |
+| F-3 | Each arm keeps 6 small faces (< 0.1 mm^2) and 2 short edges (< 0.2 mm) at the prong bosses, plus thin sliver faces along the faceted Ø12 boss outlines (double outline visible on the prong faces). To be handled in Phase 7 (virtual topology) |
+| F-4 | Gap measured in CAE (Query > Distance, two vertices at z = 10, BODY fin boss to ARM_pm prong boss): 0.150 mm, confirming F-1 inside Abaqus |
+| F-5 | After the auto repair (DV-1) CAE draws the lower prong bolt holes (z = -9) as closed, and picking near their mouth selects the design cell. Geometry checks from the command line show all 16 holes open: nearest face along the full hole length is the wall (1.600 mm on the bolt-head prongs, 1.600 to 2.000 mm on the insert prongs with the Ø4 pocket), every wall face bounds one cell, volumes match the STEP. Cause: a bad display tessellation of the repaired hole walls; picking uses the display, the mesher uses the exact geometry. Rule: pick those bosses on the disk zone away from the hole; confirm visually once meshed (Phase 7) |
+| F-7 | The merge imprints the bolt-axis line onto the prong inner boss faces: each disk is split into an inner piece (towards the frame centre) and an outer piece (towards the motor). Upper: 64.86 + 40.20 mm^2; lower: 61.93 + 37.74 mm^2 |
+| F-8 | Root cause of the arm slivers (F-3): the fork notch in `ARM_DESIGN` is a vertical cylinder of radius 5.15 mm on the arm axis (fin tip radius 5 + 0.15 gap), and the prong inner faces lie exactly 5.15 mm from the same axis, so the notch is tangent to both prong planes. The tangency leaves, per arm, four 3 um wide crescent faces (0.0058 mm^2) of the design region's own bolt-hole cylinder at the hole rims and two 0.15 mm tall strips (0.069 mm^2) on the top face. Meshing: ARM_mm meshed (78,858 elements, about 20 % above the estimate, clusters at the slivers; mid-edge nodes left unprojected in places), ARM_mp failed ('poor boundary triangles'). CAE repair attempts on ARM_mp: Repair small faces removed 5 of 6 but left edges with 0.4 mm tolerance (15 imprecise entities); Remove faces on the last crescent deleted the whole design cell (5 cells, 2662.5 mm^3). Both features deleted to restore the imported geometry. Further CAE attempts on ARM_mp: global seed 0.95 to 0.6 fail, 0.55 meshes (387,289 elements, 0 errors, 789 warnings = 0.2 %, all along the notch tangency lines and the top strips); local notch seeding (`seed_notch`, 36 edges within 6.5 mm of the notch axis) from 0.4 down to 0.1 mm fails ('poor boundary triangles'). Second tangency found: the upper prong boss (Ø12, axis z = 4) is tangent to the arm top z = 10 (source of the 0.15 mm strips). Automatic virtual topology (edges < 0.2 mm, faces < 0.1 mm^2) merged only the top-strip edges; meshing still failed; feature deleted. Route A chosen. Geometry fix requested from the main chat: `claude/stage6_arm_geometry_fix_request.md` |
+| F-9 | Corrected root cause of F-8 after review against the journal: the decisions are consistent (D-048 slot end a semicircle tangent to the flat prong faces; D-049 edge distance 6 with D-051 Ø12 bosses puts the upper boss top exactly at the arm top z = 10, which D-046 fixes under the prop keep-out; bolt line 33 mm with slot-end centre 34.35 mm). The defect is the split: `ARM_FIXED` bosses bounded by the prong planes at 5.15 mm, which beyond the slot-end tangent line run inside the arm and meet the semicircle tangentially; the bolt hole reaches 0.25 mm past that line. Earlier suggestions withdrawn: arm top z = 10.3 (violates the prop keep-out), boss Ø11.6 (0.2 mm design sliver, changes D-051), slot-tool recut (not the cause). Tested fix: through-fork Ø12 bosses plus the upper boss extended to the arm top; all four arms pass the acceptance test (smallest face 2.5 mm^2, narrowest 0.4 mm); fixed +0.35 g per arm. The 0.5 mm strip at the prong tip seen in Fusion is the D-048 tip clearance (tip at 26.5 mm, boss edge at 27 mm), present before as well; freezing the tip end instead would cost 0.80 to 0.88 g per arm and was not adopted. Script `s06_arm_split_fix_v03B.py`, files `abaqus_v03B_fix/`; note `claude/stage6_arm_geometry_fix_request.md` (decision for the main chat) |
+| F-10 | Main chat (D-054 accepted, F-028) found the same tangency flaw in BODY: upper and lower fin bosses touch the fin top (z = 10) and bottom (z = -15), leaving 16 faces of 0.028 mm^2, 0.027 mm wide after the merge. Confirmed here with the acceptance test on BODY.step (238 faces, 16 failing). Correction: the earlier 'body clean' statement in Phase 1 came from checks on the separate solids, not on the merged BODY. BODY still meshed at 1.5 / 1.0 mm (0.37 % warnings) but the slivers sit on the tie secondary faces. Decision Q-54 (main chat): apply the D-054 rule to the fin bosses now (+1.21 g fixed, BODY re-imported) or only if the 0.8 mm mesh fails |
+| F-11 | CAE 2022 writes `*Distributing, weighting method=UNIFORM` with no formulation keyword; the solver takes STRUCTURAL as default and warns (11 times) that it ignores the structural rotational coupling because all coupling nodes belong to solid elements without rotational DOFs. With no rotational DOFs to couple, the coupling works as intended for solids (continuum behaviour); no change made |
+| F-12 | Reference run: first elastic mode (mode 7, 365.2 Hz) is a local mode of the GPS overhang (GPS frame and pad, 2.5 mm plate at x -50 to -33, carrying the 8 g GPS point mass), not a global frame mode. Above the D-035 minimum (290 Hz), below the goal (417 Hz). With the modes 7 to 12 band constraint it becomes the active constraint from iteration 1, and Tosca can only remove material from the 2.5 mm pad, so it may be unable to satisfy it. The debug mesh has one 2.5 mm element through the plate thickness, which tends to overestimate bending stiffness, so the converged value is likely lower. Mode 12 (689 Hz) is also local: the GPS overhang plus the front edge of the battery plate. Decision for the main chat (Q-55) |
+| F-13 | First Tosca submission (`TO_v03B_run`, 2026-10-09 16:10) stopped in the Tosca preprocessor: 'Inertia relief is not allowed for sensitivity-based topology optimization' (SMATsoToscaPrep, error 111). Tosca 2022 (3DEXPERIENCE R2022x) rejects the combination. The Tosca User's Guide for 2023, 2024 and 2025 states 'Inertia relief is supported only during optimization using 3D elements and Abaqus sensitivities', so support arrived after 2022; the 2026-10-06 journal check (D-041) relied on a list of unsupported keywords that did not show this restriction. The HPC (Abaqus 2024/2025) should accept it. Other preprocessor messages: 12 elements without volume (the 11 MASS and 1 ROTARYI point-mass elements, harmless); `GR_FROZEN` deactivated because `FIXED_ALL` has no element in the design area (non-design elements are never changed, so the restriction is redundant) |
+| F-14 | H0 on Abaqus 2025 (nemix): mass 333.698 g, modes 7 to 12 and LC1 ALLSE identical to 2022 (0.000 %), but ALLSE of LC2a / LC2b / LC3a = 1.16e9 / 2.47e8 / 2.73e6 N mm (unphysical). Cause (message file): 2025 reuses the LC1 factorisation for LC2a, LC2b and LC3a ('this step does not involve matrix decomposition', 689,265 equations against 689,301), whereas 2022 hit 'load applied to a DOF without stiffness' and re-factorised in LC2a and LC2b. With no supports the inertia-relief singularity is regularised inside the factorisation, which is not valid for the other load vectors. The solver warns in every step: 'please rerun the analysis with statically determinate boundary conditions'. Fixed by DV-18 |
+| F-15 | First H2 start at 32 cores failed in cycle 0 (Abaqus, 15 s): 'ADJOINT SENSITIVITY ANALYSIS WITH INERTIA RELIEF LOADING IS NOT SUPPORTED FOR DISTRIBUTED (MPI) PARALLEL EXECUTION' and 'adjoint sensitivity ... eigenvalue extraction ... not supported using MPI-based parallelization; run in thread mode'. At 32 cores across two sockets Abaqus chose MPI; at 16 (H0, H1) it ran threads. Fix: `mp_mode=threads` in the `.par` AddCallArgs. `abq2025 optimization` itself rejects `mp_mode` on its command line (only on the solver arguments). Applies to H3 |
+| F-16 | Assembly review of the v03-B print set: the FC bay is closed on every side and from the top; FC boss holes blind; no passage for the battery lead, GPS cable or antenna. Cause: the design space had component voids but no insertion, tool or cable paths. Leads to the v04-B redesign (Phase H item 24 to 31) |
+| F-6 | Bolt and insert holes in the prong bosses (STEP): bolt-head prong Ø3.2 through 5 mm; insert prong Ø4 x 3 mm pocket from the outer face plus Ø3.2 x 2 mm to the inner face; both bolts of a corner on the line 33 mm out along the arm diagonal, at z = -9 and z = 4 |
+
+## Phase 1: Model database and parts
+
+1. Work directory set to the model folder; `Model-1` renamed `revB_v03B`; saved as `revB_v03B.cae`. Reason: `abaqus.rpy` lands next to the model as the build record and fallback script (D-043).
+2. Import (File > Import > Part, STEP), Part Filter: Combine into single part, Merge solid regions, Retain intersecting boundaries. Part Attributes left at default (3D, deformable; CAE 2022 has no separate topology option).
+   - Combine: one part per file instead of one per solid.
+   - Merge: one body with shared nodes across every design/fixed interface (no ties, no artificial boundaries for Tosca).
+   - Retain boundaries: the internal faces survive, splitting the body into cells, so design and fixed can become separate element sets.
+3. Geometry Diagnostics, three passes per part: (a) invalid and imprecise entities: none; (b) free edges, shell faces, wire edges: none; (c) edges < 0.2 mm, faces < 0.1 mm^2: arms 2 and 6 (F-3); body not confirmed at the time (see F-10).
+4. Cut of the FC-boss holes (DV-2).
+
+Result:
+
+| Part | Cells | Volume (mm^3) |
+|---|---|---|
+| BODY | 23 | 45951.8 |
+| ARM_pp, pm, mp, mm | 6 each | 10970.42 |
+
+## Phase 2: Material, section, orientation
+
+1. Material `PETCF_SIRAYA` (D-038, D-045, A-021):
+   - Density 1.30e-9 t/mm^3 (1 g/cm^3 = 1e-6 t / 1e3 mm^3 = 1e-9 t/mm^3).
+   - Elastic, Engineering Constants: E1 = E2 = 5058, E3 = 2890 MPa; Nu12 = Nu13 = Nu23 = 0.35; G12 = 1873, G13 = G23 = 1070 MPa.
+   - Consistency: G12 = E1 / (2 (1 + Nu12)) = 1873 MPa, so the print plane is isotropic. Nu31 = Nu32 = 0.35 x 2890/5058 = 0.20. Positive definiteness: 1 - 0.1225 - 0.070 - 0.070 - 0.049 = 0.689 > 0.
+   - Effect: in-plane moduli (x, y) drive arm bending, frequencies and compliance; E3, G13 and G23 matter where load crosses the layers (fins, bosses, floor under the landing load).
+2. Section `SEC_PETCF`: solid, homogeneous, `PETCF_SIRAYA`. Assigned to all cells of all five parts (design and fixed alike; the split only matters to Tosca through the sets). Colour coding by section: no unassigned cells.
+3. Material orientation on all cells of all five parts: Definition Global (1 = x, 2 = y, 3 = z = build direction); additional rotation direction and stacking direction left at default (no effect without a rotation angle, and stacking applies only to continuum shells). Explicit so the input file carries `*Orientation` and the report can point to it; with in-plane isotropy only the 3 axis must be right.
+
+## Phase 3A: Assembly and design/fixed cell sets
+
+1. Instances of all five parts, dependent (mesh on part), auto-offset off (the STEP files already hold true positions; an offset would open the joint gaps and the ties would find nothing).
+2. Geometry cell sets on each part (they turn into element sets at meshing and survive re-meshing):
+   - BODY: `FIXED_BODY` 13 cells (plate and GPS frame border, 8 fin bosses, 4 FC bosses); `ALL_BODY` 23 cells; `DESIGN_BODY` = ALL minus FIXED, 10 cells (main design cell including the plate windows, GPS pad, 8 wedges next to the fin bosses).
+   - Each arm: `FIXED_ARM` 5 cells (4 prong bosses, motor pad); `ALL_ARM` 6 cells; `DESIGN_ARM` 1 cell.
+   - Effect: these sets decide what Tosca may remove; a fixed cell in the design set could be eaten away, a design cell in the fixed set is frozen and costs mass.
+
+Result (command-line check):
+
+| Part | Design cells | Design volume (mm^3) | Fixed cells | Fixed volume (mm^3) |
+|---|---|---|---|---|
+| BODY | 10 | 34287.1 | 13 | 11664.7 |
+| ARM_pp, pm, mp, mm | 1 each | 8307.9 | 5 each | 2662.5 |
+
+Expected BODY design volume 34286.9 (35304.8 - 792.7 overlap - 225.2 holes); all values match.
+
+## Phase 3B: Face partitions and surfaces
+
+1. Datum planes on BODY (offset from principal planes): x = +-20, y = +-20, x = -32.
+2. Face partitions with these planes: floor bottom face to a 40 x 40 square (DV-5); top face z = 24 split at x = -32 (DV-6).
+3. Surfaces on the parts (geometry type; carried to the instances as `BODY-1.S_...`, `ARM_xx-1.S_...`). Left/right convention: standing at the frame centre looking out along the arm, z up, L is on the left; numerically L where -sy x + sx y > 0 for a corner with signs (sx, sy).
+4. Load and mass entry surfaces are on fixed material only (frozen load regions, handover): coupling onto design material would push load into elements Tosca may soften to void and would bias the optimiser to keep them. The plate windows and the GPS pad are therefore not part of the seats; their structural value is left to Tosca.
+
+Result (command-line check: face count, area, corner/side by face position):
+
+| Surface | Faces | Area (mm^2) | Check |
+|---|---|---|---|
+| `S_BATT_SEAT` | 1 | 1056.0 | plate frame and strap band, x > -32 |
+| `S_GPS_SEAT` | 1 | 164.0 | GPS frame ring, x < -32 |
+| `S_FC_SEAT` | 4 | 80.9 | FC boss rings at z = -6 |
+| `S_FLOOR` | 5 | 1600.0 | square plus 4 FC boss bottom disks; 0.03525 MPa x 1600 = 56.4 N |
+| `S_FIN_BOSS_xx_L/_R` (8) | 2 each | 123.0 each | corner and side verified by position |
+| `S_MOT_SEAT_xx` (4) | 1 each | 214.1 each | motor pad top, z = 0 |
+| `S_PRONG_BOSS_xx_L/_R` (8) | 3 each | 204.7 each | offsets +5.15 (L), -5.15 (R) from the fin mid-plane |
+| `S_JNT_xx` (4) | 4 each | 400.4 each | offsets +-10.15 (outer faces of both prongs) |
+
+## Phase 4: Reference points, couplings, point masses
+
+1. 11 reference points in the assembly at the component CGs from `reference_points.csv`, renamed `RP_BATT`, `RP_FC`, `RP_GPS`, `RP_MOT_xx`, `RP_JNT_xx`; one geometry set per RP (`SET_RP_...`) for couplings, inertias, loads, outputs and Tosca.
+2. 11 couplings `CP_...`: distributing, continuum formulation (the formulation intended for coupling nodes on solid elements; structural is intended for shell or beam nodes with rotational DOFs), all six DOFs, uniform weighting, influence radius to the outermost point. Distributing, not kinematic: a kinematic coupling would make each seat patch rigid and add stiffness the real frame does not have (higher frequencies, lower compliance). All six DOFs so the motor reaction torque (CM3) and the battery rotary inertia have a path into the frame.
+3. 11 point masses `PM_...`, total 205.4 g. Rotary inertia only on the battery (rigid 59 x 30 x 32 box, 100 g): I11 = 0.016033, I22 = 0.037542, I33 = 0.036508 t mm^2, from I = m (b^2 + c^2)/12. Other components as plain point masses (A-024): their own rotary inertia is small next to the inertia from their distance to the rotation axes.
+4. Assumption noted: the motor stator base is stiff aluminium screwed to the pad, so the real pad is locally stiffer than the distributing coupling lets it be; the model is conservative there (slightly lower arm-tip stiffness and frequencies).
+
+Result (command-line check): RP coordinates as in the CSV; all couplings DISTRIBUTING with six DOFs on the intended surfaces; point masses 100, 27.2, 8, 4 x 13.75, 4 x 3.8 g = 205.4 g; rotary inertia on `PM_BATT` only.
+
+## Concept notes
+
+Short revision of basics that came up during the build.
+
+### Mass moment of inertia and area moment of inertia
+
+Two different quantities share the name "moment of inertia" and both have a "/12" box formula and a parallel-axis rule, which makes them easy to confuse. The units tell them apart.
+
+| | Mass moment of inertia | Area moment of inertia |
+|---|---|---|
+| Other names | rotational inertia, rotary inertia, moment of inertia of mass, polar mass moment (about the spin axis) | second moment of area, second area moment, "moment of inertia" in beam theory |
+| Symbol here | I11, I22, I33 (Abaqus point inertia), J for a combined value | I (bending), J (polar, torsion) |
+| Definition | I = integral of r^2 dm over the body | I = integral of y^2 dA over the cross-section |
+| Units | mass x length^2 (kg m^2; t mm^2 in this model) | length^4 (m^4; mm^4) |
+| Physical meaning | how hard it is to spin a body up or down about an axis | how stiff and strong a beam section is in bending |
+| Governing law | M = I alpha (torque = inertia x angular acceleration); kinetic energy 1/2 I omega^2 | sigma = M y / I; curvature = M / (E I); beam deflection proportional to 1 / (E I) |
+| Rectangular formula | solid box, mass m, edges a, b, c; about the axis along a: I = m (b^2 + c^2) / 12 (the two edges perpendicular to the axis, each squared) | rectangle width b, height h, bending about the width axis: I = b h^3 / 12 (one dimension cubed) |
+| Parallel-axis rule | I_O = I_G + m d^2 | I = I_c + A d^2 |
+| Radius of gyration | k = sqrt(I / m) | k = sqrt(I / A) |
+| Where it appears in this project | point mass/inertia of the battery on `RP_BATT`; frequencies of rocking modes (omega = sqrt(k / J)) | arm and fin cross-sections: bending stiffness E I and stress; what Tosca effectively shapes when it places material far from the neutral axis |
+
+Torsion relatives: polar moment of area J = integral of r^2 dA (exact for circular shafts, tau = T r / J); for non-circular sections the torsion constant replaces it.
+
+### Battery example (Phase 4)
+
+- Battery 100 g, box 59 x 30 x 32 mm, CG 16 mm above the plate.
+- Own rotary inertia about y: I22 = m (59^2 + 32^2) / 12 = 0.0375 t mm^2.
+- Positional part when the plate tilts: the CG travels an arc s = d theta (d = 16 mm), so its inertia contribution is m d^2 = 1e-4 x 16^2 = 0.0256 t mm^2.
+- Total resistance to pitching about the seat: J = I22 + m d^2 = 0.0631 t mm^2. A plain point mass gives only 0.0256 (41 %).
+- For a mode dominated by that rocking, omega = sqrt(k / J), so omitting I22 would overstate the frequency by up to sqrt(0.0631 / 0.0256) = 1.57 (unsafe side for the 417 Hz constraint).
+- Other components: own rotary inertia small next to m d^2 about the axes they move around (motor about 2 %), so plain point masses (A-024).
+
+## Phase 5: Joint ties
+
+1. 8 ties `TIE_xx_L/_R` (Interaction > Constraint > Tie). Abaqus 2022 names: main (formerly master) = `ARM_xx-1.S_PRONG_BOSS_xx_s`, secondary (formerly slave) = `BODY-1.S_FIN_BOSS_xx_s` (DV-8).
+2. Settings: surface-to-surface discretization; position tolerance specified 0.3 mm (gap 0.15 mm; the default tolerance scales with element size and could miss the gap); adjust secondary initial position off (geometry kept as designed, the tie bridges the gap); tie rotational DOFs off (solids).
+3. Physical meaning: bolt preload clamps the bosses without slip or separation (D-047, D-028 fallback); joint modelled fully stiff over the flat-on-flat overlap; bolt bending and boss bearing compliance not modelled.
+
+Result (command-line check, Python attributes `main` / `secondary` in 2022): all 8 ties pair the same corner and side, SURFACE_TO_SURFACE, SPECIFIED 0.3, adjust OFF, tie rotations OFF.
+
+## Phase 6A: Steps, inertia relief, outputs
+
+1. Steps, all linear perturbation, each solved from the unloaded base state: `FREQ` (Lanczos, 20 eigenvalues, no shift; free-free so modes 1 to 6 are rigid-body at about 0 Hz and the 417 Hz constraint applies to modes 7 to 12), `LC1`, `LC2a`, `LC2b`, `LC3a` (static).
+2. Inertia relief in each static step (`IR_LC1`, `IR_LC2a`, `IR_LC2b`, `IR_LC3a`), all six free directions, global CSYS. CAE 2022 offers inertia relief in static linear perturbation steps, so the sheet's main route is used; the Static, General fallback was not needed. No gravity (cancelled exactly by inertia relief).
+3. Field output: `F-Output-1` in FREQ with U only (a frequency request does not propagate into static perturbation steps); `F-Output-2` created in LC1 and propagated: U, S, E, ENER, CF. LE dropped (identical to E in a linear analysis), RF dropped (no supports, all zero). Output variables cost .odb size and write time, not solve time.
+4. History output: `H-ENERGY` from LC1, whole model, all energy totals (ALLEN, includes ALLSE, ALLWK, ETOTAL), every increment. C_i,0 = 2 x ALLSE; in a linear step ALLWK = 1/2 F u = ALLSE, a consistency check (corrected from '2 x ALLSE' in Phase 8B).
+
+Result (command-line check): Initial, FREQ (FrequencyStep), LC1, LC2a, LC2b, LC3a (StaticLinearPerturbationStep); four InertiaRelief loads.
+
+## Phase 6B: Loads
+
+1. RP group sets: `SET_MOT_ALL` (4 motors), `SET_MOT_DIAG_A` (pp, mm), `SET_MOT_DIAG_B` (pm, mp), `SET_MOT_FRONT` (pp, pm). A concentrated force or moment on a set acts in full on each point.
+2. Loads, each created in its own linear perturbation step (active there only):
+
+| Step | Load | Region | Value |
+|---|---|---|---|
+| LC1 | `LC1_F` | `SET_MOT_ALL` | CF3 = 5.04 N each |
+| LC1 | `LC1_M_A` / `LC1_M_B` | `SET_MOT_DIAG_A` / `_B` | CM3 = +40 / -40 N mm |
+| LC2a | `LC2a_F`, `LC2a_M` | `SET_MOT_DIAG_A` | CF3 = 5.04 N, CM3 = +40 N mm each |
+| LC2b | `LC2b_F` | `SET_MOT_FRONT` | CF3 = 5.04 N each |
+| LC2b | `LC2b_M_pp` / `LC2b_M_pm` | single RPs | CM3 = +40 / -40 N mm |
+| LC3a | `LC3a_P` | `BODY-1.S_FLOOR` | 0.03525 MPa (x 1600 mm^2 = 56.4 N, positive into the surface = upward on the floor bottom) |
+
+3. Net loads and current load factors (solid design space, 0.3222 kg): LC1 20.16 N up (6.4 g); LC2a 10.08 N up + 80 N mm yaw; LC2b 10.08 N up + pitching moment (front pair 49.5 mm ahead of the centre), zero yaw; LC3a 56.4 N up (17.8 g; rises towards the N-04 23 g as Tosca removes mass towards 250 g). CM3 sign convention right-hand about +z; spin directions assumed, only the pairing matters (sheet).
+
+Result (command-line check, values read from each step's load state): each static step holds only its own inertia relief and loads; values as tabulated.
+
+Note on the API: load magnitudes and the active/inactive status live in the step's `loadStates` (status CREATED / PROPAGATED / MODIFIED = active), not on the load object.
+
+## Phase 7: Mesh (BODY done, arms pending)
+
+1. Element type C3D10 (quadratic tetrahedron, Standard) on all cells of all parts; mesh controls tet, free.
+2. Seeds: arms global 1.0 mm; BODY global 1.5 mm with the 80 edges of the 16 fin boss tie faces seeded at 1.0 mm (`seedEdgeBySize`, constraint FINER), so both sides of each tie have about 1.0 mm elements.
+3. BODY mesh: 140,463 C3D10, 212,451 nodes; `DESIGN_BODY` 95,248 + `FIXED_BODY` 45,215 = total. Verify: 0 errors, 515 warnings (0.37 %, under the sheet's 1 %), clustered at the fin bosses, the FC boss bottoms and the plate window edges (seed transitions and small features). Mid-edge nodes left unprojected in places (curved faces; harmless). The element count is above the 82k estimate because of the 1.0 mm tie-face refinement and curvature control around holes and bosses.
+4. Arms: see F-8; awaiting regenerated ARM_xx.step (`claude/stage6_arm_geometry_fix_request.md`). Scope of the request limited to the arms so the meshed BODY stays valid.
+
+## Phase 7R: Re-import after D-054 / D-055
+
+Inputs: `stage6_abaqus_v03B.zip` from the main chat (BODY.step with D-055 fin bosses and no FC-boss cylinders in the design solid; ARM_xx.step identical to `abaqus_v03B_fix`; `reference_points.csv` unchanged). Working copy `revB_v03B_D055.cae`; `revB_v03B.cae` kept as it was.
+
+1. Alignment check of the zip against this log: D-054 and D-055 applied; DV-2 cut no longer needed; mass 322.2 g (DV-3) now in the sheet; partitions (DV-5, DV-6) and tie roles (DV-8) now in the sheet. Stale: `stage6_abaqus_handover.md` still quotes about 323.5 g and sheet section 8 about 324 g; 322.2 g applies. Sheet section 9 now sets the laptop debug mesh to 2.5 mm global with 1.5 mm on the arms and joint (the 1.5 / 1.0 mm mesh of Phase 7 is the sheet's 'intermediate' level, about 0.45 M elements, likely beyond 16 GB); R4 follows the new guidance.
+2. Acceptance test on the merged solids (no face < 0.5 mm^2, none narrower than 0.3 mm): BODY 210 faces, smallest 8.04 mm^2, narrowest 0.80 mm; arms 88 faces each, smallest 2.50 mm^2, narrowest 0.40 mm. All pass.
+3. Expected values for the rebuild, computed from the STEP files:
+
+| Item | BODY | Each arm |
+|---|---|---|
+| Cells | 15 (design 2, fixed 13) | 6 (design 1, fixed 5) |
+| Design volume (mm^3) | 33353.9 (main cell 32863.9 + GPS pad 490.0) | 8036.9 |
+| Fixed volume (mm^3) | 12597.9 (plate and GPS frame 3050.0, 8 fin bosses 1094.4, 4 FC bosses 198.2) | 2933.5 |
+
+| Surface | Faces | Area (mm^2) | Change from Phase 3B |
+|---|---|---|---|
+| `S_BATT_SEAT` | 1 | 1056.0 | none |
+| `S_GPS_SEAT` | 1 | 164.0 | none |
+| `S_FC_SEAT` | 4 | 80.92 | none |
+| `S_FLOOR` | 5 | 1600.0 | none (floor piece 1486.9 + 4 x 28.27 disks); the D-055 fin boss bottoms lie on z = -15 but outside the square |
+| `S_FIN_BOSS_xx_L/_R` | 2 | 138.50 (2 x 69.25) | was 123.0; boss outline extended to z = 10 and z = -15 |
+| `S_PRONG_BOSS_xx_L/_R` | 2 | 134.58 (lower 61.93 + upper 72.65) | was 3 faces, 204.7; bolt-axis imprint gone (F-7), the curved slot-end walls are not in the surface |
+| `S_JNT_xx` | 4 | 431.31 | was 400.4; through-fork bosses |
+| `S_MOT_SEAT_xx` | 1 | 214.15 | none |
+
+4. Tie coverage (DV-8 roles kept: main prong, secondary fin): upper fin face fully opposite prong material; lower fin face 10.3 mm^2 of 69.25 without prong opposite (bottom corners and the strip below z = -14.5, where the arm ends). Expected in Phase 8: unconstrained secondary nodes only at the bottom of the 8 lower fin boss faces.
+5. Selection rules used by the scripts (same as by hand): design cells identified by volume; fixed = all others. Seats on external faces of fixed cells only. Corner frame s = (sx x + sy y)/sqrt 2 along the arm, t = (-sy x + sx y)/sqrt 2 across it; L where t > 0. Fin faces at |t| = 5, prong inner faces at |t| = 5.15, joint outer faces at |t| = 10.15, all with s > 10 and normal along t. Floor partition planes x = +-20, y = +-20 applied only to the face that crosses each plane; top split at x = -32.
+6. Scripts: `R1_inspect.py` (read only), `R2_parts.py` (delete old constraints, `LC3a_P`, instances and parts; import with combine, merge and retain boundaries; section, orientation, cell sets, partitions, surfaces, instances; stops on any mismatch), `R3_connect.py` (11 couplings, 8 ties, `LC3a_P`), `R4_mesh.py` (C3D10; BODY 2.5 mm with the 16 fin-boss tie faces at 1.5 mm, arms 1.5 mm; verify).
+
+Run notes (CAE 2022 API): the Coupling object has no continuum/structural attribute and rejects `alpha` as a creation keyword, so R3 sets only type, weighting, adjust and DOFs (same values as the Phase 4 couplings, read back by R1); the formulation is the Abaqus default, to be confirmed in the .inp in Phase 8. The inertia relief loads have no region (whole model) and survived the instance replacement; RP loads, point masses, steps and outputs untouched.
+
+Result:
+
+- R2: every cell count, volume, surface face count and area as expected (largest deviation 0.07 mm^3, 0.01 mm^2).
+- R3: 11 couplings DISTRIBUTING, UNIFORM, six DOF on the intended seats; 8 ties SPECIFIED 0.3, adjust OFF, rotations OFF; `LC3a_P` 0.03525 MPa on `BODY-1.S_FLOOR`, active in LC3a only.
+- R4 (sheet section 9 laptop debug mesh; BODY 2.5 mm with the 96 fin-boss tie-face edges at 1.5 mm, arms 1.5 mm):
+
+| Part | Elements | Nodes | Design | Fixed | Errors | Warnings |
+|---|---|---|---|---|---|---|
+| BODY | 39,246 | 62,890 | 23,716 | 15,530 | 0 | 39 (0.10 %) |
+| ARM_pp | 26,542 | 41,007 | 18,513 | 8,029 | 0 | 10 (0.04 %) |
+| ARM_pm | 26,638 | 41,153 | 18,607 | 8,031 | 0 | 13 (0.05 %) |
+| ARM_mp | 26,778 | 41,344 | 18,770 | 8,008 | 0 | 5 (0.02 %) |
+| ARM_mm | 26,546 | 41,018 | 18,590 | 7,956 | 0 | 7 (0.03 %) |
+| Total | 145,750 | 227,412 | | | 0 | 74 (0.05 %) |
+
+Mid-edge nodes left unprojected in places (curved faces, harmless). All parts mesh at once, including ARM_mp, which failed on the old geometry at any seed above 0.55 mm: the tangency fix (D-054, D-055) resolved F-8 and F-10. About 0.68 M DOF.
+
+## Phase 8A: Mass, data check, tie report
+
+1. Mass (Query > Mass properties, all instances): 3.22e-4 t = 322.1 g (expected 322.2 g; frame volume 89,802 mm^3 x 1.30e-9 = 116.7 g + point masses 205.4 g). The mesh volume is 31 mm^3 (0.03 %) below the geometry (tets on curved faces). Centre of mass (-1.14, 0.02, 14.5) mm: slightly aft (GPS at x = -40) and high (battery). Inertia about the CG: Ixx 0.360, Iyy 0.398, Izz 0.513 t mm^2.
+2. Job `revB_v03B_ref`, data check: no errors. Warnings: coupling formulation (F-11); 74 distorted elements = the 74 verify warnings, none with tie-adjusted nodes, worst on BODY (quality 0.004, min angle 3.8 deg), accepted for the debug mesh; standard inertia relief notes; E and S not available on MASS / ROTARYI elements; CF removed in LC3a (pressure only).
+3. Ties: 172 untied secondary nodes (node set `WarnNodeMissMainIntersect`), located with `R5_tiecheck.py`: 21 or 22 per tie, all on the lower fin boss faces, z -15 to -11.25, s 27 to 34, none on an upper boss face and none elsewhere. This is the 10.3 mm^2 per face without prong opposite (Phase 7R item 4). One node per face lies just inside the nominal prong disk outline (same in all 8, so a geometric edge effect at the faceted boss edge, not a broken tie). DV-8 check passed: every joint is connected over the flat-on-flat overlap.
+
+## Phase 8B: Reference run
+
+1. Job `revB_v03B_ref`, Ryzen 5 5600H, 5 threads: completed, 0 errors, wallclock 242 s (FREQ 94 s, each static step about 15 s). 673,860 equations.
+2. FREQ (Lanczos, 20 modes, one run): modes 1 to 6 eigenvalues 7e-6 to 6.2e-5 (rad/s)^2, i.e. below 0.002 Hz: clean rigid-body modes, so no part is loose.
+
+| Mode | f (Hz) | Shape (screenshots) |
+|---|---|---|
+| 7 | 365.2 | local: GPS overhang plate bending (F-12) |
+| 8 | 487.6 | global: arms bending out of plane, tips together (umbrella type) |
+| 9 | 521.0 | global: arms, diagonal pair (saddle type) |
+| 10 | 523.9 | global: the other member of the near-equal pair (journal part 2, Step 5) |
+| 11 | 566.6 | global: arms |
+| 12 | 689.0 | local: GPS overhang and front edge of the battery plate |
+| 13 to 20 | 728 to 1575 | |
+
+3. Static steps: the solver confirms 'checking sufficiency of boundary conditions for inertia relief' and, with no supports, exactly 6 numerical singularity warnings per decomposition (BODY nodes 150, 79, 70), the number Abaqus announces for the 6 rigid-body directions; no zero pivots, no other singularities. LC2a and LC2b: note 'load applied to a DOF without stiffness, new decomposition' (same 6 DOFs), resolved by re-decomposition. LC3a reused the LC2b factorisation.
+4. Energies and displacements (`R6_results.py`, end of each step):
+
+| Step | ALLSE (N mm) | C_i,0 = 2 ALLSE (N mm) | Cap 2 C_i,0 (N mm, A-020) | ALLWK (N mm) | Max U (mm), location |
+|---|---|---|---|---|---|
+| LC1 | 0.09490 | 0.1898 | 0.3796 | 0.09490 | 0.0240, BODY |
+| LC2a | 0.07181 | 0.1436 | 0.2873 | 0.07181 | 0.0214, ARM_mm |
+| LC2b | 0.04881 | 0.0976 | 0.1952 | 0.04881 | 0.0163, ARM_pm |
+| LC3a | 0.14906 | 0.2981 | 0.5962 | 0.14906 | 0.0568, BODY |
+
+ALLWK = ALLSE in every step (linear, energy balanced). Displacements are hundredths of a millimetre, no rigid drift (inertia relief removed the rigid-body part), consistent with intact ties and couplings.
+5. Output files for the report: mode shape screenshots of modes 7 to 12 (FREQ). Summary for the main chat: `claude/stage6_phase8_reference_results.md`.
+
+## Phase T1: D-056 BODY and identical arms (handover 2, step 1)
+
+Inputs read: `claude/stage6_handover_2_tosca.md`, `claude/stage6_model_setup_part2_tosca.md`, `claude/stage6_v03B_export_note.md`; new `stage6_abaqus_v03B.zip` (BODY.step with the flared GPS keel, D-056; arms unchanged).
+
+1. Checks here on the new BODY.step: face test pass (223 faces, smallest 8.04 mm^2, narrowest 0.80 mm). Design is now one solid of 42,206.2 mm^3: the keel and the GPS pad merge with the main design region, so `DESIGN_BODY` has 1 cell (was 2). Fixed 13 solids, 12,597.9 mm^3, unchanged. All BODY seat and tie faces unchanged (same areas and positions as Phase 7R), so the surface rules of R2 apply as they are. Arm files: same volumes and faces as the arm part already in the model, so the existing arm part is kept.
+2. Expected frame volume 54,804.1 + 4 x 10,970.4 = 98,685.7 mm^3 = 128.29 g; with 205.4 g of point masses 333.7 g. Note for the main chat: the export note's mass budget line reads '324.7 g with the D-056 keel'; 333.7 g is correct (the handover and the note's revision section agree).
+3. Scripts (in `stage6_tosca_step1.zip`): `R7_body_arms.py` (deletes couplings, ties, `LC3a_P`, all instances, BODY and ARM_pm/mp/mm; renames ARM_pp to ARM, DV-10; imports BODY; section, orientation, cell sets by fixed volume, partitions, surfaces; instances BODY-1 and ARM_xx-1 rotated 0 / -90 / +90 / 180 deg about z through the origin; checks every arm prong face at t = +-5.15 and fin face at t = +-5 in its corner frame, i.e. gap 0.150 mm, and each motor seat in its corner; assembly sets `DESIGN_ALL` (5 cells) and `FIXED_ALL` (33 cells) for Tosca), `R8_connect.py` (couplings, ties, `LC3a_P` on the new names), `R9_mesh.py` (D-058 target: BODY 2.0 mm, tie faces 1.2 mm, arm part 1.2 mm; fallback 2.5 / 1.5 / 1.5).
+
+4. Result (all checks OK):
+   - ARM part: 6 cells; fixed 2933.5, design 8037.0 mm^3; `S_PRONG_BOSS_L/_R` 2 faces 134.59 mm^2, `S_JNT` 4 faces 431.30, `S_MOT_SEAT` 1 face 214.15.
+   - BODY: fixed 13 cells 12,597.9 mm^3; design 1 cell 42,206.1 mm^3 (pass criterion 42,206.2); seats and fin tie faces as in Phase 7R.
+   - Arm positions: in all four corners prong faces at t = +-5.150 and fin faces at t = +-5.000, gap 0.150 mm (pass criterion); motor seats in their own corners (pp (55.9, 54.8), pm (54.8, -55.9), mp (-54.8, 55.9), mm (-55.9, -54.8)), confirming the -90 / +90 / 180 deg rotations map pp onto pm / mp / mm.
+   - `DESIGN_ALL` 5 cells, `FIXED_ALL` 33 cells.
+   - R8: 11 couplings DISTRIBUTING, UNIFORM, six DOF; 8 ties SPECIFIED 0.3, adjust OFF; `LC3a_P` 0.03525 MPa in LC3a only.
+   - R9 (D-058 target mesh, BODY 2.0 mm with 96 tie-face edges at 1.2 mm, arm 1.2 mm): BODY 75,215 C3D10 / 116,794 nodes (design 48,793, fixed 26,422), 0 errors, 53 warnings (0.07 %); ARM 49,304 / 74,001 nodes (design 35,809, fixed 13,495), 0 errors, 1 warning, shared by the four instances. Model: 272,431 elements, about 412,800 nodes, about 1.24 M DOF (Phase 8: 0.67 M).
+
+## Phase T2: Mesh for the first Tosca run (handover 2, step 2)
+
+1. Data check of job `revB_v03B_D056_ref` on the D-058 target mesh (BODY 2.0 / tie faces 1.2 / arm 1.2 mm, 272,431 C3D10, about 1.24 M DOF), 5 threads.
+2. Memory estimate (.dat): minimum memory required 2,002 MB; **memory to minimize I/O 20,768 MB** (5.44e12 floating point operations per iteration). Above the 10 GB limit of the sheet (16 GB laptop), so the run would page to disk.
+3. Decision (sheet section 1, D-058): fallback mesh BODY 2.5 mm, tie faces 1.5 mm, arm 1.5 mm, the Phase 8 sizes (Phase 8 at these sizes: FREQ 94 s, each static step about 15 s, no memory problem).
+4. Other data check results on the target mesh, kept for comparison: total mass 3.3369e-4 t = 333.69 g (expected 333.7 g), centre of mass (-2.25, 0.02, 14.32) mm (moved aft from -1.14 by the keel); 264 untied tie secondary nodes (172 on the Phase 8 mesh; finer mesh, same region expected, located again on the fallback mesh); 57 distorted elements.
+5. Fallback mesh (R9 with 2.5 / 1.5 / 1.5): 149,305 elements, 232,581 nodes. Data check: memory to minimize I/O **10,524 MB** (minimum 1,094 MB; 1.87e12 operations per iteration), at the 10 GB limit. Kept: it is the coarsest mesh the sheet allows, and the Phase 8 model of nearly the same size (0.67 M DOF, 10 to 11 GB class) ran in 242 s on this laptop with no paging. RAM to be watched during the reference run. Mass 333.70 g, centre of mass (-2.25, 0.02, 14.32) mm; 172 untied tie secondary nodes (same count as Phase 8, same mesh sizes at the joint); 83 distorted elements.
+6. Abaqus counts total nodes as 232,581 (BODY about 62,900 + 4 x about 41,000 for the arm, plus 11 reference points).
+
+## Phase T3: Reference job on the Tosca mesh (handover 2, step 3)
+
+Job `revB_v03B_D056_ref`, fallback mesh 2.5 / 1.5 / 1.5 (149,305 C3D10, 689,301 equations), 5 threads: completed, 0 errors, wallclock 236 s (FREQ 93 s, static steps about 14 s each). RAM near full throughout with 4 or 5 short disk peaks; run time equal to Phase 8, so paging cost is negligible.
+
+| Check | Result | Pass criterion |
+|---|---|---|
+| Mass | 333.70 g (data check) | 333.7 g +-0.1 %: pass |
+| Rigid-body modes 1 to 6 | 0.0006 to 0.0014 Hz | < 1 Hz: pass |
+| GPS mode | not among modes 7 to 12 (the lowest elastic mode is now global, 489.9 Hz) | well above 417 Hz: pass |
+| Numerical singularities | 3 per factorisation (node BODY-1.51, DOF 1 to 3), no zero pivots | at most 6 announced by Abaqus: pass |
+| Ties | 172 untied secondary nodes, 21 / 22 per lower fin face, z -15 to -11.25, none elsewhere (R5) | as Phase 8A: pass |
+
+Modes (screenshots):
+
+| Mode | f (Hz) | Shape |
+|---|---|---|
+| 7 | 489.9 | global: umbrella, all four tips together |
+| 8 | 521.5 | global: saddle |
+| 9 | 524.3 | global: saddle, near-equal pair with mode 8 |
+| 10 | 573.6 | global: arms (tips moving in alternating pairs) |
+| 11 | 681.8 | **local in the band**: front edge of the battery plate (x = +32) bending, arms moving little; above 417 Hz in the solid design space, but the plate edge is fixed frame material at its envelope, so this mode drops if Tosca removes the design material under it |
+| 12 | 749.4 | mixed: two arms (pp, mp) with the left edge of the battery plate |
+| 13 to 20 | 756.9 to 1836.3 | |
+
+Compared with Phase 8 (D-055 BODY): the GPS mode (365.2 Hz) is gone from the band; the global modes moved up slightly (487.6 to 489.9, 521.0 to 521.5, 523.9 to 524.3, 566.6 to 573.6 Hz); the plate-edge mode moved from 689.0 to 681.8 Hz (more mass at the rear).
+
+4. Static steps (R6):
+
+| Step | ALLSE_i,0 (N mm) | Cap ALLSE_i <= 2 ALLSE_i,0 (N mm) | Phase 8 ALLSE (N mm) | Change | Max U (mm), location |
+|---|---|---|---|---|---|
+| LC1 | 0.090893 | 0.18179 | 0.09490 | -4.2 % | 0.0157, ARM_mm |
+| LC2a | 0.069877 | 0.13975 | 0.07181 | -2.7 % | 0.0203, ARM_mm |
+| LC2b | 0.045459 | 0.09092 | 0.04881 | -6.9 % | 0.0156, ARM_pm |
+| LC3a | 0.10466 | 0.20932 | 0.14906 | -29.8 % | 0.0101, ARM_mm |
+
+ALLWK = ALLSE in every step. LC3a fell most: in Phase 8 its largest displacement was on BODY (0.057 mm, the battery plate and GPS overhang loaded by the inertia of the battery and GPS at 17.8 g); the keel now supports the rear of the plate, so that bending energy is gone and the largest displacement moves to an arm tip (0.010 mm). The other cases are dominated by the arms and change little.
+5. Caps (handover step 5): the values above are the reference ALLSE_i,0 on the Tosca mesh; to be used in the Tosca constraints after T4.
+
+## Phase T4: Inertia relief smoke test (handover 2, step 4; D-041, DV-11)
+
+1. Copy model `revB_v03B_IR321`: steps FREQ, LC2a, LC2b, LC3a deleted; RF added to `F-Output-2`; `IR_LC1` kept; 3-2-1 supports created in step LC1 (linear perturbation BCs; accepted by CAE 2022): `BC_A` on `SET_RP_JNT_pp` U1 U2 U3, `BC_B` on `SET_RP_JNT_pm` U1 U3, `BC_C` on `SET_RP_JNT_mp` U3.
+2. Result (`R10_ir321.py`): ALLSE 0.0908934 N mm against 0.090893 N mm in the free run (difference 0.000 %); reactions at the three supports below 2.4e-11 N, sum (2.2e-11, -7.3e-12, 1.7e-11) N against a net applied thrust of 20.16 N. The `.msg` no longer shows the 'no boundary conditions for inertia relief' warning or any numerical singularity (0 analysis warnings).
+3. Conclusion: the inertia relief loads balance the applied loads exactly (reactions zero to solver precision), and the free inertia relief solution with rigid-body post-processing gives the same strain energy as the statically determinate supported one. D-041 confirmed in Abaqus; the in-Tosca part follows in cycles 1 and 2 of the first run.
+4. Note: boundary conditions created inside a linear perturbation step worked; Miguel's earlier failures with BCs outside the Initial step were probably in Static, General steps.
+
+## Phase T6: Tosca task (handover 2, step 6)
+
+1. Assembly set `DESIGN_ARMS` (union of the four instance `DESIGN_ARM` sets) for the rotational symmetry restriction.
+2. Task `TO_v03B` on model `revB_v03B`, region `DESIGN_ALL`. Basic: freeze load regions on, freeze boundary condition regions on. Density: Normal; initial density Specify 1 (DV-13); minimum 0.001 and maximum 1 (defaults); maximum change per cycle 0.25. Advanced: general optimization (sensitivity-based); delete soft elements off; material interpolation 'Optimization product default' (lets Tosca switch to PEDE for the frequency step, C-3; not forced to SIMP); penalty 3; use Abaqus sensitivities on (required for inertia relief, C-2); group evaluation off.
+3. Design responses (11, single-term): `R_VOL` volume, Sum, region `DESIGN_ALL`; `R_SE_LC1` / `LC2a` / `LC2b` / `LC3a` strain energy, whole model, Sum, step specified; `R_FREQ_7` to `R_FREQ_12` 'Eigenfrequency from modal analysis', whole model, step FREQ, Modes = Range with lower = upper = mode number (one response per mode, as the Tosca documentation does with one DRESP per mode). Rejected: one response over the range 7 to 12 with 'Sum of values' (would constrain the sum of six frequencies, about 3,500 Hz, so a 417 Hz bound would be meaningless); the Kreisselmeier-Steinhauser eigenfrequency (an aggregate of the lowest modes meant for maximising the first frequency, not for a per-mode band).
+
+## Phase T7: Local Tosca chain test without inertia relief (DV-16)
+
+1. Work directory: after the CAE crash the session restarted in `C:\temp`, so the run was written there; folders `TO_v03B_noIR` (completed run) and `TO_v03B_noIR_1` (earlier attempt during the crashes) and the files `TO_v03B_noIR.par / .log / .ipm / .com`, `TO_v03B_noIR-Job.inp` moved to the project folder; the CAE session journal copied as `abaqus_temp_session.rpy`. The first scripted process `TO_v03B_noIR` (R11, whose CPU setting failed) crashed CAE whenever it was opened; deleted from the command line and recreated by hand.
+2. `.par` check (what Tosca received): DYN_FREQ responses on step 1 modes 7 to 12, one each; strain energy on steps 2 to 5; volume on `DESIGN_ALL_ELEM`, objective MIN; GE 417 absolute; strain energy LE 2.0 relative; LINK_TOPO ROTATION_SYM, AXIS_3, 90 deg on `DESIGN_ARMS_ELEM`; DENSITY_INITIAL 1, lower 0.001, move 0.25, penalty 3; AUTO_FROZEN BOTH; ITER_MAX 3; cpus 5. As set up.
+3. Tosca preprocessor: 101,040 design elements; 636 elements auto-frozen (loaded or supported: the floor layer under `S_FLOOR` and elements at the supported and coupled nodes); automatic checkerboard filter radius 2.42 mm; 12 point-mass elements without volume (warning, harmless).
+4. Run: cycles 0 to 3 completed, about 4 min of Abaqus and 10 s of Tosca per cycle, 17 min in total (16:43 to 17:00). Application finished successfully.
+
+| Cycle | Volume fraction | R_VOL (mm^3) | f7 | f8 | f9 | f10 | f11 | f12 (Hz) | SE LC1 | SE LC2a | SE LC2b | SE LC3a (N mm) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | 1.000 | 74,740 | 489.9 | 521.5 | 524.3 | 573.6 | 681.8 | 749.4 | 0.1330 | 0.0963 | 0.0647 | 0.1675 |
+| 1 | 0.942 | 70,469 | 460.0 | 488.9 | 492.1 | 540.1 | 637.7 | 707.9 | 0.1485 | 0.1092 | 0.0722 | 0.1949 |
+| 2 | 0.875 | 65,479 | 437.2 | 461.8 | 465.6 | 504.9 | 588.0 | 663.5 | 0.1668 | 0.1253 | 0.0809 | 0.2311 |
+| 3 | 0.809 | 60,598 | 428.2 | 445.7 | 453.0 | 475.9 | 541.0 | 624.9 | 0.1832 | 0.1412 | 0.0885 | 0.2671 |
+
+Caps (2 x cycle 0): 0.2659 / 0.1927 / 0.1293 / 0.3349 N mm. After 3 cycles: strain energies at 1.38 / 1.47 / 1.37 / 1.60 times cycle 0, all within the caps; f7 at 428 Hz, 11 Hz above the bound, so the frequency band becomes active in the next cycle or two. Volume falls about 6.5 % per cycle.
+5. Chain checks: Abaqus sensitivities read for all five steps; frequencies in Hz (C-4); solid start (C-6); rotational symmetry accepted (C-1); strain energies without inertia relief are higher than with it (LC1 0.1330 against 0.0909: the 20 N net thrust is reacted at the supports), as expected for this test only. R_VOL at cycle 0 (74,740 mm^3, frozen elements excluded) is 0.5 % above the geometric design volume (74,353.8 mm^3); probably Tosca's element volume computation on the curved boundaries; to be checked against the HPC run.
+6. Results (`TOSCA_POST/TO_v03B_noIR-Job_post.odb`, combined over all cycles, all steps): density `MAT_PROP_NORMALIZED` at cycle 3 between 0.637 and 1.000; the four arm fields show the same pattern rotated by 90 deg (top view): rotational symmetry works. Lowest densities in the battery plate windows and the GPS pad (about 0.64), then the keel. Mode shapes at cycle 3: mode 7 (428 Hz) umbrella and mode 8 (446 Hz) arm pairs, both global; mode 11 (541 Hz) local, a narrow strip at the front of the battery plate, falling fastest in the band (681.8 to 541 Hz, -21 % in 3 cycles) as the plate windows soften; likely the first to reach 417 Hz in the HPC run. Low-density (spurious) mode check not conclusive: no element is below 0.64 after 3 cycles; to be checked every few cycles in the HPC run.
+7. Conclusion: the Tosca chain works in 2022 except inertia relief (F-13). Combine: Optimization Process Manager > Results asks to combine when `TOSCA_POST` is empty; settings used: base results from the last cycle odb, all cycles, all steps incl. FREQ, preselected variables.
+
+## CHECK items (Tosca sheet)
+
+| # | Item | Answer | Source |
+|---|---|---|---|
+| C-1 | Cyclic symmetry restriction | In Abaqus/CAE 'Cyclic symmetry' is a translational repetition (region repeated a distance along an axis); the 90 deg pattern is **Rotational symmetry**: region, CSYS, axis, 'repeating segment size' as an angle (>= 2 deg), optional 'Ignore frozen area'; region may be a set. Use Rotational symmetry, global z, 90 deg, region = union of the four `DESIGN_ARM` sets. Spanning four instances: to confirm when created (DV-12) | Abaqus/CAE User's Guide, 'Creating a rotational symmetry restriction' and 'Creating a cyclic symmetry restriction' (topology) |
+| C-2 | General algorithm needed for frequency | The condition-based algorithm handles stiffness (strain energy) with a volume constraint only; frequency responses and constraints need the general (sensitivity-based) algorithm. Inertia relief is supported only with 3D elements and Abaqus sensitivities ('Use Abaqus sensitivities when possible' must be on) | Abaqus/CAE User's Guide, 'Configuring advanced options'; Tosca Structure User's Guide, 'Remarks for sensitivity-based optimizations' (2025) |
+| C-3 | Mass interpolation for eigenfrequencies (TOSCA.OUT of the chain test does not name the interpolation used; still open, check on the HPC run or in the 2022 Tosca documentation) | Advanced tab: interpolation SIMP (default, static), RAMP (dynamic), MIMP; 'TOSCA switches automatically to PEDE if the model has at least one dynamic load case'. PEDE is Tosca's interpolation for dynamic (eigenfrequency) problems; to be confirmed in the Tosca log of cycle 1 | Abaqus/CAE User's Guide 2024, 'Configuring advanced options' |
+| C-4 | Eigenfrequency units: **confirmed Hz** (cycle 0 values 489.93 to 749.44 equal the T3 frequencies in Hz) | Tosca DYN_FREQ responses and GE_VALUE bounds are given in Hz in the documentation example (100 Hz, 150 Hz); to be confirmed: the cycle 1 value must read about 490 (Hz), not 9.5e6 (eigenvalue) | Tosca Structure User's Guide 2024, 'Constraining an eigenfrequency' |
+| C-5 | Member size with the general algorithm | Available (the documentation names its combination with demold as possible only in a general topology optimization). Limitation: 'the minimum member size must exceed twice the average element size, or results will depend on the mesh', and the restriction is computationally expensive (run unrestricted first is recommended). On the Tosca mesh (BODY 2.5, arms 1.5 mm) 2.5 mm is below 2 x 2.5 = 5.0 and 2 x 1.5 = 3.0 mm: not meaningful. Q-T1 decided by Miguel (2026-10-09): **left out of the first run**; tested at the 0.8 mm HPC mesh | Abaqus/CAE User's Guide, 'Creating a member size restriction' |
+| C-6 | Initial density of cycle 1: **confirmed solid start with DV-13** (cycle 0 frequencies equal the solid reference; volume objective 1.000 at cycle 0) | Default 'optimization product default': with a volume constraint the start density meets it; **with volume only as the objective every element starts at 0.5**. Our formulation (minimise volume) would therefore start at 0.5, where SIMP stiffness is 0.125 of solid and the strain energy caps are violated from cycle 1. Set Initial density = Specify 1.0 so cycle 1 is the solid reference (DV-13) | Abaqus/CAE User's Guide 2024, 'Configuring the density settings' |
+| C-7 | Smooth / extract menu name in 2022 | 'Extract...' button in the Optimization Process Manager (Job module) | CAE 2022 dialog |
+
+## Phase H: HPC runs (D-060 to D-063)
+
+1. Files written from CAE 2022 (`revB_v03B_D056.cae`, work directory back in the project folder): H0 input `revB_v03B_D056_ref.inp` (Job Manager > Write Input); H1 process `TO_v03B_H1` (model `revB_v03B`, task `TO_v03B`, 3 cycles, save every cycle) > Write Files: `TO_v03B_H1.par`, `TO_v03B_H1-Job.inp`. The written `.par` carries no workstation-specific messaging lines (the interactive local run had `listener_name` / `direct_port`); content checked: absolute caps 0.18179 / 0.13975 / 0.09092 / 0.20932 N mm (D-063), C_F10 on R_FREQ_10, rotational symmetry 90 deg, start density 1, ITER_MAX 3, no GR_FROZEN.
+2. HPC inspection: `/home` 5.5 TB, 2.8 TB free, no quotas, no scratch; folders `~/drone_revB/stage6/{inputs,H0,H1,H2,H3,scripts}`. Disk planning: one cycle `.odb` 690 MB at 2.5 / 1.5 mm; H1 about 3 GB; H2 and H3 saved every 5 cycles. Abaqus 2024 and 2025 installed under `/opt/Simulia` (`abaqus` = 2025); `abaqus optimization task=...` available. Tosca licence: to confirm.
+3. Scripts (`stage6_hpc_H0H1.zip`): `run_H0.sh`, `run_H1.sh`, `h0_check.py` (mass, modes 7 to 12, ALLSE against N-06-07 within 0.5 %), `h1_check.py` (TOSCA.OUT scan, cycle table, cycle 0 against H0, volume trend, SE/cap), edited `TO_v03B_H1.par` (DV-17).
+4. Licence: FlexNet server on nemix (`27800@localhost`), 9999 tokens per feature, `standard`, `TOSCA_TOPO`, `TOSCA_INT_ABAQUS` present. H0 run 1 (`abq2025`, 16 threads): 120 s wallclock, 9 GB peak; result F-14. Fix DV-18, then H0 rerun with the rewritten input.
+5. H0 run 2 (input rewritten by R12, 3 x `*Boundary` per static step, none in FREQ): **PASS**. Mass 333.698 g (-0.001 %); modes 7 to 12 = 489.93 / 521.51 / 524.32 / 573.63 / 681.81 / 749.44 Hz (0.000 %); ALLSE LC1 / LC2a / LC2b / LC3a = 0.0908934 / 0.0698767 / 0.0454587 / 0.10466 N mm (max 0.001 % from 2022); support reactions below 1.5e-11 N in all four static steps. Abaqus 2025 with DV-18 reproduces the 2022 reference; the D-063 caps (2 x 0.090893 / 0.069877 / 0.045459 / 0.10466 N mm) stand for H1 and H2.
+6. H1 (`abq2025 optimization`, Tosca Structure 3DEXPERIENCE R2025x build R427, 16 threads), started 18:25:48, finished 18:40:30 (about 3.5 min per cycle, 14.7 min in total), 2.7 GB on disk. **PASS**: the 2022 `.par` was read without errors; inertia relief accepted with the sensitivity-based algorithm (F-13 limit gone in 2025); cycle 0 equal to H0.
+
+| Cycle | R_VOL (mm^3) | f7 | f8 | f9 | f10 | f11 | f12 (Hz) | SE LC1 | LC2a | LC2b | LC3a (N mm) |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | 74,740 | 489.9 | 521.5 | 524.3 | 573.6 | 681.8 | 749.4 | 0.09089 | 0.06988 | 0.04546 | 0.10466 |
+| 1 | 70,469 | 460.0 | 488.9 | 492.1 | 540.1 | 637.7 | 707.9 | 0.10165 | 0.07893 | 0.05153 | 0.12100 |
+| 2 | 65,479 | 437.2 | 461.8 | 465.6 | 504.9 | 588.0 | 663.5 | 0.11415 | 0.09018 | 0.05907 | 0.14315 |
+| 3 | 60,598 | 428.2 | 445.7 | 453.0 | 475.9 | 541.0 | 624.9 | 0.12506 | 0.10109 | 0.06683 | 0.16689 |
+
+SE at cycle 3 = 0.69 / 0.72 / 0.74 / 0.80 of the caps (1.38 / 1.45 / 1.47 / 1.59 x cycle 0). Volume and frequency histories are identical to the local chain test (T7): with no strain-energy constraint active yet, the density update in the first cycles is set by the volume objective and the frequency responses, which do not depend on the static supports or on inertia relief. Note: the 2025 `optimization_report.csv` gives OBJ_VOL as the absolute volume (2022: normalised), so the `h1_check.py` column labelled vol_frac shows mm^3. C-3 (interpolation used for the frequency responses) still not named in the log.
+
+7. H2 preparation (D-064 to D-066, journal v0.48). Scripts (`stage6_hpc_H2.zip`): `run_bench.sh` (H0 input at 32 cores, wallclock against H0, `h0_check.py` on the result), `run_H2.sh` (copies the H1 input, writes `TO_v03B_H2.par` from the H1 `.par` with ITER_MAX 60 and the DV-19 AddCallArgs, verifies the edit, starts H2 with `setsid nohup` and the watcher), `h2_watch.sh` (every 60 s; checks the saved odb of cycles 5, 10, ... once the next cycle is saved, and the last cycle at the end; stops H2 on STOP), `h2_modecheck.py` (D-066 item 2: for modes 7 to 12, the peak region = nodes with |U| >= 0.8 max; spurious if more than half of those nodes touch only elements below density 0.3; D-064: support reactions per static step, limit 1e-6 N). Script tested first on an H1 saved odb (`--probe`) to confirm the density field name. Other H2 settings unchanged from H1 (density update Normal, no member size, Tosca default convergence).
+8. H2 started 2026-10-10 00:46 on nemix (third attempt: first failed with F-15, second rejected `mp_mode` on the optimization command line), 32 cores, thread mode, memory 90 %; cycle 1 reached. Watcher fixed for zero-padded save names (`TO_v03B_H2-Job_005.odb`; bash arithmetic now base 10). `h2_modecheck.py` tested on H1 cycle 3 (`--probe`): density field `MAT_PROP_NORMALIZED` in the FREQ step of each saved odb; modes 7 to 12 all in solid material (share of peak nodes below 0.3 = 0). Known gap: the Tosca odb has one instance `PART-1-1` and the support reactions printed exactly 0 (support node sets not found, so not a real check); to be fixed after the run on the saved odbs.
+9. H3 reference job prepared ahead of the H2 review at Miguel's request (deadline): `R13_mesh10.py` remeshes BODY and ARM at 1.0 mm in a Save As copy `revB_v03B_m10.cae` and writes `H3_ref.inp`; run on the second HPC (`run_H3ref.sh`, 32 cores, threads), checked by `h3ref_check.py` (model size, time, memory, modes 7 to 12, ALLSE and caps, reactions). Purpose: H3 caps (D-063) and the measured cost per solve at 1.0 mm, so the main chat can choose the production mesh with the H2 results. The H3 Tosca run is not started before the H2 review.
+
+10. H3 reference job (nexus: 2 x AMD EPYC 7513, 64 cores, 251 GB, Abaqus 2024 RELr426): 723,474 C3D10, 1,063,190 nodes, 3,189,636 variables, mass 333.69 g; 671 s wallclock on 64 threads, peak 80 GB. Modes 7 to 12 = 486.66 / 517.87 / 520.97 / 568.67 / 673.31 / 742.66 Hz (-0.6 to -1.3 % against 2.5 / 1.5); ALLSE LC1 / LC2a / LC2b / LC3a = 0.0919015 / 0.0709504 / 0.0461905 / 0.106569 N mm (+1.1 to +1.8 %); H3 caps (D-063) 0.183803 / 0.141901 / 0.0923811 / 0.213138 N mm; reactions below 3.7e-10 N.
+11. S24 (Tosca 2024 smoke test on nexus, H1 files, 64 threads): cycles 0 to 2 identical to H1; Tosca 2024 accepts inertia relief with the sensitivity-based algorithm. PASS.
+12. H3 started 2026-10-10 about 02:00 on nexus, BEFORE the main chat's H2 review (DV-21, Miguel: deadline; risk of a wasted run accepted). Process `TO_v03B_H3` from `revB_v03B_m10.cae`: 1.0 mm mesh, H3 caps, member size `GR_MS` minimum thickness 2.5 mm on `DESIGN_ALL` (MIN_MEMBER), max 60 cycles, save last + every 10; 54 cores (10 left to another user), thread mode, memory 80 %; run directory `/tmp/mdias_H3/H3` (root disk, 567 GB free; `/home` had 38 GB). Expected about 18 min per cycle.
+13. H2 stopped by the watcher at cycle 10 (01:28): modes 8, 9, 10 (417.0 / 418.2 / 419.7 Hz) flagged by the D-066 rule (share of peak nodes touching only elements below 0.3 = 0.69 / 0.56 / 0.61; maxima at the arm tips), 32,425 elements below 0.3. Cycles 0 and 5 ok. Constraints at cycle 10 / 11 violated (f7 407.3 / 397.8 Hz, LC3a SE 1.24 / 1.32 x cap). 11 GB on disk, about 3.8 min per cycle at 32 threads. Reaction check printed 0 N: assembly RP sets not present in the flattened Tosca odb (instance `PART-1-1`); corrected in `cyclecheck.py` (searches assembly and instance sets containing RP_JNT, counts values, adds design mass at iso 0.3 / 0.5 with rho 1.30 g/cm^3).
+14. H3 at cycle 32 (10:09): volume 31,208 mm^3 (40.6 g density-weighted), f7 417.6 Hz, SE / cap 0.97 / 0.96 / 0.97 / 1.01; overshoot at cycles 13 to 20 (f7 down to 341 Hz, LC3a up to 1.98 x cap), recovered from cycle 27; about 14 min per cycle. Design material about 3 x the B allowance (about 13 g, Q-53). Report: `claude/stage6_hpc_H2_report.md`.
+15. `cyclecheck.py` on H3 cycles 10, 20, 30: cycle 10 ok; cycle 20 modes 9, 10 flagged (arm tips, 388.4 / 405.1 Hz); cycle 30 all six modes flagged (arm tips, share 0.66 to 0.81, mean density 0.20 to 0.34). Reactions below 9.8e-10 N (4 values per step). Mass: the script's 'design' sum includes the fixed regions (24,353 mm^3); design only at cycle 30: weighted 31,841 mm^3 (41.4 g), iso 0.3 48.9 g, iso 0.5 43.0 g; printed frame at iso 0.5 74.6 g. Recommended to the main chat: stop H3 (D-066 rule).
+16. H3 stopped after cycle 40 (12:37); cycle 40 frozen in `/tmp/mdias_H3/TH` (model `TO_v03B_H3-Job.inp` from `SAVE.inp/040`, `tosca_distribution.inp`, `c40.odb`). Smoothed iso surfaces of cycle 33 (`iso_mt.py`, marching tetrahedra + Taubin): body + 4 identical arms, closed; frame 72.2 g at iso 0.5, 82.5 g at iso 0.3. Arms: fork, open channel, closed section towards the pad.
+17. D-066 item 1 answered from the run: Tosca 2024 writes per-element `*SCALESTIFFNESS` / `*SCALEMASS` distributions; mass linear in rho (100 x lower at rho 0.001), stiffness about 0.19 rho at low density rising to rho^3 near 1; void protection without making grey attractive (k/m < 1 for all intermediate rho). Table and explanation: `claude/stage6_concepts_explained.md` section 9.
+18. D-066 item 3: `threshold_job.py` built TH03 / TH05 (cycle 40 cut at iso 0.3 / 0.5; solid factor 1, air stiffness 1e-6 and mass 1e-9; SENSITIVITY and 10 DESIGN RESPONSE blocks removed); 457,918 / 437,027 of 723,451 elements solid. Runs started 13:2x on nexus, 27 cores each.
+19. D-066 item 3 results (cycle 40, whole-model mass incl. 205.4 g point masses): Tosca c40 f7 to f12 = 417.8 / 419.7 / 420.5 / 427.3 / 487.1 / 521.2 Hz, SE/cap 0.98 / 1.00 / 1.00 / 1.00. TH05 (iso 0.5): 277.2 g, 438.3 / 446.1 / 450.8 / 456.5 / 515.6 / 547.4 Hz, SE/cap 0.86 / 0.86 / 0.92 / 0.93. TH03 (iso 0.3): 281.3 g, 449.5 / 462.5 / 465.8 / 488.2 / 544.8 / 574.9 Hz, SE/cap 0.77 / 0.76 / 0.82 / 0.84. Both cuts meet 417 Hz and all caps; the thresholded parts are stiffer than Tosca predicted (+4.9 % on f7 at iso 0.5), as expected from section 7 of `stage6_concepts_explained.md`. Grey material was not overcredited. Iso 0.5 chosen as print candidate (lighter, passes). Reactions on TH05 to be confirmed.
+20. TH05 support reactions (4 node sets): 3.9e-10 / 1.5e-9 / 7.3e-10 / 3.7e-10 N (LC1 / 2a / 2b / 3a), pass. Cycle 40 smoothed surfaces (marching tets + 6 Taubin iterations): iso 0.5 frame 54,742 mm^3 = 71.2 g (body 33,034, each arm 5,427 mm^3); iso 0.4 frame 58,943 mm^3 = 76.6 g. Wall thickness (ray casting, area share): iso 0.5 body median 2.52 mm, below 1.2 mm 7.3 %, arm median 3.09 mm, below 1.2 mm 5.1 %; iso 0.4 body 2.77 mm / 3.7 %, arm 3.28 mm / 2.7 %. Thin spots local: body side walls by the FC bay and plate supports, arm top web mid-length.
+21. Wall thickness, sphere method (local thickness, Hildebrand and Rueegsegger 1997: diameter of the largest inscribed sphere containing the point; voxels 0.1 mm arm, 0.25 mm body; finer body runs exceed the workspace memory). Surface share below 0.8 / 1.2 / 2.0 / 2.5 mm: arm iso 0.5 0.9 / 3.8 / 23 / 43 %, arm iso 0.4 0.8 / 2.2 / 15 / 37 %, body iso 0.5 0.2 / 2.3 / 10 / 23 %, body iso 0.4 0.1 / 1.0 / 5 / 15 %. Material volume below 1.2 mm: 0.4 to 1.2 %. The ray (normal) method agrees on the arm below 2 mm and is pessimistic on the body (edges). Report figures: `fig_thickness_cumulative.png`, `fig_thickness_map_arm_pp.png`, `fig_thickness_map_body.png`.
+22. Interface restoration (D-044, mesh booleans): final = (iso surface UNION exact fixed solids) INTERSECT exact envelope (design + fixed solids from the STEP), STEP meshed with gmsh at 0.3 mm, booleans with manifold3d. Arm, iso 0.5: 5,427 to 5,543 mm^3 (7.21 g per arm); 227 mm^3 of fixed geometry restored, 110 mm^3 outside the envelope removed; one manifold piece. BODY needs the D-056 BODY.step (local copy is D-055, without the keel).
+23. Print set, iso 0.4, cycle 40, interfaces restored (D-044). BODY.step D-056 checked (14 solids: design 42,206.2, fixed 12,597.9 mm^3). Body: iso 35,095 mm^3; 868 mm^3 of fixed geometry restored (largest: battery plate skin 349 mm^3 over 2.5 x 34 x 82 mm, i.e. about 0.06 mm per face; fin bosses about 63 mm^3 each); 901 mm^3 outside the envelope trimmed (films and fills in component voids, windows, holes); result 35,062 mm^3 = 45.58 g. Arm: iso 5,962 mm^3; 168 mm^3 restored (prong bosses and motor pad skins, mean layer 0.06 mm), 119 mm^3 trimmed (4 bolt-hole fills of about 12.5 mm^3, one pocket, 0.02 mm film); result 6,011 mm^3 = 7.81 g. Both manifold, one piece each. Frame: 45.58 + 4 x 7.81 = 76.8 g; AUW about 282 g. Files: `revB_v03B_BODY_c40_iso040.stl`, `revB_v03B_ARM_c40_iso040_print4.stl` (arm in the +x+y position; identical for all four).
+24. F-16 (assembly review of the print set): the FC bay is closed. Openings seen from the bay: USB-C window 12 x 8 mm (-y wall, z -2 to 6), strap tunnel 18 x 3.5 mm (both y walls, z 18 to 21.5), a 4 x 4 mm passage at the foot of each wall (z -6 to -3), 1 to 3 mm slits at the wall corners; roof closed (fixed battery plate and an optimised ceiling at z 18 to 20). FC insertion blocked on every side by design material only (+x 798, -x 861, +y 778, -y 607 mm^3; fixed 6 mm^3), from the top by the fixed plate. FC boss holes are blind (z -13 to -6, 2 mm floor below), no screwdriver line from above. No dedicated passage for the battery lead (D-029 front), GPS cable or receiver antenna. Motors, props, battery plate and strap, USB-C and arm joint are served by the exact fixed regions and keep-outs. Cause: the design space defined component voids (D-032) but no assembly access. Floor contains a closed internal cavity (iso surface), harmless for printing.
+25. Redesign discussion with Miguel (2026-10-10 evening to 2026-10-11): requirements (no glue or tape, a designed seat for every component including the pigtail, capacitor, receiver wires and antenna, GPS cable; check the space at each assembly step; capacitor joint not bent near the solder; 250 g not achievable, mass for assembly accepted); architecture chosen: optimised open tub plus removable lid, five M2 countersunk screws into heat-set inserts.
+26. Components fixed in the discussion: FC hardware M2 (soft mount: damping ring 1.0, grommet 6.6, anti-loosening nut 2.5, retainer ear 1.4, nylon nut 1.6), screws from below through Ø2.2 bosses with Ø4.2 x 1.5 counterbores; FC rotated (USB -y at x = +5.4, battery pads on the front edge at y -8.7 / -4.5, from Miguel's drawing and photo); receiver cradle on the +y screws; GPS Flywoo GOKU GM10 Nano V3 with compass (12 x 17 x 5, 2.6 g; pin count to confirm); antenna out of the rear wall with a TPU holder under the keel.
+27. Battery lead routing studied: forward run under the prop disc rejected for the XT30 (prop corridor +-8.9 at x = 25, +-4.3 at x = 35, blade height); option 2 confirmed by Miguel: capacitor flipped 180 deg over the FC, only the two wires leave through a 7 x 3.5 front window at board height, rising at x 25 to 30 on the centreline to the XT30 on the lid front lip.
+28. Checks made while writing the brief (brief section 9): 33 x 33 board cannot pass the chamfered upper body (corners at 23.3 mm against 22.5 on the diagonal), so the upper corners open and the lid bosses move to the wall segments at (+-20.25, +-7); XT30 does not pass the 7 x 3.5 window (solder after threading); a GPS cable beside the keel would be inside the prop sweep + 3 mm (route inside the keel instead); a Ø4 antenna hole does not fit between the keel side and the fin-fillet tangent line (1.86 mm; hole below the keel); a downward antenna V reaches about z -18 to -20, below the landing plane (horizontal V); a tub-fixed capacitor cradle would block the FC insertion and left 0.3 mm to the pm nut (cradle on the pm screw, capacitor moved 0.75 mm); counterbores reduce `S_FLOOR` to about 1544.6 mm^2 (LC3a pressure 0.036515 MPa); lid tied at five points may give local plate modes (reference job decides).
+29. Mass estimate v04-B: GPS -5.4 g, retainers and hardware about +3 to +4 g, frame plus hardware about 75 to 79 g, AUW about 280 g.
+30. Verification gates G0 to G7 and post-run checks T-1 to T-7 defined in the brief (file identity, Boolean bookkeeping, face test, tangency audit per new feature, gmsh test at 1.5 and 1.0 mm, assembly clash with insertion sweeps, CAE mesh, reference job with lid-mode check; thresholded TH04 as acceptance).
+31. Documents for the main chat: `claude/stage6_update_since_H1.md` (part A) and `claude/stage6_v04B_design_brief.md` (part B).
+32. Capacitor retention dropped (Miguel, 2026-10-11): the capacitor floats on its soldered leads at the discussed position over the FC, no cradle and no lid rib; pm screw M2 x 20 with the anti-loosening nut only. Brief sections 2, 3, 4, 5.2, 5.4, 6.1 (K4), 8, 9.6, 11 and 15 updated.
+33. Miguel confirmed all brief section 9 defaults and antenna option A (horizontal V under the keel), 2026-10-11.
+34. v04-B revision 2 received from the main chat (`stage6_abaqus_v04B.zip`, journal v0.51, D-079 to D-081, note `claude/stage6_v04B_export_note.md`). File identity re-checked here: sha256 of TUB, LID, KEEPOUTS, COMPONENTS match the note; TUB 19 solids (design 40,676.1; fixed 5 x 133.5 lid bosses, 4 x 240.2 FC bosses, 112.7 antenna boss, 8 x 1094.4 fin bosses), LID 7 solids (design 1238.0 + 1258.6; fixed 4365.4 + 4 x 58.4 pads). Expected CAE values computed from the STEP files after a general fuse (OCP): S_FLOOR 2060.58 mm^2 after partition at x, y = +-23 (5 faces), S_FC_SEAT 4 x 28.37 = 113.47, fin boss tie faces 2 per side 138.50 (unchanged), tub boss tops 5 x 20.23, tub top under the lid 625.98 after partition at y = +-17 (9 faces; no edge parallel to the cut within 1.5 mm), S_BATT_SEAT 1052.91 after partition at x = +-32 (1056 less the keel pad hole), S_GPS_SEAT 209.19, lid bottom 7 faces 2740.84, wall pad bottoms 4 x 24.47 (dia 6 / 2.2).
+35. Scripts `stage6_v04B_G6G7.zip`: `V1_build.py` (model revB_v04B copied from revB_v03B; TUB and LID import, cell sets by volume, partitions, surfaces with the item 34 checks; arm instances rotated then moved by (3 sx, 3 sy, 0), prong / fin offsets 5.15 / 5.00 checked; DESIGN_ALL 7 cells, FIXED_ALL 43, DESIGN_ARMS 4; RP_MOT, RP_JNT, RP_GPS recreated at the revision 2 positions and their sets, group sets, loads and point masses re-linked, GPS 2.6 g, point masses 200.0 g; couplings, joint ties, lid ties (DV-22), D-064 supports, LC3a p = 56.4 / A), `V2_mesh.py` (G6, debug and prod), `V3_jobs.py` (G7a / G7b inputs, DV-23), `g7_check.py` and `run_G7.sh` (nexus: mass 332.79 g +-0.1 %, modes 1 to 20 with shape labels and lid / GPS flags, ALLSE / ALLWK / caps, reactions, untied nodes, solver warnings).
+36. V1 (after a wrong STEP_DIR to an older export, caught by the design-volume check, and two script fixes: floor faces picked after all partitions, `sum` shadowed in the Abaqus namespace) passed every check: TUB 19 cells, LID 7, surfaces as item 34 (S_FLOOR 2060.58, S_FC_SEAT 113.47, fin faces 138.50, tub bosses 5 x 20.23, rim 625.98, S_BATT_SEAT 1052.91, S_GPS_SEAT 209.19, lid bottom 2740.86, pads 4 x 24.47), joint gaps 0.150 mm at all corners, RPs at the revision 2 positions, point masses 200.00 g, LC3a 0.027371 MPa.
+37. G6 PASS. Debug: TUB 49,742 C3D10 (0 errors, 19 warnings 0.04 %), LID 19,322 (3, 0.02 %), ARM 26,542 x 4 (10, 0.04 %), total 175,232. Production 1.0 mm (`revB_v04B_m10.cae`): TUB 382,422 (78, 0.02 %), LID 63,398 (10, 0.02 %), ARM 80,603 x 4 (4, 0.00 %), total 768,232. Warnings at the fin roots (about +-30, +-30) and fin boss tops, the lid deck / pocket rim and tab, as before. G7a_ref.inp (13 ties) and G7b_ref.inp (9 ties incl. TIE_LIDRIM) written.
+38. G7 on nexus (Abaqus 2024, debug mesh, 828,051 variables, 2 x 32 threads, 235 / 173 s). Both: mass 332.809 g (+0.006 %), modes 1 to 6 below 0.001 Hz, no singularity, reactions below 1.1e-10 N, untied nodes 172 on the lower fin boss faces only. G7a (5 boss ties) FAIL: mode 7 389.8 Hz arm saddle, mode 8 405.1 Hz lid plate with the battery (lid edge at y = 17), then 446.2 / 463.3 / 520.3 / 590.0 Hz. G7b (seat tie) PASS: 449.7 / 465.2 / 477.0 / 483.9 (arm modes) / 571.3 (lid plate) / 654.6 Hz (tab); ALLSE 0.108317 / 0.100093 / 0.0511136 / 0.197021 N mm. Only G7b passes: stopped per instruction 6, report `claude/stage6_v04B_G7_report.md`. Noted: ALLWK differs from ALLSE in all static steps (likely the DV-18 supports in the energy bookkeeping; to confirm on the H0 odb). No mode screenshots (Abaqus GUI on nexus not usable); shapes from `g7_check.py`.
+39. Miguel's preference recorded in the G7 report: move on with G7b (option A) rather than redesign; decision for the main chat.
+40. D-082 (option A) received: H4c and H4 on the G7b model (seat tie). Package stage6_v04B_H4c.zip: W1_task.py (re-points the Tosca task regions to DESIGN_ALL / DESIGN_ARMS, sets the H4c caps 0.216635 / 0.200186 / 0.102227 / 0.394042 N mm, checks the seat tie and the mesh; STAGE H4ref writes H4_ref.inp on the 1.0 mm mesh; STAGE H4 needs GR_MS), run_H4c.sh (54 threads, ITER_MAX 60, par checks incl. no member size and the caps), h4_check.py (history, SE / cap), seatcheck.py (density of the tub elements under the seat and of the lid design, D-082 b), allwk_check.py (D-082 item 3).
+
+41. H4c first start (2026-10-11 22:57, /home, 59 cores, about 4 min per cycle): cycles 0 to 10 completed, cycle 11 failed in the Abaqus frequency step (Lanczos Sturm-count error, DV-24). History: volume 75,858 to 42,317 mm^3; f7 449.7 to 418.1 Hz (active from cycle 4); SE / cap at cycle 10 0.75 / 0.68 / 0.76 / 0.84; modes 11 and 12 fell to 485 / 523 Hz at cycle 10. cyclecheck on cycle 10: modes 7, 8, 9, 10, 12 flagged by the D-066 rule, all arm bending modes at 418 to 523 Hz with the peak at the motor seats (as H2 / H3: grey arm tips, not void modes; diagnostic only, D-070); mode 11 at 485 Hz is the GPS deck (-54, -4.5, 26.5); reactions below 1e-10 N. seatcheck cycle 10: tub elements in the 2 mm under the seat 1,299, mean density 0.45, 53 % below 0.3 (Tosca is thinning the rim under the lid); lid design 19,322 elements, mean 0.92, 3 % below 0.3.
+42. H4 (1.0 mm, 768,232 C3D10, member size 2.5 mm, caps relative 2.0 x cycle 0, DV-25, Lanczos shift DV-24, 60 threads, /tmp/mdias_H4): started 00:14, Tosca stop condition met after cycle 31 (08:46), 8 h 32 min, about 16 min per cycle; no solver error. Cycle 0: volume 75,520 mm^3, f7 to f12 445.4 / 462.0 / 473.6 / 480.7 / 567.7 / 649.0 Hz. Cycle 31: volume 32,709 mm^3 (-56.7 %), f7 to f12 416.4 / 417.1 / 417.7 / 418.6 / 501.2 / 504.5 Hz, SE / cycle 0 = 1.59 / 1.41 / 1.63 / 2.10 (cap 2.0: LC3a 5 % over, f7 0.6 Hz under at Tosca's stop). History: f7 active from cycle 4; LC3a rising past 2.0 from cycle 18 and held at 2.0 to 2.1. cyclecheck cycle 31: modes 7 to 11 arm bending at the motor seats (D-066 flag, diagnostic), mode 12 GPS deck; reactions below 1.2e-9 N; 274,613 elements below 0.3; iso 0.3 / 0.5 kept volume (fixed incl.) 62,126 / 60,675 mm^3 = 80.8 / 78.9 g. seatcheck cycle 31: tub elements in the 2 mm under the seat 10,383, mean density 0.36, 63 % below 0.3; lid design 63,398 elements, mean 0.83, 15 % below 0.3.
