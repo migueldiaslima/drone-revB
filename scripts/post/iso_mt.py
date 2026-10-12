@@ -10,9 +10,30 @@ from odbAccess import openOdb
 
 args = sys.argv[1:]
 path = [a for a in args if a.lower().endswith('.odb')][0]
-isos = [float(a) for a in args if not a.lower().endswith('.odb')] or [0.5]
+isos = [float(a) for a in args if not a.lower().endswith('.odb') and a.replace('.', '', 1).isdigit()] or [0.5]
 o = openOdb(path, readOnly=True)
 ra = o.rootAssembly
+
+# part filter (build log item 47): words TUB, LID or ARMS keep only that part (element sets of the flattened
+# Tosca odb: <PART>-1_ALL_<PART>, ARM_xx-1_ALL_ARM); word KEEL also writes a crop around the keel lid boss.
+WORDS = [a.lstrip('-').upper() for a in args]
+PART = [w for w in WORDS if w in ('TUB', 'LID', 'ARMS')]
+PART = PART[0] if PART else ''
+KEEL = 'KEEL' in WORDS
+KEEL_BOX = ((-42.0, -12.0, 4.0), (-18.0, 12.0, 24.0))     # boss 5 at (-30, 0), top z 21.5
+keep = None
+if PART:
+    keep = set()
+    for iname in ra.instances.keys():
+        es = ra.instances[iname].elementSets
+        want = 'ARM' if PART == 'ARMS' else PART
+        ks = [k for k in es.keys() if k.upper().endswith('_ALL_' + want) or k.upper() == 'ALL_' + want]
+        for k in ks:
+            keep.update((iname, e.label) for e in es[k].elements)
+        print('part %s: element sets %s' % (PART, ', '.join(ks[:6])))
+    print('part %s: %d elements' % (PART, len(keep)))
+    if not keep:
+        raise SystemExit('no elements found for part %s' % PART)
 st = o.steps['FREQ']
 fr = [f for f in st.frames if any('MAT_PROP_NORMALIZED' in k.upper() for k in f.fieldOutputs.keys())][-1]
 key = [k for k in fr.fieldOutputs.keys() if 'MAT_PROP_NORMALIZED' in k.upper()][0]
@@ -35,6 +56,8 @@ for iname in ra.instances.keys():
         X.append(nd.coordinates)
     for e in inst.elements:
         if not e.type.startswith('C3D'):
+            continue
+        if keep is not None and (iname, e.label) not in keep:
             continue
         T.append([gid[(iname, n)] for n in e.connectivity[:4]])
         D.append(dens.get((iname, e.label), 1.0))
@@ -72,6 +95,18 @@ def orient(tris, hi_pts):
     flip = np.einsum('ij,ij->i', n, hi_pts - cen) > 0   # normal must point away from solid
     tris[flip] = tris[flip][:, [0, 2, 1]]
     return tris
+
+def write_stl(fn, tris):
+    nrm = np.cross(tris[:, 1] - tris[:, 0], tris[:, 2] - tris[:, 0])
+    ln = np.linalg.norm(nrm, axis=1)[:, None]
+    nrm = nrm / np.where(ln > 0, ln, 1)
+    rec = np.zeros(len(tris), dtype=[('n', '<f4', 3), ('v', '<f4', (3, 3)), ('a', '<u2')])
+    rec['n'] = nrm; rec['v'] = tris
+    with open(fn, 'wb') as f:
+        f.write(b'iso surface marching tets'.ljust(80, b' '))
+        f.write(struct.pack('<I', len(tris)))
+        f.write(rec.tobytes())
+
 
 for iso in isos:
     out = []
@@ -122,14 +157,13 @@ for iso in isos:
         out.append(np.asarray(caps))
     tris = np.concatenate(out, axis=0)
     tag = path.rsplit('/', 1)[-1].replace('.odb', '')
-    fn = 'mt_%s_%03d.stl' % (tag, int(round(iso * 100)))
-    nrm = np.cross(tris[:, 1] - tris[:, 0], tris[:, 2] - tris[:, 0])
-    ln = np.linalg.norm(nrm, axis=1)[:, None]
-    nrm = nrm / np.where(ln > 0, ln, 1)
-    rec = np.zeros(len(tris), dtype=[('n', '<f4', 3), ('v', '<f4', (3, 3)), ('a', '<u2')])
-    rec['n'] = nrm; rec['v'] = tris
-    with open(fn, 'wb') as f:
-        f.write(b'iso surface marching tets'.ljust(80, b' '))
-        f.write(struct.pack('<I', len(tris)))
-        f.write(rec.tobytes())
-    print('iso %.2f: %d triangles -> %s' % (iso, len(tris), fn))
+    fn = 'mt_%s%s_%03d.stl' % (tag, ('_' + PART) if PART else '', int(round(iso * 100)))
+    sets = [(fn, tris)]
+    if KEEL:
+        cen = tris.mean(axis=1)
+        inb = np.all((cen >= KEEL_BOX[0]) & (cen <= KEEL_BOX[1]), axis=1)
+        sets.append((fn.replace('.stl', '_keel.stl'), tris[inb]))
+    for fn, tris in sets:
+        write_stl(fn, tris)
+        print('iso %.2f: %d triangles -> %s' % (iso, len(tris), fn))
+
