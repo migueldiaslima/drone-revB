@@ -9,11 +9,11 @@
 # Run in /tmp/mdias_H4/TH:
 #   abaqus python ~/drone_revB/stage6/scripts/th04_islands.py c31.odb TH04b TH04a > TH04_islands.txt 2>&1
 # Options (D-085, build log item 46):
-#   part=TUB or part=LID   only the elements of that part (element set <part>-1_ALL_<part>, count checked)
-#   tol=0                  no node-proximity links (ties not counted); default tol=0.2
-#   With part=TUB the five lid bosses (top annulus at z 21.5, item 36) are located and their component reported.
+#   TUB or LID             only the elements of that part (element set <part>-1_ALL_<part>, count checked)
+#   notol                  no node-proximity links (ties not counted); default tol=0.2
+#   With TUB the five lid bosses (top annulus at z 21.5, item 36) are located and their component reported.
 #   Job names are optional; without them the mesh is read from the cycle odb.
-#   abaqus python ~/drone_revB/stage6/scripts/th04_islands.py c31.odb part=TUB tol=0 > islands_TUB.txt 2>&1
+#   abaqus python ~/drone_revB/stage6/scripts/th04_islands.py c31.odb TUB notol > islands_TUB.txt 2>&1
 from __future__ import print_function
 import sys, os, re
 import numpy as np
@@ -24,13 +24,20 @@ TOL = 0.2           # mm, node proximity treated as a connection (ties)
 RHO_MAT = 1.30e-3   # g/mm^3, PET-CF (as cyclecheck / item 15)
 NLIST = 15          # islands listed per iso
 
+# abaqus python rewrites key=value arguments (part=TUB arrived as -part TUB): plain words instead.
 args = [a for a in sys.argv[1:] if not a.endswith('.py')]
-opts = dict(a.split('=', 1) for a in args if '=' in a)
-args = [a for a in args if '=' not in a]
+opts = {}
+for a in args:
+    w = a.lstrip('-').upper()
+    if w in ('TUB', 'LID'):
+        opts['part'] = w
+    elif w in ('NOTOL', 'TOL0'):
+        opts['tol'] = '0'
+args = [a for a in args if not a.startswith('-') and a.lstrip('-').upper() not in ('TUB', 'LID', 'NOTOL', 'TOL0', 'PART', 'TOL')]
 c31 = [a for a in args if a.lower().endswith('.odb')]
 jobs = [a for a in args if not a.lower().endswith('.odb')]
 if len(c31) != 1:
-    raise SystemExit('usage: th04_islands.py c31.odb [TH04b TH04a] [part=TUB|LID] [tol=0]')
+    raise SystemExit('usage: th04_islands.py c31.odb [TH04b TH04a] [TUB|LID] [notol]')
 TOL = float(opts.get('tol', TOL))
 PART = opts.get('part', '').upper()
 NEXP = {'TUB': 382422, 'LID': 63398}          # production mesh element counts (item 37)
