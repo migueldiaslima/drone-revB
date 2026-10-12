@@ -9,9 +9,30 @@ from odbAccess import openOdb
 
 args = sys.argv[1:]
 path = [a for a in args if a.lower().endswith('.odb')][0]
-isos = [float(a) for a in args if not a.lower().endswith('.odb')] or [0.3, 0.5]
+isos = [float(a) for a in args if not a.lower().endswith('.odb') and a.replace('.', '', 1).isdigit()] or [0.3, 0.5]
 o = openOdb(path, readOnly=True)
 ra = o.rootAssembly
+
+# part filter (build log item 47): words TUB, LID or ARMS keep only that part (element sets of the flattened
+# Tosca odb: <PART>-1_ALL_<PART>, ARM_xx-1_ALL_ARM); word KEEL also writes a crop around the keel lid boss.
+WORDS = [a.lstrip('-').upper() for a in args]
+PART = [w for w in WORDS if w in ('TUB', 'LID', 'ARMS')]
+PART = PART[0] if PART else ''
+KEEL = 'KEEL' in WORDS
+KEEL_BOX = ((-42.0, -12.0, 4.0), (-18.0, 12.0, 24.0))     # boss 5 at (-30, 0), top z 21.5
+keep = None
+if PART:
+    keep = set()
+    for iname in ra.instances.keys():
+        es = ra.instances[iname].elementSets
+        want = 'ARM' if PART == 'ARMS' else PART
+        ks = [k for k in es.keys() if k.upper().endswith('_ALL_' + want) or k.upper() == 'ALL_' + want]
+        for k in ks:
+            keep.update((iname, e.label) for e in es[k].elements)
+        print('part %s: element sets %s' % (PART, ', '.join(ks[:6])))
+    print('part %s: %d elements' % (PART, len(keep)))
+    if not keep:
+        raise SystemExit('no elements found for part %s' % PART)
 st = o.steps['FREQ']
 fr = st.frames[0]
 key = [k for k in fr.fieldOutputs.keys() if 'MAT_PROP_NORMALIZED' in k.upper()][0]
@@ -42,6 +63,8 @@ for iso in isos:
         for e in inst.elements:
             if not e.type.startswith('C3D'):
                 continue
+            if keep is not None and (iname, e.label) not in keep:
+                continue
             if dens.get((iname, e.label), 1.0) < iso:
                 continue
             nel += 1
@@ -64,7 +87,7 @@ for iso in isos:
         r = find(n)
         roots[r] = roots.get(r, 0) + 1
     sizes = sorted(roots.values(), reverse=True)
-    fn = 'iso_%s_%03d.stl' % (tag, int(round(iso * 100)))
+    fn = 'iso_%s%s_%03d.stl' % (tag, ('_' + PART) if PART else '', int(round(iso * 100)))
     with open(fn, 'wb') as f:
         f.write(b'iso surface'.ljust(80, b' '))
         f.write(struct.pack('<I', len(faces)))
