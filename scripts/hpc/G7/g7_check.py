@@ -7,8 +7,11 @@ from __future__ import print_function
 import sys, os, re, math
 from odbAccess import openOdb
 
-job = [x for x in sys.argv[1:] if not x.startswith('-')][-1]
+job = [x for x in sys.argv[1:] if not x.startswith('-') and '=' not in x][-1]
 MASS_EXP, FMIN = 332.79, 417.0
+for x in sys.argv[1:]:
+    if x.startswith('mass='):
+        MASS_EXP = float(x.split('=')[1])     # rev 3: mass=332.25 (build log item 46)
 R2 = 1.0 / math.sqrt(2.0)
 CORN = {'pp': (1, 1), 'pm': (1, -1), 'mp': (-1, 1), 'mm': (-1, -1)}
 fails = []
@@ -55,7 +58,7 @@ def rp_label(name):
 
 
 rps = {}
-for n in ['BATT', 'GPS', 'FC'] + ['MOT_' + c for c in CORN] + ['JNT_' + c for c in CORN]:
+for n in ['BATT', 'GPS', 'FC', 'ANT'] + ['MOT_' + c for c in CORN] + ['JNT_' + c for c in CORN]:
     rps[n] = rp_label('SET_RP_' + n)
 
 # ---------- modes ----------
