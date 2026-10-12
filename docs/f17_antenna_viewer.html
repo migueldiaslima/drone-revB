@@ -73,7 +73,7 @@ ul.notes { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
         <div class="opts" id="opts">
           <label class="opt"><input type="radio" name="opt" id="opt-now" value="now"><div><b>As exported (F-17)</b><span>Boss under the keel, 90 deg V, no link</span></div></label>
           <label class="opt"><input type="radio" name="opt" id="opt-d" value="d"><div><b>D: on the GPS cap</b><span>Coax through the GPS channel, no frame feature</span></div></label>
-          <label class="opt"><input type="radio" name="opt" id="opt-f" value="f" checked><div><b>Under the keel: antenna spine</b><span>One smooth fixed feature: holder pad, sleeve on the antenna channel, web into the rear lid boss</span></div></label>
+          <label class="opt"><input type="radio" name="opt" id="opt-f" value="f" checked><div><b>Under the keel: antenna spine</b><span>Revision 3: one smooth fixed spine, TPU holder, T hanging under the cable exit</span></div></label>
         </div>
       </div>
       <div class="card">
@@ -84,11 +84,11 @@ ul.notes { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
       <div class="card" id="holdercard">
         <h2>How the holder attaches</h2>
         <ol class="steps">
-          <li><b>Pad.</b> The spine ends in a flat pad in the keel underside (z = 0), 13.5 x 10 mm, with an M2 heat-set insert and a 2 mm locating hole.</li>
-          <li><b>Antenna into the holder.</b> The moulded T drops into a pocket open at the top. Each leg snaps into a TPU C-clip 3 mm from the moulding.</li>
-          <li><b>Coax.</b> It leaves the channel exit straight down and turns rearward into the stem with a bend radius of about 2 mm, inside the holder.</li>
-          <li><b>Holder onto the pad.</b> The peg goes into the locating hole, and one M2 x 8 screw from below, its head recessed in the holder, goes into the insert. Peg and screw are 4.5 mm apart, so the holder cannot rotate.</li>
-          <li><b>Clamp.</b> The top of the moulding bears on the pad. The T is clamped between the pocket floor and the pad, not held by the screw alone.</li>
+          <li><b>Pad.</b> The spine ends in a pad in the keel underside (z = 0, 14 x 16 mm, 2.2 thick). The pad has a boss with a dia 3.2 x 4 hole for an M2 x 3 heat-set insert, pressed from below, and a dia 2 x 1.1 locating hole.</li>
+          <li><b>Antenna into the holder.</b> The moulded T is pushed up, stem first, between the two cheeks. It snaps past 1 mm lips under the bar. Each leg is pressed into a C-clip 3 mm from the moulding.</li>
+          <li><b>Coax.</b> It drops straight out of the channel exit into the top of the stem. There is no bend at the moulding. The only bend is the channel's own R7.</li>
+          <li><b>Holder onto the pad.</b> The stem enters the slot in the top plate, the 0.9 mm peg goes into the locating hole, and one M2 x 5 screw goes in from below in front of the cradle.</li>
+          <li><b>Clamp.</b> The plate bears on the pad, and the bar is held between the lips and the plate. The screw only holds the holder up.</li>
         </ol>
       </div>
       <div class="card">
@@ -102,7 +102,7 @@ ul.notes { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
           <button type="button" data-v="under">Below</button>
         </div>
       </div>
-      <p class="foot">Source: s06_geometry_v04B.py parameters, K8 and K9 centrelines, scripts/figures/f17_antenna_spine.py (spine surface from a signed distance field). Coax 60 to 62 mm, measured by Miguel. Mass = solid volume x 1.30 g/cm3.</p>
+      <p class="foot">Source: scripts/geometry_main/s06_f17_spine.py (revision 3 spine and holder from signed distance fields; checks in geometry/v04B_r3_f17/checks.json). Coax 60 to 62 mm, measured by Miguel. PET-CF 1.30, TPU 1.21 g/cm3.</p>
     </aside>
   </div>
 </div>
@@ -218,7 +218,8 @@ ul.notes { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
   [[1, 1], [1, -1], [-1, 1], [-1, -1]].forEach(function (s) { cyl(gF, s[0] * 12.75, s[1] * 12.75, 3.2, -15, -6, mFix); });
 
   var gC = G("channels");
-  tube(gC, K8, 1.75, mat(C.k8, 0.85));
+  var k8Now = new THREE.Group(); gC.add(k8Now);
+  tube(k8Now, K8, 1.75, mat(C.k8, 0.85));
   var k9Now = new THREE.Group(); gC.add(k9Now);
   tube(k9Now, K9, 2.0, mat(C.k9, 0.85));
   var k9Moved = new THREE.Group(); gC.add(k9Moved);
@@ -282,54 +283,47 @@ ul.notes { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
   cyl(gD, -44, 0, 2.7, 0, 6.5, mat(C.ghost, 0.35));
   tube(gD, [[-9.2, 3.5, 7], [-15, 0, 6], [-18.5, -4.09, 5]].concat(K9.slice().reverse().slice(1)).concat([[-38.2, -1.5, 24.5], [-50, -6.5, 25], [-53.5, -6.5, 26.8], [-56, -2, 27], [-57, 0, 27]]), 0.6, mCoax);
 
-  // under the keel: antenna spine (smooth fixed feature) + TPU holder + T stem-forward under the exit
+  // under the keel, revision 3: antenna spine + TPU holder, T hanging stem-up under the K8 exit (s06_f17_spine.py)
   var gF2 = G("opt-f");
-  var EX = [-38, 3.5];                      // K8 exit on the keel underside
-  var YC = 3.5;                             // T centred on the exit
-  // moulding: bar 4 x 14 x 4, stem 3 x 3.2 x 3 pointing +x
-  box(gF2, -47.5, -43.5, YC - 7, YC + 7, -4.0, 0.0, mat(0x161616, 1));
-  box(gF2, -43.5, -40.5, YC - 1.6, YC + 1.6, -3.5, -0.5, mat(0x161616, 1));
-  [1, -1].forEach(function (s) {
-    rod(gF2, [-45.5, YC + s * 7, -2.0], [-45.5, YC + s * 20, -2.0], 0.7, mLeg);
-    rod(gF2, [-45.5, YC + s * 20, -2.0], [-45.5, YC + s * 25, -2.0], 2.0, mat(0x161616, 1));
-  });
-  // TPU holder (translucent so the antenna inside shows)
-  var mT = mat(C.tpu, 0.55), mTs = mat(C.tpu, 1);
-  box(gF2, -52.0, -48.0, YC - 4.5, YC + 4.5, -5.2, 0, mT);            // rear block: screw and peg
-  box(gF2, -48.0, -43.0, YC - 7.6, YC + 7.6, -5.2, -4.0, mT);           // pocket floor under the bar
-  box(gF2, -48.0, -47.5, YC - 7.6, YC + 7.6, -4.0, 0, mT);              // pocket rear wall
-  box(gF2, -43.5, -40.0, YC - 2.4, YC + 2.4, -5.2, -3.5, mT);           // stem cradle
-  [1, -1].forEach(function (s) {
-    box(gF2, -47.0, -44.0, YC + s * 7.6 + (s > 0 ? 0 : -3.4), YC + s * 7.6 + (s > 0 ? 3.4 : 0), -5.2, -4.0, mT);   // arm to the clip
-    var clip = new THREE.Mesh(new THREE.TorusGeometry(1.25, 0.6, 14, 40, Math.PI * 1.5), mTs);
-    clip.rotation.set(Math.PI / 2, 0, Math.PI * 0.75);   // opening faces up: the leg is pressed in from above
-    clip.position.set(-45.5, YC + s * 10, -2.0); gF2.add(clip);
-    box(gF2, -46.1, -44.9, YC + s * 10 - 0.6, YC + s * 10 + 0.6, -4.0, -3.1, mTs);                                  // clip post
-  });
-  // screw (M2 x 8 from below) and peg
-  cyl(gF2, -50.0, 5.0, 1.0, -4.0, 4.0, mat(0x8d949a, 1, { metalness: 0.6, roughness: 0.35 }));   // M2 x 8 shank, 4 mm into the insert
-  cyl(gF2, -50.0, 5.0, 1.9, -5.2, -4.0, mat(0x8d949a, 1, { metalness: 0.6, roughness: 0.35 }));  // head, recessed in a counterbore
-  cyl(gF2, -50.0, 0.5, 0.95, 0, 1.8, mTs);
-  // coax: receiver, slack loop in the bay against the rear wall, K8, exit, 90 deg bend into the stem
-  var loop = [];
-  for (var i = 0; i <= 24; i++) { var t = -Math.PI / 2 + (2 * Math.PI * i) / 24; loop.push([-18.6, 7 + 3.5 * Math.cos(t), 11.5 + 3.5 * Math.sin(t)]); }
-  tube(gF2, [[-9.2, 3.5, 7], [-14, 5.5, 7.2], [-18.6, 7, 8]].concat(loop.slice(1)).concat([[-18.6, 5, 7.5], [-19.5, 3.5, 7]]).concat(K8.slice(1, -1)).concat([[-38, 3.5, 0], [-38.1, 3.5, -0.9], [-38.55, 3.5, -1.5], [-39.3, 3.5, -1.9], [-40.5, 3.5, -2.0]]), 0.6, mCoax);
-  var spineMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.55, metalness: 0.0, side: THREE.DoubleSide });
+  var k8Moved = new THREE.Group(); gC.add(k8Moved);
   var spineNote = document.createElement("div");
-  spineNote.className = "hint"; spineNote.style.bottom = "28px"; spineNote.textContent = "loading spine surface...";
+  spineNote.className = "hint"; spineNote.style.bottom = "28px"; spineNote.textContent = "loading revision 3 geometry...";
   view.appendChild(spineNote);
-  fetch("f17_spine_mesh.json").then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (d) {
+  function meshFrom(d, colorFn, m) {
     var geo = new THREE.BufferGeometry();
     geo.setAttribute("position", new THREE.Float32BufferAttribute(d.v, 3));
-    var col = new Float32Array(d.boss.length * 3), o = new THREE.Color(C.link), bl = new THREE.Color(C.fixed);
-    d.boss.forEach(function (b, i) { var c = b ? bl : o; col[3 * i] = c.r; col[3 * i + 1] = c.g; col[3 * i + 2] = c.b; });
-    geo.setAttribute("color", new THREE.BufferAttribute(col, 3));
+    if (colorFn) {
+      var n = d.v.length / 3, col = new Float32Array(n * 3);
+      for (var i = 0; i < n; i++) { var c = colorFn(i); col[3 * i] = c.r; col[3 * i + 1] = c.g; col[3 * i + 2] = c.b; }
+      geo.setAttribute("color", new THREE.BufferAttribute(col, 3));
+    }
     geo.setIndex(d.t); geo.computeVertexNormals();
-    gF2.add(new THREE.Mesh(geo, spineMat));
+    return new THREE.Mesh(geo, m);
+  }
+  fetch("f17_r3_mesh.json").then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (d) {
+    var o = new THREE.Color(C.link), bl = new THREE.Color(C.fixed);
+    gF2.add(meshFrom(d.spine, function (i) { return d.spine.boss[i] ? bl : o; },
+      new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.55, side: THREE.DoubleSide })));
+    gF2.add(meshFrom(d.holder, null, mat(C.tpu, 0.6)));
+    var A = d.ant, bar = A.bar, st = A.stem, mBlk = mat(0x161616, 1);
+    box(gF2, bar[0][0], bar[0][1], bar[1][0], bar[1][1], bar[2][0], bar[2][1], mBlk);
+    box(gF2, st[0][0], st[0][1], st[1][0], st[1][1], st[2][0], st[2][1], mBlk);
+    [1, -1].forEach(function (s) {
+      var y0 = A.y + s * (bar[1][1] - bar[1][0]) / 2, y1 = A.y + s * A.span / 2, yc = y1 - s * A.cap_len;
+      rod(gF2, [A.x, y0, A.leg_z], [A.x, yc, A.leg_z], A.leg_d / 2, mLeg);
+      rod(gF2, [A.x, yc, A.leg_z], [A.x, y1, A.leg_z], A.cap_d / 2, mBlk);
+    });
+    cyl(gF2, d.screw.xy[0], d.screw.xy[1], 1.0, -1.5, 3.5, mat(0x8d949a, 1, { metalness: 0.6, roughness: 0.35 }));
+    cyl(gF2, d.screw.xy[0], d.screw.xy[1], 1.9, -2.8, -1.5, mat(0x8d949a, 1, { metalness: 0.6, roughness: 0.35 }));
+    tube(k8Moved, d.k8, 1.75, mat(C.k8, 0.85));
     tube(k9Moved, d.k9, 2.0, mat(C.k9, 0.85));
+    // coax: receiver end, a gentle S of the 18 mm slack in the bay (R >= 7), K8, straight into the stem top
+    var coax = [[-9.2, 3.5, 6.5], [-11.5, 5.5, 9.0], [-15.0, 6.5, 12.0], [-18.4, 5.8, 10.2], [-19.6, 4.2, 7.0]];   // clear of the FC nut access columns
+    d.k8.forEach(function (p) { if (p[0] <= -20.0 && p[2] >= -0.5) coax.push(p); });
+    tube(gF2, coax, 0.6, mCoax);
     spineNote.remove();
     applyOpt(current);
-  }).catch(function (e) { spineNote.textContent = "Spine surface did not load (" + e.message + ")"; });
+  }).catch(function (e) { spineNote.textContent = "Revision 3 geometry did not load (" + e.message + ")"; });
 
   /* ---------- UI ---------- */
   var LAYERS = [
@@ -360,14 +354,15 @@ ul.notes { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
       verdict: '<span class="pill p-bad">Ruled out</span>With the measured 62 mm coax the antenna cannot reach the cap: the route through the GPS channel is about 74 mm.'
     },
     f: {
-      nums: [["New fixed material", "1,040 mm3 = 1.35 g"], ["Fixed chain", "pad, sleeve, web, rear lid boss"], ["Spine to GPS channel (moved 1.5 mm)", "1.51 mm"], ["Spine to keel side", "1.20 mm"], ["Coax: route + slack loop", "about 38 + 22 mm"], ["Holder bottom above landing plane", "9.8 mm"], ["Leg tip to rear-left arm axis (approx.)", "12.0 mm"]],
-      verdict: '<span class="pill p-good">Recommended</span>The T sits centred under the cable exit, at the forward limit set by the rear arms. The GPS channel gets no fixed material: it moves 1.5 mm to -y so the spine clears it. The arm clearance still needs gate C-9 on the real arm geometry.'
+      nums: [["New fixed material (spine)", "1,314 mm3 = 1.71 g"], ["Fixed chain", "pad, sleeve, web, rear lid boss"], ["Coax bend radius", "R7 in the channel, none at the stem"], ["Coax route / measured length", "44 / 62 mm"], ["Spine to GPS channel (moved 1.5 mm)", "1.19 mm"], ["Leg tips to rear arms (gate C-9)", "5.7 mm"], ["Holder (TPU) mass / lowest point above landing", "0.93 g / 6.1 mm"]],
+      verdict: '<span class="pill p-good">Validated</span>All 34 geometry checks pass (s06_f17_spine.py). Still open: measure the antenna (leg diameter, stem, total span), then run the CAD generator and gates G0 to G5 for revision 3.'
     }
   };
   var nums = document.getElementById("nums"), verdict = document.getElementById("verdict"), current = "f";
   function applyOpt(k) {
     groups["opt-now"].visible = k === "now"; groups["opt-d"].visible = k === "d"; groups["opt-f"].visible = k === "f";
     k9Now.visible = k !== "f" || k9Moved.children.length === 0; k9Moved.visible = k === "f";
+    if (k8Now) k8Now.visible = k !== "f" || k8Moved.children.length === 0; k8Moved.visible = k === "f";
     if (bossRL) bossRL.visible = k !== "f";
     document.getElementById("holdercard").hidden = k !== "f";
   }
