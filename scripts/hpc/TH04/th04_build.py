@@ -49,15 +49,27 @@ if len(tab.get('S', {})) == 0 or len(tab.get('M', {})) == 0:
 txt = open(MODEL).read()
 txt = re.sub(r',\s*SENSITIVITY=ADJOINT', '', txt, flags=re.I)
 out, skip = [], False
+ndr, nsub = 0, 0
 for ln in txt.splitlines():
-    if ln.upper().startswith('*DESIGN RESPONSE'):
+    kw = ln.upper().replace(' ', '')
+    if kw.startswith('*DESIGNRESPONSE'):
         skip = True
+        ndr += 1
         continue
+    # suboptions of *DESIGN RESPONSE (H4 deck: *GLOBALRESPONSE; also *ELEMENTRESPONSE, *NODERESPONSE)
     if skip and ln.startswith('*') and not ln.startswith('**'):
+        if kw.split(',')[0].endswith('RESPONSE'):
+            nsub += 1
+            continue
         skip = False
     if not skip:
         out.append(ln)
 lines = out
+print('removed: %d DESIGN RESPONSE blocks, %d response suboptions' % (ndr, nsub))
+left = [ln for ln in lines if ln.startswith('*') and not ln.startswith('**')
+        and ln.upper().replace(' ', '').split(',')[0].endswith('RESPONSE')]
+if left:
+    raise SystemExit('response keywords still in the deck: %s' % left[:3])
 # Lanczos shift (DV-24)
 for i, ln in enumerate(lines):
     if ln.upper().startswith('*FREQUENCY') and i + 1 < len(lines):
