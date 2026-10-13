@@ -1,0 +1,196 @@
+{
+ "params": {
+  "rx": {
+   "L": 18.4,
+   "W": 10.4,
+   "T": 4.0,
+   "pcb_t": 1.0
+  },
+  "clear_xy": 0.3,
+  "clear_lip": 0.1,
+  "floor": {
+   "z0": 4.1,
+   "t": 1.4
+  },
+  "wall_t": 1.2,
+  "y_in": [
+   2.45,
+   13.45
+  ],
+  "lip": {
+   "over": 0.9,
+   "tip_h": 0.3,
+   "x": [
+    -6.0,
+    6.0
+   ]
+  },
+  "end": {
+   "t": 1.2,
+   "h": 1.0,
+   "y_to": 9.75
+  },
+  "ear": {
+   "xy": 12.75,
+   "d": 5.8,
+   "hole_d": 2.4,
+   "y_from": 9.75
+  },
+  "chamfer_bed": 0.3
+ },
+ "dims": {
+  "z0": 4.1,
+  "zf": 5.5,
+  "xi": 9.5,
+  "yi0": 2.45,
+  "yi1": 13.45,
+  "zl": 9.6,
+  "ztop": 10.8,
+  "w": 1.2,
+  "xo": 10.7,
+  "ze": 6.5
+ },
+ "checks": {
+  "solids": {
+   "value": 1,
+   "required": 1,
+   "pass": true
+  },
+  "volume mm^3 / mass TPU g": {
+   "value": "731.8 / 0.89",
+   "required": "brief estimate 0.87 g",
+   "pass": true
+  },
+  "CG (x, y, z)": {
+   "value": [
+    0.0,
+    8.24,
+    6.06
+   ],
+   "required": "-",
+   "pass": true
+  },
+  "bounding box": {
+   "value": [
+    -15.65,
+    15.65,
+    1.25,
+    15.65,
+    4.1,
+    10.8
+   ],
+   "required": "z top <= 11.5 (K4)",
+   "pass": true
+  },
+  "receiver dummy overlap with cradle (mm^3)": {
+   "value": 0,
+   "required": 0,
+   "pass": true
+  },
+  "receiver rests on the floor (gap mm); side and end clearance by construction": {
+   "value": 0.0,
+   "required": "0; 0.3 per side",
+   "pass": true
+  },
+  "lip over the receiver edge (mm)": {
+   "value": 0.6,
+   "required": ">= 0.5",
+   "pass": true
+  },
+  "lip underside above receiver top (mm)": {
+   "value": 0.1,
+   "required": "0 to 0.2",
+   "pass": true
+  },
+  "interference with v04-B component dummies (mm^3)": {
+   "value": {},
+   "required": "none",
+   "pass": true
+  },
+  "IPEX lead (dia 1.13 leaving above the PCB top) to cradle (mm)": {
+   "value": 0.1,
+   "required": "> 0",
+   "pass": true
+  },
+  "C-5 capacitor clearance (mm)": {
+   "value": 1.75,
+   "required": ">= 1.0",
+   "pass": true
+  },
+  "C-6 floor to FC parts envelope (z <= +3.8) (mm)": {
+   "value": 0.3,
+   "required": ">= 0.3 (Q-60 open)",
+   "pass": true
+  },
+  "ear seats on lock nut pp (gap mm)": {
+   "value": 0.0,
+   "required": 0,
+   "pass": true
+  },
+  "nylon nut pp on ear (gap mm)": {
+   "value": 0.0,
+   "required": 0,
+   "pass": true
+  },
+  "screw pp radial clearance in the ear hole (mm)": {
+   "value": 0.2,
+   "required": "0.1 to 0.3",
+   "pass": true
+  },
+  "free radius around the pp nylon nut above the ear (mm)": {
+   "value": 3.4,
+   "required": "socket OD / 2 (M2 nut 4 mm AF)",
+   "pass": true
+  },
+  "ear seats on lock nut mp (gap mm)": {
+   "value": 0.0,
+   "required": 0,
+   "pass": true
+  },
+  "nylon nut mp on ear (gap mm)": {
+   "value": 0.0,
+   "required": 0,
+   "pass": true
+  },
+  "screw mp radial clearance in the ear hole (mm)": {
+   "value": 0.2,
+   "required": "0.1 to 0.3",
+   "pass": true
+  },
+  "free radius around the mp nylon nut above the ear (mm)": {
+   "value": 3.4,
+   "required": "socket OD / 2 (M2 nut 4 mm AF)",
+   "pass": true
+  },
+  "clearance to TUB (mm)": {
+   "value": 4.85,
+   "required": "> 0",
+   "pass": true
+  },
+  "clearance to LID (mm)": {
+   "value": 10.7,
+   "required": "> 0",
+   "pass": true
+  },
+  "clearance to K8 antenna channel entry (mm)": {
+   "value": 6.607,
+   "required": "> 0",
+   "pass": true
+  },
+  "snap wall root strain, guided cantilever bound (%)": {
+   "value": 6.42,
+   "required": "TPU 95A: fine; PET-CF: no",
+   "pass": true
+  },
+  "min wall / lip tip / floor (mm)": {
+   "value": [
+    1.2,
+    0.3,
+    1.4
+   ],
+   "required": ">= 0.8 wall at 0.4 nozzle",
+   "pass": true
+  }
+ },
+ "all_pass": true
+}
