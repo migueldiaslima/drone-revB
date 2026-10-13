@@ -1,0 +1,123 @@
+{
+ "params": {
+  "gps": {
+   "L": 17.0,
+   "W": 12.0,
+   "H": 5.0,
+   "x_c": -44.0,
+   "z0": 24.0
+  },
+  "preload": 0.3,
+  "plate": {
+   "x": [
+    -54.0,
+    -34.0
+   ],
+   "y": 12.0,
+   "t": 1.2,
+   "r": 2.0
+  },
+  "window": {
+   "L": 9.0,
+   "W": 9.0,
+   "r": 1.0
+  },
+  "leg_d": 5.4,
+  "hole_d": 2.4,
+  "bed_chamfer": 0.3
+ },
+ "dims": {
+  "z_mod_top": 29.0,
+  "zp0": 28.7,
+  "zp1": 29.9,
+  "z_boss": 26.5
+ },
+ "checks": {
+  "solids": {
+   "value": 1,
+   "required": 1,
+   "pass": true
+  },
+  "volume mm^3 / mass TPU g": {
+   "value": "539.6 / 0.65",
+   "required": "estimate 0.84 g (in RP_GPS)",
+   "pass": true
+  },
+  "CG (x, y, z)": {
+   "value": [
+    -44.0,
+    0.0,
+    29.04
+   ],
+   "required": "-",
+   "pass": true
+  },
+  "clamp interference on the module top (mm^3, from 0.3 mm preload)": {
+   "value": 37.16,
+   "required": "> 0",
+   "pass": true
+  },
+  "clamp band around the window: x ends / y sides (mm)": {
+   "value": [
+    4.0,
+    1.5
+   ],
+   "required": ">= 1.0",
+   "pass": true
+  },
+  "overlap with the TUB (mm^3)": {
+   "value": 0,
+   "required": 0,
+   "pass": true
+  },
+  "legs seated on the cap bosses (gap mm)": {
+   "value": 0.0,
+   "required": 0,
+   "pass": true
+  },
+  "plate to the pocket rim top (mm)": {
+   "value": 2.2,
+   "required": "> 0",
+   "pass": true
+  },
+  "clearance to the LID (mm)": {
+   "value": 5.108,
+   "required": "> 0",
+   "pass": true
+  },
+  "clearance to battery (mm)": {
+   "value": 4.5,
+   "required": "> 0",
+   "pass": true
+  },
+  "clearance to strap (mm)": {
+   "value": 26.911,
+   "required": "> 0",
+   "pass": true
+  },
+  "interference with other component dummies": {
+   "value": {},
+   "required": "none",
+   "pass": true
+  },
+  "K9 cable hole under the module, not under the cap (no overlap mm^3)": {
+   "value": 0,
+   "required": 0,
+   "pass": true
+  },
+  "screw: plate + leg above the boss top (mm)": {
+   "value": 3.4,
+   "required": "M2 x 6 engages 2.6, M2 x 8 engages 4.6 (insert hole 6.0 deep)",
+   "pass": true
+  },
+  "cap top / with M2 pan head (z)": {
+   "value": [
+    29.9,
+    31.2
+   ],
+   "required": "-",
+   "pass": true
+  }
+ },
+ "all_pass": true
+}
