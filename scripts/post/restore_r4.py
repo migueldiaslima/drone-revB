@@ -39,7 +39,57 @@ def vol(m):
     return m.volume() if hasattr(m, 'volume') else m.get_volume()
 
 
+def orient(V, F):
+    """make the triangle orientation consistent over each connected sheet (every edge used once in each
+    direction), then outward (positive signed volume) per connected component"""
+    F = np.asarray(F, dtype=np.int64).copy()
+    nt = len(F)
+    he = np.vstack([F[:, [0, 1]], F[:, [1, 2]], F[:, [2, 0]]])
+    tri = np.tile(np.arange(nt), 3)
+    key = np.sort(he, axis=1)
+    order = np.lexsort((key[:, 1], key[:, 0]))
+    ks = key[order]
+    same = np.all(ks[1:] == ks[:-1], axis=1)
+    i = np.nonzero(same)[0]
+    a_, b_ = order[i], order[i + 1]                 # the two half-edges of a shared edge
+    ta, tb = tri[a_], tri[b_]
+    agree = np.all(he[a_] == he[b_], axis=1)       # same direction: one of the two triangles must flip
+    nb = [[] for _ in range(nt)]
+    for x, y, g in zip(ta.tolist(), tb.tolist(), agree.tolist()):
+        nb[x].append((y, g))
+        nb[y].append((x, g))
+    flip = np.zeros(nt, dtype=bool)
+    seen = np.zeros(nt, dtype=bool)
+    comp = np.full(nt, -1)
+    c = 0
+    for s0 in range(nt):
+        if seen[s0]:
+            continue
+        stack = [s0]
+        seen[s0] = True
+        comp[s0] = c
+        while stack:
+            t = stack.pop()
+            for u, g in nb[t]:
+                if not seen[u]:
+                    seen[u] = True
+                    comp[u] = c
+                    flip[u] = flip[t] ^ g
+                    stack.append(u)
+        c += 1
+    F[flip] = F[flip][:, ::-1]
+    V = np.asarray(V, dtype=float)
+    sv = np.einsum('ij,ij->i', V[F[:, 0]], np.cross(V[F[:, 1]], V[F[:, 2]])) / 6.0
+    cs = np.bincount(comp, weights=sv, minlength=c)
+    neg = cs[comp] < 0
+    F[neg] = F[neg][:, ::-1]
+    return F, int(flip.sum()), c
+
+
 def to_manifold(V, F, label):
+    F, nflip, ncomp = orient(V, F)
+    if nflip:
+        print('  %s: %d triangles re-oriented (%d sheet(s))' % (label, nflip, ncomp))
     mesh = Mesh(vert_properties=np.ascontiguousarray(V, dtype=np.float32), tri_verts=np.ascontiguousarray(F, dtype=np.uint32))
     m = Manifold(mesh)
     st = str(m.status())
