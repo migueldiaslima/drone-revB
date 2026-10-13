@@ -32,7 +32,7 @@ The staircase surface of the element-level body gives single-element peaks at re
 
 ## (d) Which stress against which allowable
 
-Print orientation: every part is printed with its layers in the global x-y plane (build direction = global z), which is the D-045 material model. This holds whichever tub orientation Miguel chooses (floor-down or rim-down both keep z as the build axis); the arms are printed flat. Two checks per element:
+Print orientation: every part is printed with its layers in the global x-y plane (build direction = global z), which is the D-045 material model. The TUB is printed floor-down, on the landing face where the FC screws enter (Miguel, 2026-10-13): build direction = global +z, so S33 is the stress across the layers; the arms are printed flat. Two checks per element:
 
 | Check | Stress | Allowable / 1.5 | Why |
 |---|---|---|---|
