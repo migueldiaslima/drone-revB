@@ -21,6 +21,15 @@ if R4:
 ISO = float(os.environ.get('TH_ISO', ISO))     # item 51: other iso levels, job suffix _iNN
 ISUF = ('_i%02d' % int(round(ISO * 100))) if 'TH_ISO' in os.environ else ''
 DIST = 'tosca_distribution.inp'
+TAGX = os.environ.get('TH_TAG', '')          # item 52: job name suffix for box variants
+# item 52: TH_BOXES = 'x0,x1,y0,y1,z0,z1,iso;...' : TUB elements whose corner-node centroid lies in a box use
+# that box's iso level instead of ISO (iso 0 = forced solid). Prints the volume and mass added against ISO.
+BOXES = []
+for b in [t for t in os.environ.get('TH_BOXES', '').split(';') if t.strip()]:
+    v = [float(x) for x in b.split(',')]
+    if len(v) != 7:
+        raise SystemExit('TH_BOXES entry needs 7 numbers: %s' % b)
+    BOXES.append(v)
 
 o = openOdb(odbp, readOnly=True)
 st = o.steps['FREQ']
@@ -103,6 +112,31 @@ if NOISL:
     for r, mem in sorted(comps.items(), key=lambda t: -len(t[1])):
         c = xyz[[econ[i][0] for i in mem]].mean(axis=0)
         print('  %6d elements, centroid about (%.1f, %.1f, %.1f)' % (len(mem), c[0], c[1], c[2]))
+boxiso = {}
+if BOXES:
+    inst = o.rootAssembly.instances[list(o.rootAssembly.instances.keys())[0]]
+    tubk = [k for k in inst.elementSets.keys() if k.upper().endswith('ALL_TUB')]
+    if not tubk:
+        raise SystemExit('TUB element set not found')
+    tub = set(e.label for e in inst.elementSets[tubk[0]].elements)
+    xyzn = dict((n.label, n.coordinates) for n in inst.nodes)
+    added_v = 0.0
+    nbox = 0
+    for e in inst.elements:
+        if e.label not in tub or not e.type.upper().startswith('C3D'):
+            continue
+        p = np.asarray([xyzn[c] for c in e.connectivity[:4]], dtype=float)
+        c = p.mean(axis=0)
+        for x0, x1, y0, y1, z0, z1, bi in BOXES:
+            if x0 <= c[0] <= x1 and y0 <= c[1] <= y1 and z0 <= c[2] <= z1:
+                boxiso[e.label] = bi
+                nbox += 1
+                r = rho.get(e.label, 1.0)
+                if r >= bi and r < ISO:
+                    added_v += abs(np.dot(p[1] - p[0], np.cross(p[2] - p[0], p[3] - p[0]))) / 6.0
+                break
+    print('boxes %s: %d TUB elements inside; volume added against iso %.2f: %.1f mm^3 = %.2f g (1.30e-3 g/mm^3)' % (
+        BOXES, nbox, ISO, added_v, added_v * 1.30e-3))
 o.close()
 
 tab, head, cur = {}, {}, None
@@ -169,16 +203,16 @@ five = ''
 for k in range(1, 6):
     five += re.sub(r'name=TIE_LIDRIM', 'name=TIE_LID_%d' % k, hdr, flags=re.I) + '\n'
     five += 'TUB-1_S_TUB_BOSS_%d, LID-1_S_LID_PAD_%d\n' % (k, k)
-variants = {'TH_r4b' + ISUF: base} if R4 else {'TH04b': base, 'TH04a': base.replace(m.group(0), five)}   # r4: no lid pads (DV-26)
+variants = {'TH_r4b' + ISUF + TAGX: base} if R4 else {'TH04b': base, 'TH04a': base.replace(m.group(0), five)}   # r4: no lid pads (DV-26)
 print('TH04a ties:\n' + five)
 
-dname = ('dist_TH_r4%s%s.inp' % (ISUF, SUF)) if R4 else ('dist_TH04%s.inp' % SUF)
+dname = ('dist_TH_r4%s%s%s.inp' % (ISUF, TAGX, SUF)) if R4 else ('dist_TH04%s.inp' % SUF)
 nsol = 0
 with open(dname, 'w') as f:
     for k, lo in (('S', 1e-6), ('M', 1e-9)):
         f.write('\n'.join(head[k]) + '\n')
         for l in sorted(tab[k]):
-            solid = rho.get(l, 1.0) >= ISO and l not in island
+            solid = rho.get(l, 1.0) >= boxiso.get(l, ISO) and l not in island
             if k == 'S' and solid:
                 nsol += 1
             f.write('%d, %.6e, %.6e\n' % (l, 1.0 if solid else lo, tab[k][l][1]))
