@@ -42,6 +42,8 @@ KEELS_V = float(os.environ.get('TH_KEELS_V', '0') or 0)
 def read_stl_tris(fn):
     import struct
     d = open(fn, 'rb').read()
+    if len(d) < 84:
+        raise SystemExit('%s: %d bytes, not an STL (empty or failed download)' % (fn, len(d)))
     n = struct.unpack('<I', d[80:84])[0]
     if len(d) != 84 + 50 * n:
         raise SystemExit('%s: not a binary STL (%d bytes for %d triangles)' % (fn, len(d), n))
