@@ -59,36 +59,55 @@ def props(polys, wlim=None):
     return abs(A), zc, abs(I), c
 
 
+U_M = 52.5 * 2 ** 0.5        # motor axis (52.5, 52.5) on the diagonal (D-079; motor pad centroid in ARM_pp.step u 74.24)
+U_J = 33.0 + 3.0 * 2 ** 0.5  # J3 bolt line: 33 mm in v03 (F-9) moved out 3 mm in x and y by D-079 (prong boss centroids u 37.4 to 37.5)
+U_SLOT = 34.35 + 3.0 * 2 ** 0.5 + 5.15   # slot-end semicircle: centre 34.35 (v03, F-9) + D-079, radius 5.15 (D-048); checked on the STL
+S_XY, M_JOINT = 54.4, 21216.0             # MPa (N-05-03), joint vertical moment capacity N mm (N-06-04)
+
+
+def profile(rr, us, wlim):
+    rows = []
+    for u in us:
+        polys = rr.slice(-u).to_polygons()
+        pw = [np.c_[np.asarray(P)[:, 1], np.asarray(P)[:, 0]] for P in polys]
+        p = props(pw, wlim)
+        if p is None:
+            rows.append((u, 0.0, 0.0, 0.0, 0.0, 0.0))
+            continue
+        A, zc, I, c = p
+        rows.append((u, A, zc, I, c, I / c))
+    return rows
+
+
+def show(rows, extra=None):
+    print('  u (mm)   area mm^2   z_c mm   I mm^4      c mm   Z mm^3' + ('   Z / (u_m - u) mm^2' if extra else ''))
+    for r in rows:
+        u, A, zc, I, c, Z = r
+        print('  %5.2f  %9.2f  %7.2f  %9.1f  %6.2f  %7.1f' % (u, A, zc, I, c, Z) + ('   %8.2f' % (Z / (U_M - u)) if extra else ''))
+
+
 if __name__ == '__main__':
     arm_fn, tub_fn = sys.argv[1], sys.argv[2]
-    res = {}
-    for name, fn, us, wlim in (('ARM_pp', arm_fn, np.arange(45.0, 55.01, 1.0), None),
-                               ('TUB fin', tub_fn, np.arange(20.0, 40.01, 1.0), W_FIN)):
-        m = to_manifold(read_stl(fn))
-        r = m.rotate((0.0, 0.0, -45.0))         # pp diagonal onto +x; w = y
-        b = r.bounding_box()
-        print('%s: volume %.1f mm^3, rotated bbox x %.1f..%.1f (u), y %.1f..%.1f (w), z %.1f..%.1f' % (
-            name, r.volume() if hasattr(r, 'volume') else r.get_volume(), b[0], b[3], b[1], b[4], b[2], b[5]))
-        # slice planes x = u: rotate so x becomes the slicing axis z'
-        rr = r.rotate((0.0, 90.0, 0.0))         # about y by +90: x -> -z', z -> x'
-        rows = []
-        for u in us:
-            cs = rr.slice(-u)
-            polys = cs.to_polygons()
-            # in rr: x' = z (up), y' = w; take (w, z) = (y', x')
-            pw = [np.c_[np.asarray(P)[:, 1], np.asarray(P)[:, 0]] for P in polys]
-            p = props(pw, wlim)
-            if p is None:
-                rows.append((u, 0, 0, 0, 0, 0))
-                continue
-            A, zc, I, c = p
-            rows.append((u, A, zc, I, c, I / c))
-        res[name] = rows
-        print('  u (mm)   area mm^2   z_c mm   I mm^4      c mm   Z mm^3')
-        for u, A, zc, I, c, Z in rows:
-            print('  %5.1f  %9.2f  %7.2f  %9.1f  %6.2f  %7.1f' % (u, A, zc, I, c, Z))
-    a = dict((round(r[0], 1), r[5]) for r in res['ARM_pp'])
-    z50 = a.get(50.0)
-    print('D-050 arm at the fork exit (u 50): Z = %.1f mm^3, limit <= %.0f -> %s' % (z50, ARM_LIMIT, 'PASS' if z50 <= ARM_LIMIT else 'CHECK'))
-    near = [r[5] for r in res['ARM_pp'] if 45.0 <= r[0] <= 55.0 and r[5] > 0]
-    print('   u 45 to 55: Z %.1f to %.1f mm^3' % (min(near), max(near)))
+    arm = to_manifold(read_stl(arm_fn)).rotate((0.0, 0.0, -45.0)).rotate((0.0, 90.0, 0.0))
+    tub = to_manifold(read_stl(tub_fn)).rotate((0.0, 0.0, -45.0)).rotate((0.0, 90.0, 0.0))
+    print('u from the frame centre along the pp diagonal; motor axis u_m %.2f, bolt line u_j %.2f, slot end u %.2f' % (U_M, U_J, U_SLOT))
+    print('ARM_pp, D-050 (Z <= %.0f mm^3), u 45 to 55:' % ARM_LIMIT)
+    r1 = profile(arm, np.arange(45.0, 55.01, 1.0), None)
+    show(r1)
+    rs = profile(arm, [U_SLOT, 54.0], None)
+    print('ARM_pp at the slot end (fork exit) and at u 54:')
+    show(rs)
+    print('D-050 at the fork exit u %.2f: Z = %.1f mm^3 -> %s' % (U_SLOT, rs[0][5], 'PASS' if rs[0][5] <= ARM_LIMIT else 'NOT MET'))
+    print('ARM_pp, lever-corrected Z / (u_m - u), u 45 to 72:')
+    r2 = profile(arm, np.arange(45.0, 72.01, 1.0), None)
+    show(r2, extra=True)
+    k = min(range(len(r2)), key=lambda i: r2[i][5] / (U_M - r2[i][0]))
+    q = r2[k][5] / (U_M - r2[k][0])
+    ratio = S_XY * q * (U_M - U_J) / M_JOINT
+    print('minimum Z / (u_m - u) = %.2f mm^2 at u %.1f (Z %.1f mm^3, lever %.2f mm)' % (q, r2[k][0], r2[k][5], U_M - r2[k][0]))
+    print('arm-to-joint failure force ratio = S_xy x min[Z / (u_m - u)] x (u_m - u_j) / M_joint = %.1f x %.2f x %.2f / %.0f = %.2f' % (
+        S_XY, q, U_M - U_J, M_JOINT, ratio))
+    print('  (tip force to fail the arm / tip force to fail the joint; above 1: the joint fails first)')
+    print('TUB fin, D-051 (Z >= %.0f mm^3), cut restricted to abs(w) <= %.0f mm, u 25 to 33:' % (FIN_LIMIT, W_FIN))
+    r3 = profile(tub, np.arange(25.0, 33.01, 0.5), W_FIN)
+    show(r3)

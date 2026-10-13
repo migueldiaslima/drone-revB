@@ -1,0 +1,207 @@
+dist_TH_r4_i30_final.inp: 511770 solid elements (stiffness factor 1)
+tie and coupling surfaces in TH_r4b_i30_final.inp: 30 (ARM_mm-1_S_JNT, ARM_mm-1_S_MOT_SEAT, ARM_mm-1_S_PRONG_BOSS_L, ARM_mm-1_S_PRONG_BOSS_R, ARM_mp-1_S_JNT, ARM_mp-1_S_MOT_SEAT, ARM_mp-1_S_PRONG_BOSS_L, ARM_mp-1_S_PRONG_BOSS_R, ARM_pm-1_S_JNT, ARM_pm-1_S_MOT_SEAT, ARM_pm-1_S_PRONG_BOSS_L, ARM_pm-1_S_PRONG_BOSS_R, ARM_pp-1_S_JNT, ARM_pp-1_S_MOT_SEAT, ARM_pp-1_S_PRONG_BOSS_L, ARM_pp-1_S_PRONG_BOSS_R, LID-1_S_BATT_SEAT, LID-1_S_LID_BOTTOM, TUB-1_S_ANT_PAD, TUB-1_S_FC_SEAT, TUB-1_S_FIN_BOSS_mm_L, TUB-1_S_FIN_BOSS_mm_R, TUB-1_S_FIN_BOSS_mp_L, TUB-1_S_FIN_BOSS_mp_R, TUB-1_S_FIN_BOSS_pm_L, TUB-1_S_FIN_BOSS_pm_R, TUB-1_S_FIN_BOSS_pp_L, TUB-1_S_FIN_BOSS_pp_R, TUB-1_S_GPS_SEAT, TUB-1_S_RIM_UNDER_LID)
+step LC1, last frame: field outputs ['CENER', 'CF', 'CM', 'DMENER', 'E', 'EENER', 'JENER', 'PENER', 'RF', 'RM', 'S', 'SENER', 'U', 'UR', 'VENER']
+step LC2a, last frame: field outputs ['CENER', 'CF', 'CM', 'DMENER', 'E', 'EENER', 'JENER', 'PENER', 'RF', 'RM', 'S', 'SENER', 'U', 'UR', 'VENER']
+step LC2b, last frame: field outputs ['CENER', 'CF', 'CM', 'DMENER', 'E', 'EENER', 'JENER', 'PENER', 'RF', 'RM', 'S', 'SENER', 'U', 'UR', 'VENER']
+step LC3a, last frame: field outputs ['CENER', 'DMENER', 'E', 'EENER', 'JENER', 'PENER', 'RF', 'RM', 'S', 'SENER', 'U', 'UR', 'VENER']
+parts: ARM_mm 80603, ARM_mp 80603, ARM_pm 80603, ARM_pp 80603, LID 51191, TUB 391649; design elements 535298
+  surface ARM_mm-1_S_JNT (ARM_MM-1_S_JNT): 6378 nodes
+  surface ARM_mm-1_S_MOT_SEAT (ARM_MM-1_S_MOT_SEAT): 3306 nodes
+  surface ARM_mm-1_S_PRONG_BOSS_L (ARM_MM-1_S_PRONG_BOSS_L): 1938 nodes
+  surface ARM_mm-1_S_PRONG_BOSS_R (ARM_MM-1_S_PRONG_BOSS_R): 1950 nodes
+  surface ARM_mp-1_S_JNT (ARM_MP-1_S_JNT): 6378 nodes
+  surface ARM_mp-1_S_MOT_SEAT (ARM_MP-1_S_MOT_SEAT): 3306 nodes
+  surface ARM_mp-1_S_PRONG_BOSS_L (ARM_MP-1_S_PRONG_BOSS_L): 1938 nodes
+  surface ARM_mp-1_S_PRONG_BOSS_R (ARM_MP-1_S_PRONG_BOSS_R): 1950 nodes
+  surface ARM_pm-1_S_JNT (ARM_PM-1_S_JNT): 6378 nodes
+  surface ARM_pm-1_S_MOT_SEAT (ARM_PM-1_S_MOT_SEAT): 3306 nodes
+  surface ARM_pm-1_S_PRONG_BOSS_L (ARM_PM-1_S_PRONG_BOSS_L): 1938 nodes
+  surface ARM_pm-1_S_PRONG_BOSS_R (ARM_PM-1_S_PRONG_BOSS_R): 1950 nodes
+  surface ARM_pp-1_S_JNT (ARM_PP-1_S_JNT): 6378 nodes
+  surface ARM_pp-1_S_MOT_SEAT (ARM_PP-1_S_MOT_SEAT): 3306 nodes
+  surface ARM_pp-1_S_PRONG_BOSS_L (ARM_PP-1_S_PRONG_BOSS_L): 1938 nodes
+  surface ARM_pp-1_S_PRONG_BOSS_R (ARM_PP-1_S_PRONG_BOSS_R): 1950 nodes
+  surface LID-1_S_BATT_SEAT (LID-1_S_BATT_SEAT): 12336 nodes
+  surface LID-1_S_LID_BOTTOM (LID-1_S_LID_BOTTOM): 32802 nodes
+  surface TUB-1_S_ANT_PAD (TUB-1_S_ANT_PAD): 2430 nodes
+  surface TUB-1_S_FC_SEAT (TUB-1_S_FC_SEAT): 2016 nodes
+  surface TUB-1_S_FIN_BOSS_mm_L (TUB-1_S_FIN_BOSS_MM_L): 1908 nodes
+  surface TUB-1_S_FIN_BOSS_mm_R (TUB-1_S_FIN_BOSS_MM_R): 1908 nodes
+  surface TUB-1_S_FIN_BOSS_mp_L (TUB-1_S_FIN_BOSS_MP_L): 1908 nodes
+  surface TUB-1_S_FIN_BOSS_mp_R (TUB-1_S_FIN_BOSS_MP_R): 1908 nodes
+  surface TUB-1_S_FIN_BOSS_pm_L (TUB-1_S_FIN_BOSS_PM_L): 1908 nodes
+  surface TUB-1_S_FIN_BOSS_pm_R (TUB-1_S_FIN_BOSS_PM_R): 1896 nodes
+  surface TUB-1_S_FIN_BOSS_pp_L (TUB-1_S_FIN_BOSS_PP_L): 1908 nodes
+  surface TUB-1_S_FIN_BOSS_pp_R (TUB-1_S_FIN_BOSS_PP_R): 1896 nodes
+  surface TUB-1_S_GPS_SEAT (TUB-1_S_GPS_SEAT): 3018 nodes
+  surface TUB-1_S_RIM_UNDER_LID (TUB-1_S_RIM_UNDER_LID): 4980 nodes
+elements with a node on a tie or coupling surface: 78733 (71564 of them solid), excluded from the checks
+solid elements with a free face (surface): 124028 of 511770
+======================== LC1
+ARM_mm  LC1  von Mises                      P99.9   0.79 / 36.3 MPa (util 0.02) | max   1.38 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.75 | PASS
+        top 10 VM: 1.4 (-40.0, -47.0, 0.1); 1.3 (-40.5, -47.7, -0.2); 1.3 (-40.5, -47.4, -0.1); 1.2 (-40.1, -46.7, 0.1); 1.2 (-40.2, -47.2, -0.3); 1.1 (-39.7, -46.5, 0.1); 1.1 (-41.3, -46.8, -0.1); 1.1 (-41.2, -47.1, -0.1); 1.1 (-40.5, -47.9, -0.4); 1.1 (-40.7, -46.4, 0.0)
+ARM_mm  LC1  S33 tension (across layers)    P99.9   0.10 / 15.9 MPa (util 0.01) | max   0.20 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.14 | PASS
+        top 10 S33: 0.2 (-58.6, -55.0, -3.2); 0.2 (-58.7, -55.0, -2.8); 0.2 (-50.4, -56.7, -3.5); 0.2 (-58.9, -54.9, -2.3); 0.2 (-56.1, -53.9, -3.3); 0.1 (-58.2, -54.9, -3.2); 0.1 (-47.0, -54.4, -2.8); 0.1 (-54.7, -48.6, -3.3); 0.1 (-59.3, -55.3, -2.6); 0.1 (-54.2, -48.0, -2.8)
+ARM_mm  LC1  sqrt(S13^2 + S23^2)            P99.9   0.23 / 15.9 MPa (util 0.01) | max   0.44 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.19 | PASS
+        top 10 TSH: 0.4 (-39.6, -46.4, 0.5); 0.4 (-40.1, -46.7, 0.1); 0.4 (-39.6, -46.1, 0.6); 0.4 (-42.0, -44.8, 0.3); 0.4 (-40.1, -45.7, 0.6); 0.4 (-40.7, -45.9, 0.2); 0.4 (-40.0, -47.0, 0.1); 0.4 (-41.8, -44.6, 0.3); 0.4 (-40.7, -45.0, 0.7); 0.4 (-39.7, -46.5, 0.1)
+ARM_mp  LC1  von Mises                      P99.9   0.79 / 36.3 MPa (util 0.02) | max   1.39 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.84 | PASS
+        top 10 VM: 1.4 (-40.2, 46.9, 0.1); 1.3 (-40.5, 47.7, -0.2); 1.3 (-40.5, 47.4, -0.1); 1.3 (-39.9, 46.9, -0.0); 1.2 (-40.2, 46.6, 0.2); 1.2 (-40.3, 47.1, -0.2); 1.2 (-40.6, 46.5, 0.1); 1.1 (-40.1, 47.1, -0.3); 1.1 (-39.7, 46.6, -0.1); 1.1 (-41.2, 47.1, -0.1)
+ARM_mp  LC1  S33 tension (across layers)    P99.9   0.10 / 15.9 MPa (util 0.01) | max   0.18 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.13 | PASS
+        top 10 S33: 0.2 (-58.9, 55.3, -3.4); 0.1 (-50.4, 57.0, -3.2); 0.1 (-50.8, 57.2, -2.6); 0.1 (-58.9, 55.2, -2.6); 0.1 (-60.4, 54.6, -2.8); 0.1 (-54.2, 47.8, -2.6); 0.1 (-48.7, 44.8, -4.7); 0.1 (-55.6, 46.1, -3.4); 0.1 (-54.3, 48.7, -2.8); 0.1 (-60.3, 54.5, -3.3)
+ARM_mp  LC1  sqrt(S13^2 + S23^2)            P99.9   0.23 / 15.9 MPa (util 0.01) | max   0.44 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.20 | PASS
+        top 10 TSH: 0.4 (-40.2, 46.6, 0.2); 0.4 (-39.6, 46.4, 0.5); 0.4 (-40.2, 46.9, 0.1); 0.4 (-42.0, 44.8, 0.3); 0.4 (-40.2, 45.6, 0.6); 0.4 (-39.9, 46.5, 0.2); 0.4 (-40.6, 46.5, 0.1); 0.4 (-39.7, 46.0, 0.7); 0.4 (-40.8, 45.9, 0.2); 0.4 (-41.8, 44.6, 0.3)
+ARM_pm  LC1  von Mises                      P99.9   0.77 / 36.3 MPa (util 0.02) | max   1.36 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.81 | PASS
+        top 10 VM: 1.4 (40.2, -46.9, 0.1); 1.3 (40.5, -47.7, -0.2); 1.3 (40.5, -47.4, -0.1); 1.2 (39.9, -46.9, -0.0); 1.2 (40.2, -46.6, 0.2); 1.2 (40.3, -47.1, -0.2); 1.1 (40.6, -46.5, 0.1); 1.1 (40.1, -47.1, -0.3); 1.1 (39.7, -46.6, -0.1); 1.1 (41.2, -47.1, -0.1)
+ARM_pm  LC1  S33 tension (across layers)    P99.9   0.10 / 15.9 MPa (util 0.01) | max   0.18 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.13 | PASS
+        top 10 S33: 0.2 (58.9, -55.3, -3.4); 0.1 (50.4, -57.0, -3.2); 0.1 (58.9, -55.2, -2.6); 0.1 (50.8, -57.2, -2.6); 0.1 (60.4, -54.6, -2.8); 0.1 (54.2, -47.8, -2.6); 0.1 (48.7, -44.8, -4.7); 0.1 (55.6, -46.1, -3.4); 0.1 (54.3, -48.7, -2.8); 0.1 (50.8, -56.9, -2.3)
+ARM_pm  LC1  sqrt(S13^2 + S23^2)            P99.9   0.22 / 15.9 MPa (util 0.01) | max   0.43 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.19 | PASS
+        top 10 TSH: 0.4 (40.2, -46.6, 0.2); 0.4 (39.6, -46.4, 0.5); 0.4 (40.2, -46.9, 0.1); 0.4 (42.0, -44.8, 0.3); 0.4 (40.2, -45.6, 0.6); 0.4 (39.9, -46.5, 0.2); 0.4 (40.6, -46.5, 0.1); 0.4 (39.7, -46.0, 0.7); 0.4 (40.8, -45.9, 0.2); 0.4 (41.8, -44.6, 0.3)
+ARM_pp  LC1  von Mises                      P99.9   0.78 / 36.3 MPa (util 0.02) | max   1.36 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.73 | PASS
+        top 10 VM: 1.4 (40.0, 47.0, 0.1); 1.3 (40.5, 47.7, -0.2); 1.3 (40.5, 47.4, -0.1); 1.2 (40.1, 46.7, 0.1); 1.2 (40.2, 47.2, -0.3); 1.1 (39.7, 46.5, 0.1); 1.1 (41.3, 46.8, -0.1); 1.1 (41.2, 47.1, -0.1); 1.1 (40.5, 47.9, -0.4); 1.0 (40.7, 46.4, 0.0)
+ARM_pp  LC1  S33 tension (across layers)    P99.9   0.10 / 15.9 MPa (util 0.01) | max   0.19 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.13 | PASS
+        top 10 S33: 0.2 (58.6, 55.0, -3.2); 0.2 (58.7, 55.0, -2.8); 0.2 (50.4, 56.7, -3.5); 0.2 (58.9, 54.9, -2.3); 0.1 (56.1, 53.9, -3.3); 0.1 (58.2, 54.9, -3.2); 0.1 (54.7, 48.6, -3.3); 0.1 (47.0, 54.4, -2.8); 0.1 (59.3, 55.3, -2.6); 0.1 (54.2, 48.0, -2.8)
+ARM_pp  LC1  sqrt(S13^2 + S23^2)            P99.9   0.22 / 15.9 MPa (util 0.01) | max   0.43 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.19 | PASS
+        top 10 TSH: 0.4 (39.6, 46.4, 0.5); 0.4 (40.1, 46.7, 0.1); 0.4 (39.6, 46.1, 0.6); 0.4 (42.0, 44.8, 0.3); 0.4 (40.1, 45.7, 0.6); 0.4 (40.7, 45.9, 0.2); 0.4 (40.0, 47.0, 0.1); 0.4 (41.8, 44.6, 0.3); 0.3 (39.7, 46.5, 0.1); 0.3 (40.7, 45.0, 0.7)
+LID     LC1  von Mises                      P99.9   0.53 / 36.3 MPa (util 0.01) | max   0.91 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.79 | PASS
+        top 10 VM: 0.9 (-17.4, -5.3, 22.9); 0.8 (-17.9, -6.9, 22.7); 0.8 (-17.3, -4.9, 22.8); 0.8 (-18.1, -3.4, 23.1); 0.8 (-17.2, -3.7, 22.8); 0.7 (-17.6, 4.5, 22.9); 0.7 (-17.7, 5.5, 22.9); 0.7 (-17.8, -6.3, 22.8); 0.7 (-18.5, -12.3, 23.6); 0.7 (-18.0, -7.1, 23.0)
+LID     LC1  S33 tension (across layers)    P99.9   0.09 / 15.9 MPa (util 0.01) | max   0.27 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.16 | PASS
+        top 10 S33: 0.3 (26.8, -8.6, 22.7); 0.2 (27.0, -9.5, 22.5); 0.2 (-17.9, -5.4, 22.8); 0.2 (-18.2, -6.3, 22.7); 0.1 (-9.2, 1.7, 22.9); 0.1 (-18.2, 5.4, 23.4); 0.1 (27.7, -8.2, 23.6); 0.1 (-8.9, 3.7, 22.8); 0.1 (-18.3, 4.3, 23.5); 0.1 (26.7, -9.2, 22.6)
+LID     LC1  sqrt(S13^2 + S23^2)            P99.9   0.14 / 15.9 MPa (util 0.01) | max   0.21 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.38 | PASS
+        top 10 TSH: 0.2 (27.0, -9.5, 22.5); 0.2 (26.1, -9.0, 22.9); 0.2 (26.8, -8.6, 22.7); 0.2 (26.3, -8.8, 23.1); 0.2 (-9.2, 1.7, 22.9); 0.2 (25.4, -9.0, 23.0); 0.2 (-17.8, -4.3, 22.8); 0.2 (-17.9, -5.4, 22.8); 0.2 (-16.9, -16.6, 22.5); 0.2 (25.9, -8.8, 22.7)
+TUB     LC1  von Mises                      P99.9   0.49 / 36.3 MPa (util 0.01) | max   1.21 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.82 | PASS
+        top 10 VM: 1.2 (-15.3, -23.2, 9.8); 1.2 (15.1, -23.1, 9.8); 1.1 (-15.5, -23.0, 9.8); 1.1 (15.4, -22.8, 9.8); 1.0 (-15.1, 23.1, 9.8); 1.0 (-15.3, 22.9, 9.8); 1.0 (15.6, 23.4, 9.7); 1.0 (16.2, -22.2, 9.8); 1.0 (15.7, -22.7, 9.8); 0.9 (16.1, -23.3, 9.8)
+TUB     LC1  S33 tension (across layers)    P99.9   0.11 / 15.9 MPa (util 0.01) | max   0.32 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.17 | PASS
+        top 10 S33: 0.3 (-1.3, -20.7, 4.9); 0.3 (-3.1, -20.7, 2.4); 0.3 (-1.3, -20.7, 4.0); 0.3 (-2.6, -21.0, 2.3); 0.3 (-1.7, -20.6, 4.4); 0.3 (-1.5, -21.6, 3.5); 0.3 (-1.5, -20.8, 4.3); 0.3 (-1.3, -21.1, 4.7); 0.3 (-2.9, -20.9, 2.6); 0.3 (-1.5, -20.8, 4.8)
+TUB     LC1  sqrt(S13^2 + S23^2)            P99.9   0.13 / 15.9 MPa (util 0.01) | max   0.28 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.40 | PASS
+        top 10 TSH: 0.3 (15.0, -22.6, 10.3); 0.3 (15.4, -22.8, 9.8); 0.2 (-15.0, 22.6, 10.2); 0.2 (15.0, 22.6, 10.3); 0.2 (15.1, -23.1, 9.8); 0.2 (-15.1, -22.4, 10.2); 0.2 (14.6, -22.8, 10.3); 0.2 (-22.4, -15.2, 10.3); 0.2 (-22.4, 15.2, 10.3); 0.2 (-15.1, 23.1, 9.8)
+======================== LC2a
+ARM_mm  LC2a von Mises                      P99.9   0.85 / 36.3 MPa (util 0.02) | max   1.48 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.86 | PASS
+        top 10 VM: 1.5 (-40.0, -47.0, 0.1); 1.4 (-40.5, -47.7, -0.2); 1.4 (-40.5, -47.4, -0.1); 1.3 (-40.1, -46.7, 0.1); 1.3 (-40.2, -47.2, -0.3); 1.2 (-39.7, -46.5, 0.1); 1.2 (-41.3, -46.8, -0.1); 1.2 (-41.2, -47.1, -0.1); 1.2 (-40.5, -47.9, -0.4); 1.1 (-40.7, -46.4, 0.0)
+ARM_mm  LC2a S33 tension (across layers)    P99.9   0.11 / 15.9 MPa (util 0.01) | max   0.21 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.16 | PASS
+        top 10 S33: 0.2 (-58.6, -55.0, -3.2); 0.2 (-58.7, -55.0, -2.8); 0.2 (-50.4, -56.7, -3.5); 0.2 (-47.0, -54.4, -2.8); 0.2 (-58.9, -54.9, -2.3); 0.2 (-56.1, -53.9, -3.3); 0.2 (-54.7, -48.6, -3.3); 0.2 (-58.2, -54.9, -3.2); 0.1 (-59.3, -55.3, -2.6); 0.1 (-54.2, -48.0, -2.8)
+ARM_mm  LC2a sqrt(S13^2 + S23^2)            P99.9   0.25 / 15.9 MPa (util 0.02) | max   0.47 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.23 | PASS
+        top 10 TSH: 0.5 (-39.6, -46.4, 0.5); 0.4 (-40.1, -46.7, 0.1); 0.4 (-39.6, -46.1, 0.6); 0.4 (-42.0, -44.8, 0.3); 0.4 (-40.1, -45.7, 0.6); 0.4 (-40.7, -45.9, 0.2); 0.4 (-40.0, -47.0, 0.1); 0.4 (-41.8, -44.6, 0.3); 0.4 (-40.7, -45.0, 0.7); 0.4 (-39.7, -46.5, 0.1)
+ARM_mp  LC2a von Mises                      P99.9   0.08 / 36.3 MPa (util 0.00) | max   0.12 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.15 | PASS
+        top 10 VM: 0.1 (-44.8, 42.0, 0.3); 0.1 (-45.3, 42.5, 0.1); 0.1 (-45.1, 42.0, 0.2); 0.1 (-44.6, 41.8, 0.3); 0.1 (-24.0, 31.7, -13.1); 0.1 (-24.4, 31.8, -13.0); 0.1 (-40.3, 47.4, -8.4); 0.1 (-40.2, 46.9, 0.1); 0.1 (-47.0, 40.0, 0.1); 0.1 (-24.4, 31.8, -12.2)
+ARM_mp  LC2a S33 tension (across layers)    P99.9   0.02 / 15.9 MPa (util 0.00) | max   0.04 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.03 | PASS
+        top 10 S33: 0.0 (-44.6, 41.8, 0.3); 0.0 (-44.2, 41.5, 0.6); 0.0 (-44.0, 41.3, 0.4); 0.0 (-44.3, 41.3, 0.9); 0.0 (-44.5, 41.2, 0.7); 0.0 (-44.5, 41.5, 0.4); 0.0 (-44.7, 40.7, 0.9); 0.0 (-45.0, 40.7, 0.7); 0.0 (-39.7, 46.0, 0.7); 0.0 (-40.2, 45.4, 0.8)
+ARM_mp  LC2a sqrt(S13^2 + S23^2)            P99.9   0.03 / 15.9 MPa (util 0.00) | max   0.05 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.05 | PASS
+        top 10 TSH: 0.1 (-44.8, 42.0, 0.3); 0.1 (-44.6, 41.8, 0.3); 0.0 (-45.1, 42.0, 0.2); 0.0 (-44.5, 41.5, 0.4); 0.0 (-44.5, 41.2, 0.7); 0.0 (-44.2, 41.5, 0.6); 0.0 (-45.0, 40.7, 0.7); 0.0 (-45.9, 40.7, 0.2); 0.0 (-40.2, 46.6, 0.2); 0.0 (-39.6, 46.4, 0.5)
+ARM_pm  LC2a von Mises                      P99.9   0.10 / 36.3 MPa (util 0.00) | max   0.13 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.18 | PASS
+        top 10 VM: 0.1 (44.8, -42.0, 0.3); 0.1 (45.3, -42.5, 0.1); 0.1 (45.1, -42.0, 0.2); 0.1 (24.4, -31.8, -13.0); 0.1 (24.0, -31.7, -13.1); 0.1 (24.4, -31.8, -12.2); 0.1 (24.1, -31.7, -12.2); 0.1 (44.6, -41.8, 0.3); 0.1 (40.2, -46.9, 0.1); 0.1 (40.3, -47.4, -8.4)
+ARM_pm  LC2a S33 tension (across layers)    P99.9   0.02 / 15.9 MPa (util 0.00) | max   0.04 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.03 | PASS
+        top 10 S33: 0.0 (44.6, -41.8, 0.3); 0.0 (44.2, -41.5, 0.6); 0.0 (44.0, -41.3, 0.4); 0.0 (44.3, -41.3, 0.9); 0.0 (44.5, -41.2, 0.7); 0.0 (44.7, -40.7, 0.9); 0.0 (44.5, -41.5, 0.4); 0.0 (39.7, -46.0, 0.7); 0.0 (45.0, -40.7, 0.7); 0.0 (40.2, -45.4, 0.8)
+ARM_pm  LC2a sqrt(S13^2 + S23^2)            P99.9   0.03 / 15.9 MPa (util 0.00) | max   0.06 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.06 | PASS
+        top 10 TSH: 0.1 (44.8, -42.0, 0.3); 0.1 (44.6, -41.8, 0.3); 0.0 (45.1, -42.0, 0.2); 0.0 (44.5, -41.5, 0.4); 0.0 (44.5, -41.2, 0.7); 0.0 (44.2, -41.5, 0.6); 0.0 (45.0, -40.7, 0.7); 0.0 (40.2, -46.6, 0.2); 0.0 (39.6, -46.4, 0.5); 0.0 (45.9, -40.7, 0.2)
+ARM_pp  LC2a von Mises                      P99.9   0.84 / 36.3 MPa (util 0.02) | max   1.47 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.86 | PASS
+        top 10 VM: 1.5 (40.0, 47.0, 0.1); 1.4 (40.5, 47.7, -0.2); 1.4 (40.5, 47.4, -0.1); 1.3 (40.1, 46.7, 0.1); 1.3 (40.2, 47.2, -0.3); 1.2 (39.7, 46.5, 0.1); 1.2 (41.3, 46.8, -0.1); 1.2 (41.2, 47.1, -0.1); 1.2 (40.5, 47.9, -0.4); 1.1 (40.7, 46.4, 0.0)
+ARM_pp  LC2a S33 tension (across layers)    P99.9   0.11 / 15.9 MPa (util 0.01) | max   0.21 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.17 | PASS
+        top 10 S33: 0.2 (58.6, 55.0, -3.2); 0.2 (58.7, 55.0, -2.8); 0.2 (50.4, 56.7, -3.5); 0.2 (47.0, 54.4, -2.8); 0.2 (58.9, 54.9, -2.3); 0.2 (56.1, 53.9, -3.3); 0.2 (54.7, 48.6, -3.3); 0.2 (58.2, 54.9, -3.2); 0.1 (59.3, 55.3, -2.6); 0.1 (54.2, 48.0, -2.8)
+ARM_pp  LC2a sqrt(S13^2 + S23^2)            P99.9   0.25 / 15.9 MPa (util 0.02) | max   0.47 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.23 | PASS
+        top 10 TSH: 0.5 (39.6, 46.4, 0.5); 0.4 (40.1, 46.7, 0.1); 0.4 (39.6, 46.1, 0.6); 0.4 (42.0, 44.8, 0.3); 0.4 (40.1, 45.7, 0.6); 0.4 (40.7, 45.9, 0.2); 0.4 (40.0, 47.0, 0.1); 0.4 (41.8, 44.6, 0.3); 0.4 (40.7, 45.0, 0.7); 0.4 (39.7, 46.5, 0.1)
+LID     LC2a von Mises                      P99.9   0.38 / 36.3 MPa (util 0.01) | max   0.57 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   1.85 | PASS
+        top 10 VM: 0.6 (-17.4, -5.3, 22.9); 0.6 (-18.1, -3.4, 23.1); 0.6 (-17.2, -3.7, 22.8); 0.5 (-17.3, -4.9, 22.8); 0.5 (-16.9, -16.6, 22.5); 0.5 (-17.8, -6.3, 22.8); 0.5 (-18.5, -12.3, 23.6); 0.4 (-16.8, -3.8, 22.9); 0.4 (-16.6, -16.8, 22.5); 0.4 (16.2, 15.3, 22.3)
+LID     LC2a S33 tension (across layers)    P99.9   0.08 / 15.9 MPa (util 0.01) | max   0.17 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.42 | PASS
+        top 10 S33: 0.2 (26.8, -8.6, 22.7); 0.2 (-20.7, -16.8, 22.6); 0.1 (20.4, 16.6, 22.5); 0.1 (-19.6, -16.8, 22.5); 0.1 (-20.1, -16.6, 22.6); 0.1 (19.5, 16.8, 22.5); 0.1 (-21.1, -16.6, 22.6); 0.1 (20.5, 16.8, 22.7); 0.1 (20.8, 16.4, 22.5); 0.1 (-20.4, -16.8, 22.8)
+LID     LC2a sqrt(S13^2 + S23^2)            P99.9   0.12 / 15.9 MPa (util 0.01) | max   0.14 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.78 | PASS
+        top 10 TSH: 0.1 (-19.3, -16.8, 22.9); 0.1 (-19.7, -16.3, 22.9); 0.1 (-16.9, -16.6, 22.5); 0.1 (-18.9, -16.6, 23.0); 0.1 (-19.7, -15.8, 22.9); 0.1 (-20.1, -16.0, 22.5); 0.1 (20.6, 8.3, 22.6); 0.1 (-17.5, -15.5, 22.5); 0.1 (17.2, 16.1, 22.5); 0.1 (-16.6, -15.9, 22.5)
+TUB     LC2a von Mises                      P99.9   0.64 / 36.3 MPa (util 0.02) | max   1.49 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   1.66 | PASS
+        top 10 VM: 1.5 (-23.1, -15.1, 9.8); 1.5 (22.8, 15.4, 9.8); 1.4 (-22.9, -15.3, 9.8); 1.4 (23.1, 15.1, 9.8); 1.2 (-15.3, -23.2, 9.8); 1.1 (-22.1, -16.4, 9.8); 1.1 (-22.9, -16.0, 9.8); 1.1 (19.8, -17.8, 21.1); 1.1 (-19.7, -17.9, 21.0); 1.1 (22.1, 16.2, 9.8)
+TUB     LC2a S33 tension (across layers)    P99.9   0.20 / 15.9 MPa (util 0.01) | max   0.57 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.33 | PASS
+        top 10 S33: 0.6 (22.4, -15.2, 10.4); 0.5 (21.7, -15.9, 10.4); 0.5 (-22.4, 15.2, 10.3); 0.5 (-21.7, 15.9, 10.3); 0.4 (21.0, -16.7, 10.4); 0.4 (22.6, -15.0, 10.6); 0.4 (22.8, -14.6, 10.4); 0.4 (21.9, -15.7, 10.6); 0.4 (22.1, -15.3, 10.5); 0.4 (22.4, -14.9, 10.1)
+TUB     LC2a sqrt(S13^2 + S23^2)            P99.9   0.19 / 15.9 MPa (util 0.01) | max   0.42 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.74 | PASS
+        top 10 TSH: 0.4 (-23.1, -15.1, 9.8); 0.4 (22.8, 15.4, 9.8); 0.4 (-22.9, -15.3, 9.8); 0.4 (23.1, 15.1, 9.8); 0.4 (-22.4, -15.2, 10.3); 0.4 (22.4, 15.2, 10.3); 0.4 (22.1, 16.2, 9.8); 0.3 (-9.0, -20.7, 18.5); 0.3 (-22.8, -14.5, 10.3); 0.3 (-8.5, -20.9, 18.0)
+======================== LC2b
+ARM_mm  LC2b von Mises                      P99.9   0.07 / 36.3 MPa (util 0.00) | max   0.10 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.11 | PASS
+        top 10 VM: 0.1 (-44.8, -42.0, 0.3); 0.1 (-45.1, -42.0, 0.2); 0.1 (-45.3, -42.5, 0.1); 0.1 (-46.9, -40.2, 0.1); 0.1 (-40.3, -47.4, -8.4); 0.1 (-39.8, -46.6, -8.6); 0.1 (-44.6, -41.8, 0.3); 0.1 (-46.5, -40.6, 0.1); 0.1 (-40.2, -47.2, -8.2); 0.1 (-46.6, -40.2, 0.2)
+ARM_mm  LC2b S33 tension (across layers)    P99.9   0.01 / 15.9 MPa (util 0.00) | max   0.02 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.02 | PASS
+        top 10 S33: 0.0 (-44.8, -48.7, -4.7); 0.0 (-48.0, -54.6, -3.3); 0.0 (-47.0, -54.4, -2.8); 0.0 (-47.8, -54.2, -2.6); 0.0 (-33.7, -21.3, 3.6); 0.0 (-49.0, -54.8, -3.3); 0.0 (-33.0, -22.0, 3.6); 0.0 (-32.4, -22.7, 3.6); 0.0 (-47.8, -54.4, -2.8); 0.0 (-47.0, -54.3, -3.2)
+ARM_mm  LC2b sqrt(S13^2 + S23^2)            P99.9   0.02 / 15.9 MPa (util 0.00) | max   0.04 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.02 | PASS
+        top 10 TSH: 0.0 (-44.8, -42.0, 0.3); 0.0 (-44.6, -41.8, 0.3); 0.0 (-45.1, -42.0, 0.2); 0.0 (-44.4, -41.4, 0.5); 0.0 (-44.5, -41.2, 0.8); 0.0 (-45.2, -40.6, 0.6); 0.0 (-39.6, -46.4, 0.5); 0.0 (-45.6, -40.2, 0.6); 0.0 (-46.6, -40.2, 0.2); 0.0 (-45.5, -41.3, 0.2)
+ARM_mp  LC2b von Mises                      P99.9   0.07 / 36.3 MPa (util 0.00) | max   0.10 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.10 | PASS
+        top 10 VM: 0.1 (-44.8, 42.0, 0.3); 0.1 (-45.1, 42.0, 0.2); 0.1 (-45.3, 42.5, 0.1); 0.1 (-44.6, 41.8, 0.3); 0.1 (-40.3, 47.4, -8.4); 0.1 (-47.0, 40.0, 0.1); 0.1 (-39.8, 46.6, -8.6); 0.1 (-40.2, 47.2, -8.2); 0.1 (-40.2, 46.9, 0.1); 0.1 (-24.4, 31.8, -12.2)
+ARM_mp  LC2b S33 tension (across layers)    P99.9   0.01 / 15.9 MPa (util 0.00) | max   0.02 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.02 | PASS
+        top 10 S33: 0.0 (-32.3, 22.6, 3.5); 0.0 (-32.4, 22.7, 3.8); 0.0 (-26.4, 18.7, -2.6); 0.0 (-48.6, 54.7, -3.3); 0.0 (-33.9, 21.7, 3.5); 0.0 (-31.6, 23.4, 3.7); 0.0 (-32.1, 22.7, 3.3); 0.0 (-47.1, 54.4, -2.8); 0.0 (-33.1, 22.5, 3.6); 0.0 (-27.6, 19.9, -2.3)
+ARM_mp  LC2b sqrt(S13^2 + S23^2)            P99.9   0.02 / 15.9 MPa (util 0.00) | max   0.04 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.02 | PASS
+        top 10 TSH: 0.0 (-44.8, 42.0, 0.3); 0.0 (-44.6, 41.8, 0.3); 0.0 (-44.5, 41.5, 0.4); 0.0 (-44.5, 41.2, 0.7); 0.0 (-45.1, 42.0, 0.2); 0.0 (-44.2, 41.5, 0.6); 0.0 (-45.0, 40.7, 0.7); 0.0 (-39.6, 46.4, 0.5); 0.0 (-45.9, 40.7, 0.2); 0.0 (-45.7, 40.1, 0.6)
+ARM_pm  LC2b von Mises                      P99.9   0.72 / 36.3 MPa (util 0.02) | max   1.28 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.74 | PASS
+        top 10 VM: 1.3 (40.2, -46.9, 0.1); 1.2 (40.5, -47.7, -0.2); 1.2 (40.5, -47.4, -0.1); 1.2 (39.9, -46.9, -0.0); 1.1 (40.2, -46.6, 0.2); 1.1 (40.3, -47.1, -0.2); 1.1 (40.1, -47.1, -0.3); 1.1 (40.6, -46.5, 0.1); 1.0 (39.7, -46.6, -0.1); 1.0 (41.2, -47.1, -0.1)
+ARM_pm  LC2b S33 tension (across layers)    P99.9   0.09 / 15.9 MPa (util 0.01) | max   0.18 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.12 | PASS
+        top 10 S33: 0.2 (58.9, -55.3, -3.4); 0.1 (58.9, -55.2, -2.6); 0.1 (50.8, -57.2, -2.6); 0.1 (60.4, -54.6, -2.8); 0.1 (50.4, -57.0, -3.2); 0.1 (55.6, -46.1, -3.4); 0.1 (54.2, -47.8, -2.6); 0.1 (60.3, -54.5, -3.3); 0.1 (54.3, -48.7, -2.8); 0.1 (50.8, -56.9, -2.3)
+ARM_pm  LC2b sqrt(S13^2 + S23^2)            P99.9   0.20 / 15.9 MPa (util 0.01) | max   0.40 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.17 | PASS
+        top 10 TSH: 0.4 (40.2, -46.6, 0.2); 0.4 (39.6, -46.4, 0.5); 0.4 (40.2, -46.9, 0.1); 0.3 (42.0, -44.8, 0.3); 0.3 (40.2, -45.6, 0.6); 0.3 (39.9, -46.5, 0.2); 0.3 (40.6, -46.5, 0.1); 0.3 (39.7, -46.0, 0.7); 0.3 (40.8, -45.9, 0.2); 0.3 (41.8, -44.6, 0.3)
+ARM_pp  LC2b von Mises                      P99.9   0.74 / 36.3 MPa (util 0.02) | max   1.28 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.65 | PASS
+        top 10 VM: 1.3 (40.0, 47.0, 0.1); 1.2 (40.5, 47.7, -0.2); 1.2 (40.5, 47.4, -0.1); 1.1 (40.2, 47.2, -0.3); 1.1 (40.1, 46.7, 0.1); 1.0 (39.7, 46.5, 0.1); 1.0 (40.5, 47.9, -0.4); 1.0 (41.2, 47.1, -0.1); 1.0 (41.3, 46.8, -0.1); 1.0 (40.7, 46.4, 0.0)
+ARM_pp  LC2b S33 tension (across layers)    P99.9   0.09 / 15.9 MPa (util 0.01) | max   0.19 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.12 | PASS
+        top 10 S33: 0.2 (58.6, 55.0, -3.2); 0.2 (58.7, 55.0, -2.8); 0.2 (50.4, 56.7, -3.5); 0.1 (58.9, 54.9, -2.3); 0.1 (56.1, 53.9, -3.3); 0.1 (58.2, 54.9, -3.2); 0.1 (59.3, 55.3, -2.6); 0.1 (54.7, 48.6, -3.3); 0.1 (47.0, 54.4, -2.8); 0.1 (44.8, 37.9, -5.3)
+ARM_pp  LC2b sqrt(S13^2 + S23^2)            P99.9   0.21 / 15.9 MPa (util 0.01) | max   0.40 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.16 | PASS
+        top 10 TSH: 0.4 (39.6, 46.4, 0.5); 0.4 (40.1, 46.7, 0.1); 0.4 (39.6, 46.1, 0.6); 0.4 (42.0, 44.8, 0.3); 0.3 (40.1, 45.7, 0.6); 0.3 (40.7, 45.9, 0.2); 0.3 (40.0, 47.0, 0.1); 0.3 (41.8, 44.6, 0.3); 0.3 (39.7, 46.5, 0.1); 0.3 (40.7, 45.0, 0.7)
+LID     LC2b von Mises                      P99.9   0.50 / 36.3 MPa (util 0.01) | max   0.75 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   1.12 | PASS
+        top 10 VM: 0.7 (26.8, -8.6, 22.7); 0.7 (27.0, -9.5, 22.5); 0.7 (28.4, -4.1, 23.4); 0.7 (25.4, -9.0, 23.0); 0.6 (26.1, -9.0, 22.9); 0.6 (26.3, -8.8, 23.1); 0.6 (21.4, 7.9, 23.6); 0.6 (25.9, -9.7, 23.4); 0.6 (21.7, 7.3, 23.9); 0.6 (22.1, 7.2, 23.9)
+LID     LC2b S33 tension (across layers)    P99.9   0.09 / 15.9 MPa (util 0.01) | max   0.53 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.26 | PASS
+        top 10 S33: 0.5 (26.8, -8.6, 22.7); 0.4 (27.0, -9.5, 22.5); 0.3 (27.7, -8.2, 23.6); 0.2 (26.7, -9.2, 22.6); 0.2 (26.8, -8.9, 22.9); 0.2 (28.0, -9.3, 23.3); 0.2 (26.5, -9.6, 22.9); 0.2 (27.8, 10.9, 22.8); 0.1 (29.1, 6.6, 23.0); 0.1 (27.9, 9.2, 22.7)
+LID     LC2b sqrt(S13^2 + S23^2)            P99.9   0.17 / 15.9 MPa (util 0.01) | max   0.40 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.46 | PASS
+        top 10 TSH: 0.4 (27.0, -9.5, 22.5); 0.4 (25.4, -9.0, 23.0); 0.4 (26.1, -9.0, 22.9); 0.4 (26.3, -8.8, 23.1); 0.3 (26.8, -8.6, 22.7); 0.3 (25.9, -8.8, 22.7); 0.3 (26.5, -9.3, 22.8); 0.3 (25.7, -9.0, 22.8); 0.3 (26.2, -8.4, 23.1); 0.3 (25.9, -8.5, 22.9)
+TUB     LC2b von Mises                      P99.9   0.42 / 36.3 MPa (util 0.01) | max   0.97 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.79 | PASS
+        top 10 VM: 1.0 (15.1, -23.1, 9.8); 0.9 (15.4, -22.8, 9.8); 0.9 (22.8, 15.4, 9.8); 0.8 (15.6, 23.4, 9.7); 0.8 (23.4, -15.6, 9.7); 0.8 (23.1, 15.1, 9.8); 0.8 (22.1, -16.2, 9.8); 0.8 (23.1, -15.8, 9.7); 0.8 (15.7, -22.7, 9.8); 0.7 (16.1, -23.3, 9.8)
+TUB     LC2b S33 tension (across layers)    P99.9   0.12 / 15.9 MPa (util 0.01) | max   0.27 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.18 | PASS
+        top 10 S33: 0.3 (-1.1, -21.0, -1.5); 0.3 (-1.1, -20.8, -1.6); 0.3 (-1.4, -22.1, -3.4); 0.2 (-0.9, -21.6, -3.4); 0.2 (-2.1, -22.8, -3.4); 0.2 (-1.1, -21.8, -1.5); 0.2 (-1.1, -21.6, -1.7); 0.2 (-24.0, 6.0, 11.2); 0.2 (-1.9, -22.6, -3.6); 0.2 (2.1, 22.9, -7.6)
+TUB     LC2b sqrt(S13^2 + S23^2)            P99.9   0.11 / 15.9 MPa (util 0.01) | max   0.25 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.40 | PASS
+        top 10 TSH: 0.2 (22.8, 15.4, 9.8); 0.2 (23.1, 15.1, 9.8); 0.2 (22.4, 15.2, 10.3); 0.2 (22.1, -16.2, 9.8); 0.2 (22.4, -14.9, 10.1); 0.2 (23.2, -15.1, 9.5); 0.2 (22.1, 16.2, 9.8); 0.2 (15.0, -22.6, 10.3); 0.2 (22.4, -15.2, 10.4); 0.2 (23.0, -15.3, 9.5)
+======================== LC3a
+ARM_mm  LC3a von Mises                      P99.9   0.39 / 36.3 MPa (util 0.01) | max   0.58 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.45 | PASS
+        top 10 VM: 0.6 (-46.9, -40.2, 0.1); 0.6 (-40.0, -47.0, 0.1); 0.5 (-42.0, -44.8, 0.3); 0.5 (-44.8, -42.0, 0.3); 0.5 (-46.6, -40.2, 0.2); 0.5 (-46.5, -40.6, 0.1); 0.5 (-40.5, -47.4, -0.1); 0.5 (-47.4, -40.5, -0.1); 0.5 (-42.0, -45.1, 0.2); 0.5 (-40.1, -46.7, 0.1)
+ARM_mm  LC3a S33 tension (across layers)    P99.9   0.12 / 15.9 MPa (util 0.01) | max   0.18 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.13 | PASS
+        top 10 S33: 0.2 (-41.3, -44.3, 0.9); 0.2 (-41.2, -44.5, 0.7); 0.2 (-40.7, -44.7, 0.9); 0.2 (-44.5, -41.2, 0.8); 0.2 (-41.8, -44.6, 0.3); 0.2 (-44.9, -40.7, 0.8); 0.2 (-39.3, -45.9, 1.3); 0.2 (-40.7, -45.0, 0.7); 0.2 (-44.2, -41.2, 0.9); 0.2 (-44.6, -41.8, 0.3)
+ARM_mm  LC3a sqrt(S13^2 + S23^2)            P99.9   0.14 / 15.9 MPa (util 0.01) | max   0.22 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.16 | PASS
+        top 10 TSH: 0.2 (-42.0, -44.8, 0.3); 0.2 (-44.8, -42.0, 0.3); 0.2 (-41.8, -44.6, 0.3); 0.2 (-44.6, -41.8, 0.3); 0.2 (-41.2, -44.5, 0.7); 0.2 (-46.6, -40.2, 0.2); 0.2 (-39.6, -46.4, 0.5); 0.2 (-46.4, -39.6, 0.5); 0.2 (-45.6, -40.2, 0.6); 0.2 (-45.1, -42.0, 0.2)
+ARM_mp  LC3a von Mises                      P99.9   0.39 / 36.3 MPa (util 0.01) | max   0.57 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.45 | PASS
+        top 10 VM: 0.6 (-40.2, 46.9, 0.1); 0.6 (-47.0, 40.0, 0.1); 0.5 (-44.8, 42.0, 0.3); 0.5 (-42.0, 44.8, 0.3); 0.5 (-40.2, 46.6, 0.2); 0.5 (-40.6, 46.5, 0.1); 0.5 (-47.4, 40.5, -0.1); 0.5 (-46.7, 40.1, 0.1); 0.5 (-45.1, 42.0, 0.2); 0.5 (-40.5, 47.4, -0.1)
+ARM_mp  LC3a S33 tension (across layers)    P99.9   0.11 / 15.9 MPa (util 0.01) | max   0.18 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.12 | PASS
+        top 10 S33: 0.2 (-44.3, 41.3, 0.9); 0.2 (-44.5, 41.2, 0.7); 0.2 (-44.7, 40.7, 0.9); 0.2 (-45.9, 39.3, 1.3); 0.2 (-45.0, 40.7, 0.7); 0.2 (-44.6, 41.8, 0.3); 0.2 (-41.2, 44.5, 0.8); 0.2 (-45.5, 40.1, 0.8); 0.2 (-40.7, 44.9, 0.8); 0.2 (-41.8, 44.6, 0.3)
+ARM_mp  LC3a sqrt(S13^2 + S23^2)            P99.9   0.14 / 15.9 MPa (util 0.01) | max   0.22 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.16 | PASS
+        top 10 TSH: 0.2 (-44.8, 42.0, 0.3); 0.2 (-42.0, 44.8, 0.3); 0.2 (-44.6, 41.8, 0.3); 0.2 (-41.8, 44.6, 0.3); 0.2 (-44.5, 41.2, 0.7); 0.2 (-46.4, 39.6, 0.5); 0.2 (-40.2, 46.6, 0.2); 0.2 (-39.6, 46.4, 0.5); 0.2 (-45.0, 40.7, 0.7); 0.2 (-45.1, 42.0, 0.2)
+ARM_pm  LC3a von Mises                      P99.9   0.44 / 36.3 MPa (util 0.01) | max   0.64 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.53 | PASS
+        top 10 VM: 0.6 (40.2, -46.9, 0.1); 0.6 (47.0, -40.0, 0.1); 0.6 (44.8, -42.0, 0.3); 0.6 (42.0, -44.8, 0.3); 0.6 (40.2, -46.6, 0.2); 0.6 (40.6, -46.5, 0.1); 0.6 (47.4, -40.5, -0.1); 0.6 (45.1, -42.0, 0.2); 0.6 (46.7, -40.1, 0.1); 0.6 (40.5, -47.4, -0.1)
+ARM_pm  LC3a S33 tension (across layers)    P99.9   0.13 / 15.9 MPa (util 0.01) | max   0.20 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.15 | PASS
+        top 10 S33: 0.2 (44.3, -41.3, 0.9); 0.2 (44.5, -41.2, 0.7); 0.2 (44.7, -40.7, 0.9); 0.2 (45.9, -39.3, 1.3); 0.2 (44.6, -41.8, 0.3); 0.2 (45.0, -40.7, 0.7); 0.2 (41.2, -44.5, 0.8); 0.2 (40.7, -44.9, 0.8); 0.2 (45.5, -40.1, 0.8); 0.2 (41.2, -44.2, 0.9)
+ARM_pm  LC3a sqrt(S13^2 + S23^2)            P99.9   0.15 / 15.9 MPa (util 0.01) | max   0.25 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.19 | PASS
+        top 10 TSH: 0.3 (44.8, -42.0, 0.3); 0.2 (42.0, -44.8, 0.3); 0.2 (44.6, -41.8, 0.3); 0.2 (41.8, -44.6, 0.3); 0.2 (44.5, -41.2, 0.7); 0.2 (40.2, -46.6, 0.2); 0.2 (46.4, -39.6, 0.5); 0.2 (39.6, -46.4, 0.5); 0.2 (45.0, -40.7, 0.7); 0.2 (45.1, -42.0, 0.2)
+ARM_pp  LC3a von Mises                      P99.9   0.43 / 36.3 MPa (util 0.01) | max   0.64 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.52 | PASS
+        top 10 VM: 0.6 (46.9, 40.2, 0.1); 0.6 (40.0, 47.0, 0.1); 0.6 (42.0, 44.8, 0.3); 0.6 (44.8, 42.0, 0.3); 0.6 (46.6, 40.2, 0.2); 0.6 (46.5, 40.6, 0.1); 0.6 (40.5, 47.4, -0.1); 0.6 (40.1, 46.7, 0.1); 0.6 (42.0, 45.1, 0.2); 0.6 (47.4, 40.5, -0.1)
+ARM_pp  LC3a S33 tension (across layers)    P99.9   0.13 / 15.9 MPa (util 0.01) | max   0.20 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.13 | PASS
+        top 10 S33: 0.2 (41.3, 44.3, 0.9); 0.2 (41.2, 44.5, 0.7); 0.2 (40.7, 44.7, 0.9); 0.2 (39.3, 45.9, 1.3); 0.2 (40.7, 45.0, 0.7); 0.2 (41.8, 44.6, 0.3); 0.2 (40.1, 45.5, 0.8); 0.2 (44.5, 41.2, 0.8); 0.2 (44.9, 40.7, 0.8); 0.2 (44.6, 41.8, 0.3)
+ARM_pp  LC3a sqrt(S13^2 + S23^2)            P99.9   0.15 / 15.9 MPa (util 0.01) | max   0.25 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.17 | PASS
+        top 10 TSH: 0.3 (42.0, 44.8, 0.3); 0.2 (44.8, 42.0, 0.3); 0.2 (41.8, 44.6, 0.3); 0.2 (44.6, 41.8, 0.3); 0.2 (41.2, 44.5, 0.7); 0.2 (39.6, 46.4, 0.5); 0.2 (46.6, 40.2, 0.2); 0.2 (46.4, 39.6, 0.5); 0.2 (40.7, 45.0, 0.7); 0.2 (40.1, 45.7, 0.6)
+LID     LC3a von Mises                      P99.9   1.42 / 36.3 MPa (util 0.04) | max   2.43 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   2.24 | PASS
+        top 10 VM: 2.4 (-17.4, -5.3, 22.9); 2.1 (-17.3, -4.9, 22.8); 2.1 (-18.1, -3.4, 23.1); 2.1 (-17.9, -6.9, 22.7); 2.0 (-17.2, -3.7, 22.8); 2.0 (-17.6, 4.5, 22.9); 1.9 (-17.8, -6.3, 22.8); 1.9 (-17.7, 5.5, 22.9); 1.9 (-18.5, -12.3, 23.6); 1.8 (-17.4, 5.2, 22.9)
+LID     LC3a S33 tension (across layers)    P99.9   0.26 / 15.9 MPa (util 0.02) | max   0.74 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.36 | PASS
+        top 10 S33: 0.7 (26.8, -8.6, 22.7); 0.6 (27.0, -9.5, 22.5); 0.4 (-9.2, 1.7, 22.9); 0.4 (-17.9, -5.4, 22.8); 0.4 (-18.2, -6.3, 22.7); 0.4 (-18.2, 5.4, 23.4); 0.4 (-8.9, 3.7, 22.8); 0.3 (27.7, -8.2, 23.6); 0.3 (26.7, -9.2, 22.6); 0.3 (-18.3, 4.3, 23.5)
+LID     LC3a sqrt(S13^2 + S23^2)            P99.9   0.37 / 15.9 MPa (util 0.02) | max   0.57 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   1.09 | PASS
+        top 10 TSH: 0.6 (27.0, -9.5, 22.5); 0.5 (-9.2, 1.7, 22.9); 0.5 (26.1, -9.0, 22.9); 0.5 (26.3, -8.8, 23.1); 0.5 (26.8, -8.6, 22.7); 0.5 (25.4, -9.0, 23.0); 0.5 (-16.9, -16.6, 22.5); 0.4 (-17.9, -5.4, 22.8); 0.4 (-17.8, -4.3, 22.8); 0.4 (-16.6, -16.8, 22.5)
+TUB     LC3a von Mises                      P99.9   0.85 / 36.3 MPa (util 0.02) | max   1.60 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   2.11 | PASS
+        top 10 VM: 1.6 (15.1, -23.1, 9.8); 1.6 (-9.5, -9.9, -11.5); 1.5 (-15.3, -23.2, 9.8); 1.5 (-9.6, 11.5, -11.4); 1.5 (9.4, 10.3, -12.0); 1.5 (15.4, -22.8, 9.8); 1.5 (-9.5, 9.9, -12.1); 1.4 (-15.5, -23.0, 9.8); 1.3 (-15.1, 23.1, 9.8); 1.3 (-8.8, 11.0, -12.3)
+TUB     LC3a S33 tension (across layers)    P99.9   0.15 / 15.9 MPa (util 0.01) | max   0.33 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   0.38 | PASS
+        top 10 S33: 0.3 (-22.8, 14.6, 20.1); 0.3 (-22.6, 15.0, 20.2); 0.3 (-15.7, -21.9, 10.3); 0.3 (16.5, 21.2, 10.3); 0.3 (-22.8, -14.6, 20.0); 0.3 (-15.7, 21.9, 10.4); 0.3 (-22.6, -15.0, 20.1); 0.3 (22.8, 14.6, 20.0); 0.3 (-16.5, -21.2, 10.3); 0.3 (15.7, 21.9, 10.3)
+TUB     LC3a sqrt(S13^2 + S23^2)            P99.9   0.32 / 15.9 MPa (util 0.02) | max   0.77 | above: 0 el. in 0 clusters (0 failing) | excluded (tie/coupling) max   1.08 | PASS
+        top 10 TSH: 0.8 (-9.6, 11.5, -11.4); 0.8 (9.4, 10.3, -12.0); 0.6 (11.4, 9.6, -11.4); 0.6 (-10.0, -9.5, -11.9); 0.6 (-11.1, -9.8, -10.7); 0.6 (-10.3, -10.5, -10.8); 0.6 (-9.5, 9.9, -12.1); 0.6 (-8.8, 11.0, -12.3); 0.6 (-10.3, 10.4, -11.4); 0.6 (-11.2, 9.8, -11.4)
+======================== summary (worst step per part and check)
+ARM_mm  VM   P99.9 util 0.02 (LC2a), max 1.5 MPa, failing clusters 0 -> PASS
+ARM_mm  S33  P99.9 util 0.01 (LC3a), max 0.2 MPa, failing clusters 0 -> PASS
+ARM_mm  TSH  P99.9 util 0.02 (LC2a), max 0.5 MPa, failing clusters 0 -> PASS
+ARM_mp  VM   P99.9 util 0.02 (LC1), max 1.4 MPa, failing clusters 0 -> PASS
+ARM_mp  S33  P99.9 util 0.01 (LC3a), max 0.2 MPa, failing clusters 0 -> PASS
+ARM_mp  TSH  P99.9 util 0.01 (LC1), max 0.4 MPa, failing clusters 0 -> PASS
+ARM_pm  VM   P99.9 util 0.02 (LC1), max 1.4 MPa, failing clusters 0 -> PASS
+ARM_pm  S33  P99.9 util 0.01 (LC3a), max 0.2 MPa, failing clusters 0 -> PASS
+ARM_pm  TSH  P99.9 util 0.01 (LC1), max 0.4 MPa, failing clusters 0 -> PASS
+ARM_pp  VM   P99.9 util 0.02 (LC2a), max 1.5 MPa, failing clusters 0 -> PASS
+ARM_pp  S33  P99.9 util 0.01 (LC3a), max 0.2 MPa, failing clusters 0 -> PASS
+ARM_pp  TSH  P99.9 util 0.02 (LC2a), max 0.5 MPa, failing clusters 0 -> PASS
+LID     VM   P99.9 util 0.04 (LC3a), max 2.4 MPa, failing clusters 0 -> PASS
+LID     S33  P99.9 util 0.02 (LC3a), max 0.7 MPa, failing clusters 0 -> PASS
+LID     TSH  P99.9 util 0.02 (LC3a), max 0.6 MPa, failing clusters 0 -> PASS
+TUB     VM   P99.9 util 0.02 (LC3a), max 1.6 MPa, failing clusters 0 -> PASS
+TUB     S33  P99.9 util 0.01 (LC2a), max 0.6 MPa, failing clusters 0 -> PASS
+TUB     TSH  P99.9 util 0.02 (LC3a), max 0.8 MPa, failing clusters 0 -> PASS
+governing: LID LC3a VM, P99.9 util 0.04
