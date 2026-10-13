@@ -10,5 +10,5 @@ cp ../inputs/$J.inp . || { echo "missing ../inputs/$J.inp"; exit 1; }
 echo "$J running ($NCPU threads)..."
 abaqus job=$J input=$J.inp cpus=$NCPU mp_mode=threads memory="80%" interactive > ${J}_run.log 2>&1
 tail -n 2 ${J}_run.log
-abaqus python $S/g7_check.py $J mass=332.16 2>&1 | tee ${J}_check.txt
+G7_MASS=332.16 abaqus python $S/g7_check.py $J 2>&1 | tee ${J}_check.txt
 grep -h "^G7 " ${J}_check.txt

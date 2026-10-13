@@ -7,11 +7,11 @@ from __future__ import print_function
 import sys, os, re, math
 from odbAccess import openOdb
 
-job = [x for x in sys.argv[1:] if not x.startswith('-') and '=' not in x][-1]
+job = [x for x in sys.argv[1:] if not x.startswith('-') and '=' not in x and not x.replace('.', '', 1).isdigit()][-1]
 MASS_EXP, FMIN = 332.79, 417.0
-for x in sys.argv[1:]:
-    if x.startswith('mass='):
-        MASS_EXP = float(x.split('=')[1])     # rev 3: mass=332.25 (build log item 46)
+# expected mass: environment variable G7_MASS (abaqus python rewrites key=value arguments, item 48)
+if os.environ.get('G7_MASS'):
+    MASS_EXP = float(os.environ['G7_MASS'])
 R2 = 1.0 / math.sqrt(2.0)
 CORN = {'pp': (1, 1), 'pm': (1, -1), 'mp': (-1, 1), 'mm': (-1, -1)}
 fails = []
