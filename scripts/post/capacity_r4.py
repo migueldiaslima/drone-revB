@@ -62,7 +62,7 @@ def props(polys, wlim=None):
 if __name__ == '__main__':
     arm_fn, tub_fn = sys.argv[1], sys.argv[2]
     res = {}
-    for name, fn, us, wlim in (('ARM_pp', arm_fn, np.arange(30.0, 70.01, 2.0), None),
+    for name, fn, us, wlim in (('ARM_pp', arm_fn, np.arange(45.0, 55.01, 1.0), None),
                                ('TUB fin', tub_fn, np.arange(20.0, 40.01, 1.0), W_FIN)):
         m = to_manifold(read_stl(fn))
         r = m.rotate((0.0, 0.0, -45.0))         # pp diagonal onto +x; w = y
@@ -90,5 +90,5 @@ if __name__ == '__main__':
     a = dict((round(r[0], 1), r[5]) for r in res['ARM_pp'])
     z50 = a.get(50.0)
     print('D-050 arm at the fork exit (u 50): Z = %.1f mm^3, limit <= %.0f -> %s' % (z50, ARM_LIMIT, 'PASS' if z50 <= ARM_LIMIT else 'CHECK'))
-    near = [r[5] for r in res['ARM_pp'] if 46.0 <= r[0] <= 54.0 and r[5] > 0]
-    print('   u 46 to 54: Z %.1f to %.1f mm^3' % (min(near), max(near)))
+    near = [r[5] for r in res['ARM_pp'] if 45.0 <= r[0] <= 55.0 and r[5] > 0]
+    print('   u 45 to 55: Z %.1f to %.1f mm^3' % (min(near), max(near)))
