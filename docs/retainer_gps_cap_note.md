@@ -1,21 +1,22 @@
-# GPS cap v1 (production part)
+# GPS cap v2 (production part, press pins)
 
-Main chat, 2026-10-13. Generator `scripts/geometry_main/s07_gps_cap.py`; renders `scripts/figures/gps_cap_render.py`, `figures/gps_cap_1..2.png`. Files `geometry/retainers/`: GPS_CAP_v1.step (model frame), GPS_CAP_v1_TPU.stl (print frame, plate top on the bed; git-ignored, sent to Miguel), gps_cap_checks.json. Basis: brief v04-B section 5 (TPU cap, window over the antenna, two M2 screws into inserts), D-073, D-076, D-086 (deck on the TUB).
+Main chat, 2026-10-13. Generator `scripts/geometry_main/s07_gps_cap.py`; renders `scripts/figures/gps_cap_render.py`, `figures/gps_cap_1..2.png`. Files `geometry/retainers/`: GPS_CAP_v2.step (model frame), GPS_CAP_v2_TPU.stl (print frame, plate top on the bed; git-ignored, sent to Miguel), gps_cap_checks.json. Basis: brief v04-B section 5 (TPU cap, window over the antenna, two M2 screws into inserts, replaced in v2 by press pins, Miguel 2026-10-13), D-073, D-076, D-086 (deck on the TUB).
 
 ## Part
 
 | Item | Value |
 |---|---|
 | Material | TPU 95A HF (compliant clamp on the module, vibration damping), as the brief |
-| Plate | x -54 to -34, y +-12, 1.2 thick, corner radius 2, underside z 28.7 (module top 29.0 less 0.3 preload), top z 29.9 |
+| Plate | x -54 to -34, y +-12, 0.8 thick (2 lines, flexible clamp), corner radius 2, underside z 28.7 (module top 29.0 less 0.3 preload), top z 29.5 |
 | Window | 9 x 9, radius 1, centred on the module (-44, 0): clamp band 4.0 at the x ends, 1.5 at the y sides |
-| Legs | dia 5.4 (same as the cap bosses) from the boss tops z 26.5 to the plate, holes dia 2.4 (M2, TPU) at (-44, +-9.3) |
-| Screws | 3.4 mm of cap above the boss top: M2 x 6 engages 2.6 mm, M2 x 8 engages 4.6 mm (insert hole 6.0 deep); use M2 x 8 if the insert is 4 mm long or more. Cap top with an M2 pan head: z 31.2 |
-| Mass, CG | 539.6 mm^3, 0.65 g (density 1.21e-3 assumed); CG (-44, 0, 29.0) |
+| Legs | dia 5.4 (same as the cap bosses) from the boss tops z 26.5 to the plate, at (-44, +-9.3) |
+| Press pins | dia 3.325 x 4.0 below each leg into the boss hole dia 3.2 (0.125 mm diametral interference, Miguel's proven fit), 0.4 mm lead-in chamfer, tip at z 22.5 (above the deck underside 21.5) |
+| Fastening | no inserts and no screws in the cap bosses; the holes stay dia 3.2, so inserts and the v1 screw cap remain a fallback |
+| Mass, CG | 480.5 mm^3, 0.58 g (density 1.21e-3 assumed); CG (-44, 0, 28.1) |
 
 ## Checks (all pass)
 
-One solid, STL manifold. Clamp interference 37.2 mm^3 on the module envelope (0.3 mm preload). No overlap with the TUB; legs seated on the cap bosses; plate 2.2 mm above the rim top (the rim locates the module, the cap only holds it down). LID 5.1 mm, battery 4.5 mm, strap 26.9 mm; no interference with any other component dummy; the K9 cable hole stays under the module, not under the cap.
+One solid, STL manifold. Clamp interference 37.2 mm^3 on the module envelope (0.3 mm preload). No overlap with the TUB outside the pins; pin interference 4.65 mm^3 in the two holes; plate 2.2 mm above the rim top (the rim locates the module, the cap only holds it down). LID 5.1 mm, battery 4.5 mm, strap 26.9 mm; no interference with any other component dummy; the K9 cable hole stays under the module, not under the cap.
 
 ## Inputs to confirm when the module arrives (Q-63)
 
@@ -26,8 +27,8 @@ The listing gives 12 x 17 x 5 for the compass version (GetFPV lists 12 x 16 x 4.
 
 ## For the set-up chat
 
-The cap is in RP_GPS (4.23 g, cap counted as 0.84 g). Actual 0.65 g (-0.19 g): RP_GPS conservative, no change to the export.
+The cap is in RP_GPS (4.23 g, cap counted as 0.84 g). Actual 0.58 g (-0.26 g; the 2 screws 0.46 g and 2 inserts 0.33 g in RP_GPS are also gone): RP_GPS conservative, no change to the export.
 
 ## Print and assembly
 
-Plate top on the bed, legs up, TPU 95A HF, 0.2 mm layers, 100 % infill, no supports. Assembly step 13: module into the pocket (arrow along +x, D-076), cable down K9, cap on, two M2 screws into the boss inserts, tighten until the legs seat on the bosses.
+Plate top on the bed, legs and pins up, TPU 95A HF, 0.2 mm layers, 100 % infill, no supports. Assembly step 13: module into the pocket (arrow along +x, D-076), cable down K9, press the cap on until the legs seat on the bosses (no inserts in the cap bosses). Removal: lift the plate edge next to each pin.

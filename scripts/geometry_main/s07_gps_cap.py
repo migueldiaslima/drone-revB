@@ -10,7 +10,7 @@ module top around the window with a small interference (TPU preload); two legs d
 bosses at (-44, +-9.3), M2 clearance holes. The rim locates the module in x and y; the cap only holds it down.
 
 Model frame (x forward, y left, z up), mm. Run from the repo root: python3 scripts/geometry_main/s07_gps_cap.py
-Outputs geometry/retainers/: GPS_CAP_v1.step (model frame), GPS_CAP_v1_TPU.stl (print frame: plate top on the
+Outputs geometry/retainers/: GPS_CAP_v2.step (model frame), GPS_CAP_v2_TPU.stl (print frame: plate top on the
 bed, legs up), gps_cap_checks.json.
 """
 import json
@@ -32,9 +32,10 @@ CB = L["cap_boss"]                  # dia 5.4 at (-44, +-9.3), z 21.5 to 26.5, i
 P = {
     "gps": {"L": 17.0, "W": 12.0, "H": 5.0, "x_c": v4.P["gps_cg"][0], "z0": L["rim_z"][0]},   # Flywoo listing; floor z 24
     "preload": 0.3,                 # plate underside below the module top (TPU interference)
-    "plate": {"x": [-54.0, -34.0], "y": 12.0, "t": 1.2, "r": 2.0},
+    "plate": {"x": [-54.0, -34.0], "y": 12.0, "t": 0.8, "r": 2.0},   # v2: 0.8 (2 lines), flexible clamp
     "window": {"L": 9.0, "W": 9.0, "r": 1.0},          # centred on the module; assumed antenna centred (Q-63)
-    "leg_d": CB["d"], "hole_d": 2.4,                   # M2 clearance in TPU (as the cradle ears)
+    "leg_d": CB["d"],
+    "pin": {"d": 3.325, "L": 4.0, "chamfer": 0.4},     # v2 (Miguel): TPU press pins in the dia 3.2 boss holes, no inserts or screws
     "bed_chamfer": 0.3,
 }
 
@@ -66,7 +67,12 @@ def build():
     body = plate.cut(win)
     for s in (1, -1):
         body = body.union(zcyl(CB["x"], s * CB["y"], P["leg_d"] / 2.0, d["z_boss"], d["zp0"] + 0.01))
-        body = body.cut(zcyl(CB["x"], s * CB["y"], P["hole_d"] / 2.0, d["z_boss"] - 1, d["zp1"] + 1))
+        pn = P["pin"]
+        r, c = pn["d"] / 2.0, pn["chamfer"]
+        z0 = d["z_boss"] - pn["L"]
+        pin = zcyl(CB["x"], s * CB["y"], r, z0 + c, d["z_boss"] + 0.01).union(
+            cq.Workplane("XY").add(cq.Solid.makeCone(r - c, r, c, cq.Vector(CB["x"], s * CB["y"], z0))))
+        body = body.union(pin)
     try:
         body = body.faces(">Z").edges().chamfer(P["bed_chamfer"])     # plate top is the print bed side
     except Exception as ex:
@@ -110,9 +116,13 @@ def checks(body, d):
         ">= 1.0", min(g["L"] - w["L"], g["W"] - w["W"]) / 2 >= 1.0)
     K, cko = v4.keepouts()
     tub_d, tub_f, _, _ = v4.build_tub(K, cko)
-    ovt = cvol(body, tub_d) + cvol(body, tub_f)
-    rec("overlap with the TUB (mm^3)", round(ovt, 4), 0, ovt < 1e-4)
-    rec("legs seated on the cap bosses (gap mm)", round(dist(body, tub_f), 4), 0, dist(body, tub_f) < 1e-6)
+    pins = v4.union_all([zcyl(CB["x"], s * CB["y"], P["pin"]["d"] / 2.0 + 0.01, 0, d["z_boss"]) for s in (1, -1)])
+    ovt = cvol(body.cut(pins), tub_d) + cvol(body.cut(pins), tub_f)
+    rec("overlap with the TUB outside the pins (mm^3)", round(ovt, 4), 0, ovt < 1e-4)
+    ip = cvol(body, tub_f)
+    rec("pin interference in the boss holes (mm^3; dia %.3f in 3.2)" % P["pin"]["d"], round(ip, 3), "> 0", ip > 0)
+    rec("pin tip above the hole bottom / deck underside (z)", round(d["z_boss"] - P["pin"]["L"], 2), "> 21.5", d["z_boss"] - P["pin"]["L"] > 21.5)
+    
     rec("plate to the pocket rim top (mm)", round(d["zp0"] - L["rim_z"][1], 3), "> 0", d["zp0"] - L["rim_z"][1] > 0)
     lid_d, lid_f, _, _ = v4.build_lid()
     dl = min(dist(body, lid_d), dist(body, lid_f))
@@ -125,10 +135,7 @@ def checks(body, d):
     rec("interference with other component dummies", inter, "none", not inter)
     rec("K9 cable hole under the module, not under the cap (no overlap mm^3)", round(cvol(body, K["K9_gps_channel"]), 4), 0,
         cvol(body, K["K9_gps_channel"]) < 1e-4)
-    stack = d["zp1"] - d["z_boss"]
-    rec("screw: plate + leg above the boss top (mm)", round(stack, 2), "M2 x 6 engages %.1f, M2 x 8 engages %.1f (insert hole 6.0 deep)"
-        % (6 - stack, 8 - stack), True)
-    rec("cap top / with M2 pan head (z)", [round(d["zp1"], 2), round(d["zp1"] + 1.3, 2)], "-", True)
+    rec("cap top (z)", round(d["zp1"], 2), "-", True)
     return res
 
 
@@ -154,9 +161,9 @@ def main():
     ok = all(v["pass"] for v in res.values())
     for k, v in res.items():
         print("%-66s %-36s %-30s %s" % (k, v["value"], v["required"], "ok" if v["pass"] else "FAIL"))
-    cq.exporters.export(body, os.path.join(OUT, "GPS_CAP_v1.step"))
+    cq.exporters.export(body, os.path.join(OUT, "GPS_CAP_v2.step"))
     printed = body.mirror("XY").translate((0, 0, d["zp1"]))     # plate top on the bed, legs up
-    write_stl(printed, os.path.join(OUT, "GPS_CAP_v1_TPU.stl"))
+    write_stl(printed, os.path.join(OUT, "GPS_CAP_v2_TPU.stl"))
     json.dump({"params": P, "dims": d, "checks": res, "all_pass": ok}, open(os.path.join(OUT, "gps_cap_checks.json"), "w"),
               indent=1, default=str)
     print("ALL PASS" if ok else "CHECK FAILURES")

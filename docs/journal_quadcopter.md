@@ -1,6 +1,6 @@
 # Quadcopter frame rev B: project journal
 
-Journal version: v0.57 (2026-10-13, GPS cap v1, Q-63)
+Journal version: v0.57 (2026-10-13, GPS cap v2 with press pins, Q-63)
 Owner: Miguel Dias de Lima. Maintained by Claude, decisions by Miguel.
 Rule: after any compaction or new session, resume from Section 1. The journal overrides chat memory. The report may only quote numbers from Section 4.
 
@@ -97,7 +97,7 @@ Rule: after any compaction or new session, resume from Section 1. The journal ov
 
 ### Changelog
 
-- 2026-10-13: v0.57: GPS cap v1 (TPU 95A HF, 0.65 g, claude/retainer_gps_cap_note.md, s07_gps_cap.py); Q-63 opened (GM10 height and antenna position).
+- 2026-10-13: v0.57: GPS cap v2 (TPU 95A HF, 0.58 g, press pins dia 3.325 into the dia 3.2 boss holes instead of screws and inserts (Miguel), claude/retainer_gps_cap_note.md, s07_gps_cap.py); Q-63 opened (GM10 height and antenna position).
 - 2026-10-13: v0.56: H4 rev 4 and TH results recorded from the set-up chat (build log items 50 to 58, N-06-21); F-038 (deck support grey in Tosca, not caught by the connectivity check); D-087 (keels A + B with the clean keel zone, exact solids with deviations D1 to D5, B straight lower edge to z -2.0 above the K11 opening at z -3.0); D-088 (D-085 extended to stiffness); L-017 (rehearsal plus TH on saved cycles before a long run); N-06-22 (keel solids). Files: claude/stage6_v04B_r4_keels_export_note.md, s07_keels_r4.py, geometry/v04B_r4_keels/.
 - 2026-10-13: v0.55: receiver cradle v2 (TPU 95A HF, 0.88 g, Q-61 and Q-62 answered and closed; claude/retainer_rx_cradle_note.md, s07_receiver_cradle.py); Q-60 to be checked at the first fit.
 - 2026-10-13: v0.54: F-037 (set-up F-18, build log items 46 and 47: keel lid boss 5 an island in the TUB at iso 0.4, held only by the lid tie; tub behind x -34.5 removed in H4 cycle 31), L-016; D-086 (option D: GPS deck to the TUB, lid ends at the plate, boss 5 deleted, pad links, D-085 stated per part); N-06-20 (revision 4 export, gates G0 to G5 pass). Files: claude/stage6_v04B_r4_export_note.md, geometry/v04B_r4/.

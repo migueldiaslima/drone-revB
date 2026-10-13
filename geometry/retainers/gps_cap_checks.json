@@ -14,7 +14,7 @@
     -34.0
    ],
    "y": 12.0,
-   "t": 1.2,
+   "t": 0.8,
    "r": 2.0
   },
   "window": {
@@ -23,13 +23,17 @@
    "r": 1.0
   },
   "leg_d": 5.4,
-  "hole_d": 2.4,
+  "pin": {
+   "d": 3.325,
+   "L": 4.0,
+   "chamfer": 0.4
+  },
   "bed_chamfer": 0.3
  },
  "dims": {
   "z_mod_top": 29.0,
   "zp0": 28.7,
-  "zp1": 29.9,
+  "zp1": 29.5,
   "z_boss": 26.5
  },
  "checks": {
@@ -39,15 +43,15 @@
    "pass": true
   },
   "volume mm^3 / mass TPU g": {
-   "value": "539.6 / 0.65",
+   "value": "480.5 / 0.58",
    "required": "estimate 0.84 g (in RP_GPS)",
    "pass": true
   },
   "CG (x, y, z)": {
    "value": [
     -44.0,
-    0.0,
-    29.04
+    -0.0,
+    28.14
    ],
    "required": "-",
    "pass": true
@@ -65,14 +69,19 @@
    "required": ">= 1.0",
    "pass": true
   },
-  "overlap with the TUB (mm^3)": {
+  "overlap with the TUB outside the pins (mm^3)": {
    "value": 0,
    "required": 0,
    "pass": true
   },
-  "legs seated on the cap bosses (gap mm)": {
-   "value": 0.0,
-   "required": 0,
+  "pin interference in the boss holes (mm^3; dia 3.325 in 3.2)": {
+   "value": 4.652,
+   "required": "> 0",
+   "pass": true
+  },
+  "pin tip above the hole bottom / deck underside (z)": {
+   "value": 22.5,
+   "required": "> 21.5",
    "pass": true
   },
   "plate to the pocket rim top (mm)": {
@@ -105,16 +114,8 @@
    "required": 0,
    "pass": true
   },
-  "screw: plate + leg above the boss top (mm)": {
-   "value": 3.4,
-   "required": "M2 x 6 engages 2.6, M2 x 8 engages 4.6 (insert hole 6.0 deep)",
-   "pass": true
-  },
-  "cap top / with M2 pan head (z)": {
-   "value": [
-    29.9,
-    31.2
-   ],
+  "cap top (z)": {
+   "value": 29.5,
    "required": "-",
    "pass": true
   }
