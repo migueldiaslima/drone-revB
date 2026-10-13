@@ -44,6 +44,7 @@ NEXP = {'TUB': 382422, 'LID': 63398}          # production mesh element counts (
 LIDBOSS = [(21.0, 9.5), (21.0, -9.5), (-21.0, 5.0), (-21.0, -5.0), (-30.0, 0.0)]   # V1_build.py
 R4 = os.environ.get('TH_REV', '') == 'r4'
 if R4:
+    NEXP = {'TUB': 391649, 'LID': 51191}   # rev 4 production mesh (build log item 49)
     LIDBOSS = LIDBOSS[:4]       # rev 4: boss 5 deleted (D-086); GPS deck reported separately
 print('options: part=%s tol=%.3f mm' % (PART or 'all', TOL))
 
