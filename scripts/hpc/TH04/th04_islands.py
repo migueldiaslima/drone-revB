@@ -42,6 +42,9 @@ TOL = float(opts.get('tol', TOL))
 PART = opts.get('part', '').upper()
 NEXP = {'TUB': 382422, 'LID': 63398}          # production mesh element counts (item 37)
 LIDBOSS = [(21.0, 9.5), (21.0, -9.5), (-21.0, 5.0), (-21.0, -5.0), (-30.0, 0.0)]   # V1_build.py
+R4 = os.environ.get('TH_REV', '') == 'r4'
+if R4:
+    LIDBOSS = LIDBOSS[:4]       # rev 4: boss 5 deleted (D-086); GPS deck reported separately
 print('options: part=%s tol=%.3f mm' % (PART or 'all', TOL))
 
 # densities of cycle 31 (same reading as th04_build.py)
@@ -204,6 +207,17 @@ for iso in ISOS:
             print('  boss %d at (%.1f, %.1f): %d top nodes, components %s -> %s' % (bi + 1, bx, by, len(top),
                   ' '.join('%s:%d' % (k, v) for k, v in sorted(cs.items(), key=lambda t: str(t[0]))) or '-',
                   'in main tub component' if ok else 'NOT in the main tub component'))
+        if R4:
+            # GPS deck (TUB fixed cell x -54..-32.5, z 21.5..26.5): nodes of TUB elements above the keel top
+            dk = [n for n in np.nonzero((xyz[:, 0] < -32.6) & (xyz[:, 2] > 21.6))[0].tolist() if n in partnodes]
+            cs = {}
+            for n in dk:
+                cmp_ = node_comp.get(n)
+                key = 'air' if cmp_ is None else rk[cmp_]
+                cs[key] = cs.get(key, 0) + 1
+            print('  GPS deck (x < -32.6, z > 21.6): %d nodes, components %s -> %s' % (len(dk),
+                  ' '.join('%s:%d' % (k, v) for k, v in sorted(cs.items(), key=lambda t: str(t[0]))) or '-',
+                  'in main tub component' if list(cs.keys()) == [0] else 'NOT in the main tub component'))
 o.close()
 
 if not jobs:
