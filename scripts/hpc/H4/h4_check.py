@@ -28,6 +28,10 @@ else:
     print('(from Tosca report tables)')
 if REL:
     CAPS = [2.0 * v for v in data[0][10:14]]
+    if all(abs(v - 1.0) < 1e-6 for v in data[0][10:14]):
+        print('note: the report holds SE relative to cycle 0 (all 1 at cycle 0); the N mm values are in TOSCA.OUT,')
+        print('      cycle 0 "Transforming constraint ... new value" = 2 x ALLSE:')
+        os.system('grep -A1 "Transforming constraint" %s | grep "new value" | head -n 4' % os.path.join(job, 'TOSCA.OUT'))
     print('cycle 0 ALLSE LC1 / LC2a / LC2b / LC3a = %s N mm; caps (2.0 x) = %s N mm' % (
         ' / '.join('%.7g' % v for v in data[0][10:14]), ' / '.join('%.7g' % v for v in CAPS)))
 print('cycle  volume(mm3)   f7     f8     f9     f10    f11    f12  | SE/cap LC1  LC2a  LC2b  LC3a | feasible')

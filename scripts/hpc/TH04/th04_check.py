@@ -5,6 +5,9 @@ import sys, os, re
 from odbAccess import openOdb
 CAPS = [0.2192642, 0.2036868, 0.1037085, 0.3987864]       # 2 x H4 cycle 0 ALLSE (N mm)
 TOSCA = ('Tosca c31', None, [416.4, 417.1, 417.7, 418.6, 501.2, 504.5], [c * r / 2.0 for c, r in zip(CAPS, (1.59, 1.41, 1.63, 2.10))])
+if os.environ.get('TH_REV', '') == 'r4':   # rev 4 H4 cycle 28 (build log item 50); caps from TOSCA.OUT cycle 0
+    CAPS = [0.2191128, 0.2044869, 0.1041570, 0.4040888]
+    TOSCA = ('Tosca c28', None, [416.7, 417.2, 418.4, 423.7, 461.7, 496.5], [c * r / 2.0 for c, r in zip(CAPS, (1.58, 1.40, 1.60, 2.02))])
 rows = [TOSCA]
 for job in [a for a in sys.argv[1:] if not a.endswith('.py')]:
     txt = open(job + '.dat', errors='replace').read() if os.path.exists(job + '.dat') else ''
