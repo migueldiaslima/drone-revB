@@ -6,6 +6,16 @@
    "T": 4.0,
    "pcb_t": 1.0
   },
+  "ipex_zone": {
+   "x": [
+    -9.2,
+    -4.5
+   ],
+   "y": [
+    9.95,
+    13.45
+   ]
+  },
   "clear_xy": 0.3,
   "clear_lip": 0.1,
   "floor": {
@@ -20,8 +30,12 @@
   "lip": {
    "over": 0.9,
    "tip_h": 0.3,
-   "x": [
+   "x_ym": [
     -6.0,
+    6.0
+   ],
+   "x_yp": [
+    -3.5,
     6.0
    ]
   },
@@ -57,15 +71,15 @@
    "pass": true
   },
   "volume mm^3 / mass TPU g": {
-   "value": "731.8 / 0.89",
+   "value": "730.1 / 0.88",
    "required": "brief estimate 0.87 g",
    "pass": true
   },
   "CG (x, y, z)": {
    "value": [
-    0.0,
-    8.24,
-    6.06
+    0.01,
+    8.22,
+    6.05
    ],
    "required": "-",
    "pass": true
@@ -108,8 +122,18 @@
    "pass": true
   },
   "IPEX lead (dia 1.13 leaving above the PCB top) to cradle (mm)": {
-   "value": 0.1,
+   "value": 0.856,
    "required": "> 0",
+   "pass": true
+  },
+  "IPEX plug zone (x -9.2 to -4.5, y 9.95 to 13.45, above the PCB) free of cradle (mm^3)": {
+   "value": 0,
+   "required": 0,
+   "pass": true
+  },
+  "lip underside covers receiver max thickness 4.1 (gap to 4.1 mm, mm)": {
+   "value": 0.0,
+   "required": ">= 0 (TPU flexes)",
    "pass": true
   },
   "C-5 capacitor clearance (mm)": {

@@ -67,7 +67,7 @@ def shot(name, cam, items, title, tub=False, clip=None):
 
 
 f = (0, 8, 6)
-shot("1_part", [(45, -40, 45), f, (0, 0, 1)], [("cradle", TPU, 1.0)], "Receiver cradle v1, TPU 95A HF, 0.89 g")
+shot("1_part", [(45, -40, 45), f, (0, 0, 1)], [("cradle", TPU, 1.0)], "Receiver cradle v2, TPU 95A HF, 0.88 g")
 shot("2_installed", [(55, -55, 55), f, (0, 0, 1)],
      [("cradle", TPU, 1.0), ("rx", RX, 0.55), ("fc", FC, 1.0), ("fcparts", "#9cc9a8", 0.35), ("cap", CAP, 1.0), ("hw", HW, 1.0)],
      "Installed on the pp and mp screws (ears between lock nut and nylon nut)")

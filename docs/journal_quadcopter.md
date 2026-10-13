@@ -1,6 +1,6 @@
 # Quadcopter frame rev B: project journal
 
-Journal version: v0.55 (2026-10-13, receiver cradle v1, Q-61, Q-62)
+Journal version: v0.55 (2026-10-13, receiver cradle v2, Q-61, Q-62 closed)
 Owner: Miguel Dias de Lima. Maintained by Claude, decisions by Miguel.
 Rule: after any compaction or new session, resume from Section 1. The journal overrides chat memory. The report may only quote numbers from Section 4.
 
@@ -76,9 +76,9 @@ Rule: after any compaction or new session, resume from Section 1. The journal ov
 | Q-57 | Symmetry in the TO | Closed: identical arms (one part x 4 instances, cyclic symmetry restriction); no symmetry for the body (D-059) |
 | Q-58 | GM10 Nano V3 compass version: 6 wires (SDA / SCL)? | Open (Miguel, before ordering): if only 4, choose another compass module of similar size and redo the lid pocket |
 | Q-59 | GM10 cable plug sizes | Open (Miguel, measure): decides which cable end is threaded through K9 (connector rule, brief 9.3) |
-| Q-60 | FC heat-sink and component height under the receiver cradle; PCB position in the grommet groove | Open (Miguel, measure): C-6 needs the components under the cradle floor at or below z = +3.8 (0.3 mm under the floor at +4.1) |
-| Q-61 | Receiver thickness: PCB edge, maximum over components, with heat shrink | Open (Miguel, measure): sets the cradle lip height (now the 4.0 mm allowance) and end stop height (PCB 1.0 assumed) |
-| Q-62 | Receiver layout: IPEX connector end, solder pad end, button and LED | Open (Miguel, photo): sets the lip extent (now x -6 to +6) and the orientation (IPEX towards -x assumed) |
+| Q-60 | FC heat-sink and component height under the receiver cradle; PCB position in the grommet groove | Open, checked at the first fit (cannot be measured now, Miguel 2026-10-13): C-6 needs the components under the cradle floor at or below z = +3.8 (0.3 mm under the floor at +4.1); paper test under the floor, floor step if it touches |
+| Q-61 | Receiver thickness: PCB edge, maximum over components, with heat shrink | Closed (Miguel, 2026-10-13): PCB 1.0 to 1.25, maximum 4.0 to 4.1 with heat shrink; cradle lip at 4.1, end stop 1.0 |
+| Q-62 | Receiver layout: IPEX connector end, solder pad end, button and LED | Closed (Miguel, 2026-10-13): IPEX at the -x end towards +y, pads at the +x end; +y lip starts at x -3.5 |
 | Q-17 | Cost reference | Closed: 37.91 EUR, AliExpress listing seen 2026-10-03 (D-017) |
 
 
@@ -96,7 +96,7 @@ Rule: after any compaction or new session, resume from Section 1. The journal ov
 
 ### Changelog
 
-- 2026-10-13: v0.55: receiver cradle v1 (TPU 95A HF, 0.89 g, claude/retainer_rx_cradle_note.md, s07_receiver_cradle.py); Q-61, Q-62 opened (receiver thickness and layout).
+- 2026-10-13: v0.55: receiver cradle v2 (TPU 95A HF, 0.88 g, Q-61 and Q-62 answered and closed; claude/retainer_rx_cradle_note.md, s07_receiver_cradle.py); Q-60 to be checked at the first fit.
 - 2026-10-13: v0.54: F-037 (set-up F-18, build log items 46 and 47: keel lid boss 5 an island in the TUB at iso 0.4, held only by the lid tie; tub behind x -34.5 removed in H4 cycle 31), L-016; D-086 (option D: GPS deck to the TUB, lid ends at the plate, boss 5 deleted, pad links, D-085 stated per part); N-06-20 (revision 4 export, gates G0 to G5 pass). Files: claude/stage6_v04B_r4_export_note.md, geometry/v04B_r4/.
 - 2026-10-12: v0.53: H4 (N-06-17) and TH04 (N-06-18) recorded from the set-up chat (build log items 42 to 45); D-082 item 2 closed (TH04b_ni passes; TH04a_ni shows the design relies on the seat contact); F-036 (set-up F-17, antenna boss island), L-015; D-083 (DV-25 confirmed), D-084 (v04-B revision 3: antenna spine, straight T under the K8 exit, K8 R7, K9 moved), D-085 (fixed-region connectivity rule); N-06-19 (revision 3 export, gates G0 to G5 pass); measured: strap 3.25 g, receiver coax 60 to 62 mm, T antenna 52 mm tip to tip, legs dia 1.4, moulding 14 x 7.5 mm. Files: claude/stage6_v04B_r3_F17_note.md, claude/stage6_v04B_r3_export_note.md, f17_antenna_viewer.html.
 - 2026-10-11: v0.52: v04-B G6 pass, G7a fail / G7b pass (N-06-16, claude/stage6_v04B_G7_report.md, set-up DV-22, DV-23); D-082 (lid tied over the seat, with flatness requirement, TH04 with both connections, Stage 7 contact-lost check).

@@ -11,7 +11,7 @@ stop (2.4 mm deep) carries the -y side to the ears. Ears dia 5.8 x 1.4 with M2 c
 
 Model frame (x forward, y left, z up, origin at the frame centre, z = 0 on the arm top), mm.
 Run from the repo root: python3 scripts/geometry_main/s07_receiver_cradle.py
-Outputs geometry/retainers/: RX_CRADLE_v1.step, RX_CRADLE_v1_TPU.stl (print orientation, floor on the
+Outputs geometry/retainers/: RX_CRADLE_v2.step, RX_CRADLE_v2_TPU.stl (print orientation, floor on the
 bed), rx_cradle_checks.json.
 """
 import json
@@ -31,13 +31,15 @@ RHO_TPU = 1.21e-3                   # g/mm^3, same assumption as the antenna hol
 
 P = {
     # receiver (GetFPV listing: 10.4 x 18.4, 0.7 g); thickness = brief allowance until measured (Q-61)
-    "rx": {"L": 18.4, "W": 10.4, "T": 4.0, "pcb_t": 1.0},
+    "rx": {"L": 18.4, "W": 10.4, "T": 4.0, "pcb_t": 1.0},   # Q-61 (Miguel): PCB 1.0 to 1.25, max 4.0 to 4.1 with heat shrink
+    # Q-62 (Miguel): IPEX at the -x end towards the +y wall, solder pads at the +x end
+    "ipex_zone": {"x": [-9.2, -4.5], "y": [9.95, 13.45]},   # kept free above the PCB top (assumed plug footprint plus margin)
     "clear_xy": 0.3,                # receiver to walls and end stops, per side
     "clear_lip": 0.1,               # receiver top to lip underside
     "floor": {"z0": 4.1, "t": 1.4},  # z0 = anti-loosening nut top (brief section 4); C-6 needs FC parts <= z0 - 0.3
     "wall_t": 1.2,                  # 3 lines of 0.4 mm
     "y_in": [2.45, 13.45],          # inside, brief section 5.1 (capacitor side stays at y >= +1.25 outside)
-    "lip": {"over": 0.9, "tip_h": 0.3, "x": [-6.0, 6.0]},     # 0.9 over the wall face = 0.6 over the PCB edge
+    "lip": {"over": 0.9, "tip_h": 0.3, "x_ym": [-6.0, 6.0], "x_yp": [-3.5, 6.0]},   # 0.6 over the PCB edge; +y lip starts after the IPEX zone
     "end": {"t": 1.2, "h": 1.0, "y_to": 9.75},                 # end stop up to the PCB top (brief: 1 mm), -y wall to the ear zone
     "ear": {"xy": 12.75, "d": 5.8, "hole_d": 2.4, "y_from": 9.75},   # FC screw pitch 25.5 / 2; TPU hole +0.2 over 2.2
     "chamfer_bed": 0.3,             # first-layer chamfer on the floor underside edges
@@ -71,7 +73,7 @@ def lip(y_wall, sgn):
     d = dims()
     lp = P["lip"]
     o, th = lp["over"], lp["tip_h"]
-    x0, x1 = lp["x"]
+    x0, x1 = lp["x_ym"] if sgn > 0 else lp["x_yp"]
     # section in the y-z plane: flat underside, vertical tip, 45 deg lead-in back to the wall
     pts = [(y_wall, d["zl"]), (y_wall + sgn * o, d["zl"]), (y_wall + sgn * o, d["zl"] + th),
            (y_wall, d["zl"] + th + o)]
@@ -153,8 +155,13 @@ def checks(body, d):
             inter[k] = round(v, 4)
     rec("interference with v04-B component dummies (mm^3)", inter, "none", not inter)
     # IPEX-1 lead: the mated plug sits on the receiver top, the coax leaves it above the PCB top (z >= zf + pcb_t)
-    coax = box(-20.0, -d["xi"] + 1.0, 3.0, 4.2, d["zf"] + P["rx"]["pcb_t"] + 0.1, d["zf"] + P["rx"]["pcb_t"] + 1.3)
+    coax = box(-20.0, -d["xi"] + 1.0, 10.6, 11.8, d["zf"] + P["rx"]["pcb_t"] + 0.1, d["zf"] + P["rx"]["pcb_t"] + 1.3)
     rec("IPEX lead (dia 1.13 leaving above the PCB top) to cradle (mm)", round(dist(body, coax), 3), "> 0", dist(body, coax) > 0)
+    iz = P["ipex_zone"]
+    zone = box(iz["x"][0], iz["x"][1], iz["y"][0], iz["y"][1], d["zf"] + P["rx"]["pcb_t"], 14.0)
+    rec("IPEX plug zone (x %g to %g, y %g to %g, above the PCB) free of cradle (mm^3)" % (iz["x"][0], iz["x"][1], iz["y"][0], iz["y"][1]),
+        round(common_vol(body, zone), 4), 0, common_vol(body, zone) < 1e-6)
+    rec("lip underside covers receiver max thickness 4.1 (gap to 4.1 mm, mm)", round(d["zl"] - d["zf"] - 4.1, 2), ">= 0 (TPU flexes)", d["zl"] - d["zf"] - 4.1 >= -1e-6)
     rec("C-5 capacitor clearance (mm)", round(dist(body, C["capacitor"]), 3), ">= 1.0", dist(body, C["capacitor"]) >= 1.0)
     fcp = C["fc_heatsink_and_parts_under_cradle_max"]
     rec("C-6 floor to FC parts envelope (z <= +3.8) (mm)", round(dist(body, fcp), 3), ">= 0.3 (Q-60 open)", dist(body, fcp) >= 0.3 - 1e-6)
@@ -211,9 +218,9 @@ def main():
     ok = all(v["pass"] for v in res.values())
     for k, v in res.items():
         print("%-62s %-34s %-28s %s" % (k, v["value"], v["required"], "ok" if v["pass"] else "FAIL"))
-    cq.exporters.export(body, os.path.join(OUT, "RX_CRADLE_v1.step"))
+    cq.exporters.export(body, os.path.join(OUT, "RX_CRADLE_v2.step"))
     printed = body.translate((0, 0, -d["z0"]))         # floor on the bed, model x and y kept
-    write_stl(printed, os.path.join(OUT, "RX_CRADLE_v1_TPU.stl"))
+    write_stl(printed, os.path.join(OUT, "RX_CRADLE_v2_TPU.stl"))
     json.dump({"params": P, "dims": d, "checks": res, "all_pass": ok}, open(os.path.join(OUT, "rx_cradle_checks.json"), "w"), indent=1, default=str)
     print("ALL PASS" if ok else "CHECK FAILURES")
     return body
