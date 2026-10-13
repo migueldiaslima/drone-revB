@@ -16,6 +16,6 @@ echo "G7a_r3_ref and G7b_r3_ref running ($NCPU threads each). Waiting..."
 wait
 for J in G7a_r3_ref G7b_r3_ref; do
   tail -n 2 ${J}_run.log
-  abaqus python $S/g7_check.py $J mass=332.25 2>&1 | tee ${J}_check.txt
+  G7_MASS=332.25 abaqus python $S/g7_check.py $J 2>&1 | tee ${J}_check.txt
 done
 grep -h "^G7 " G7a_r3_ref_check.txt G7b_r3_ref_check.txt
