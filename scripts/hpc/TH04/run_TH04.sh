@@ -2,6 +2,9 @@
 # D-082 (b): build and run TH04b and TH04a side by side, then the check. Run in /tmp/mdias_H4/TH:
 #   bash ~/drone_revB/stage6/scripts/run_TH04.sh 30          (TH04b, TH04a)
 #   TH_REV=r4 bash ~/drone_revB/stage6/scripts/run_TH04.sh 60   (rev 4, item 50: TH_r4b, seat tie, run in /tmp/mdias_H4r4/TH)
+#   item 64 (final T-4 on the print geometry, iso 0.3, exact keels, keel cell clean):
+#     TH_REV=r4 TH_ISO=0.3 TH_TAG=_final TH_KEELS=KEEL_A_r4.stl,KEEL_B_r4.stl TH_KEELS_V=1400.5 \
+#     TH_CLEAN=-54,-23,-11,11,-2,21.5 bash ~/drone_revB/stage6/scripts/run_TH04.sh 60   (job TH_r4b_i30_final)
 #   bash ~/drone_revB/stage6/scripts/run_TH04.sh 30 ni       (item 44: islands set to air; TH04b_ni, TH04a_ni)
 NCPU=${1:-30}
 S=~/drone_revB/stage6/scripts
