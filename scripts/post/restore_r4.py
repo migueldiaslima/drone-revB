@@ -51,6 +51,12 @@ def to_manifold(V, F, label):
         except Exception:
             pass
     if 'NoError' not in st:
+        Fs = np.sort(np.vstack([F[:, [0, 1]], F[:, [1, 2]], F[:, [2, 0]]]), axis=1)
+        _, cnt = np.unique(Fs, axis=0, return_counts=True)
+        T = np.asarray(V)[np.asarray(F)]
+        area = np.linalg.norm(np.cross(T[:, 1] - T[:, 0], T[:, 2] - T[:, 0]), axis=1) / 2.0
+        print('  diagnostics %s: %d vertices, %d triangles, edges used once %d, three or more times %d, zero-area triangles %d' % (
+            label, len(V), len(F), int((cnt == 1).sum()), int((cnt > 2).sum()), int((area < 1e-12).sum())))
         stop('%s is not a valid closed manifold (%s)' % (label, st))
     return m
 
@@ -61,6 +67,9 @@ def weld(T, tol=1e-5):
     _, idx, inv = np.unique(key, axis=0, return_index=True, return_inverse=True)
     F = inv.reshape(-1, 3)
     F = F[(F[:, 0] != F[:, 1]) & (F[:, 1] != F[:, 2]) & (F[:, 0] != F[:, 2])]
+    # a face present twice (zero-thickness film, back to back) is not part of a closed volume: drop both copies
+    _, inv2, cnt = np.unique(np.sort(F, axis=1), axis=0, return_inverse=True, return_counts=True)
+    F = F[cnt[inv2.ravel()] == 1]
     return P[idx].astype(float), F
 
 
@@ -129,9 +138,7 @@ def step_solids(fn, h):
                 f = np.asarray(n, dtype=np.int64).reshape(-1, 3)
                 tris.append(f[:, ::-1] if s < 0 else f)
         F = np.vstack(tris)
-        used, Fi = np.unique(F, return_inverse=True)
-        V = X[used]
-        Fi = Fi.reshape(-1, 3)
+        V, Fi = weld(X[F], 1e-6)                 # merge coincident nodes (seams), drop degenerate triangles
         sv = np.einsum('ij,ij->i', V[Fi[:, 0]], np.cross(V[Fi[:, 1]], V[Fi[:, 2]])).sum() / 6.0
         if sv < 0:
             Fi = Fi[:, ::-1]
