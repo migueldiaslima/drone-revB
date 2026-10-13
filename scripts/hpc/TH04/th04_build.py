@@ -113,6 +113,63 @@ if NOISL:
         c = xyz[[econ[i][0] for i in mem]].mean(axis=0)
         print('  %6d elements, centroid about (%.1f, %.1f, %.1f)' % (len(mem), c[0], c[1], c[2]))
 boxiso = {}
+SHAPES = [t.strip() for t in os.environ.get('TH_SHAPES', '').split(',') if t.strip()]   # item 56: keels_r4 shapes forced solid
+# item 57: TH_CLEAN = 'x0,x1,y0,y1,z0,z1' : every TUB DESIGN element whose corner-node centroid lies in the box is set to
+# air (leftover optimiser material removed); TUB fixed elements are never touched; TH_SHAPES elements override (solid).
+CLEAN = [float(v) for v in os.environ.get('TH_CLEAN', '').split(',') if v.strip()]
+if CLEAN and len(CLEAN) != 6:
+    raise SystemExit('TH_CLEAN needs 6 numbers x0,x1,y0,y1,z0,z1')
+if SHAPES or CLEAN:
+    inst = o.rootAssembly.instances[list(o.rootAssembly.instances.keys())[0]]
+    tubk = [k for k in inst.elementSets.keys() if k.upper().endswith('ALL_TUB')]
+    desk = [k for k in inst.elementSets.keys() if k.upper().endswith('DESIGN_TUB')]
+    if not tubk or not desk:
+        raise SystemExit('TUB element sets not found (ALL_TUB %s, DESIGN_TUB %s)' % (tubk, desk))
+    tub = set(e.label for e in inst.elementSets[tubk[0]].elements)
+    des_tub = set(e.label for e in inst.elementSets[desk[0]].elements)
+    print('TUB: %d elements, %d design, %d fixed (sets %s, %s)' % (len(tub), len(des_tub), len(tub - des_tub), tubk[0], desk[0]))
+    xyzn = dict((n.label, n.coordinates) for n in inst.nodes)
+    labs, cen, vols = [], [], []
+    for e in inst.elements:
+        if e.label not in tub or not e.type.upper().startswith('C3D'):
+            continue
+        p = np.asarray([xyzn[c] for c in e.connectivity[:4]], dtype=float)
+        labs.append(e.label)
+        cen.append(p.mean(axis=0))
+        vols.append(abs(np.dot(p[1] - p[0], np.cross(p[2] - p[0], p[3] - p[0]))) / 6.0)
+    labs = np.asarray(labs)
+    cen = np.asarray(cen)
+    vols = np.asarray(vols)
+    isdes = np.asarray([l in des_tub for l in labs.tolist()])
+    r_el = np.asarray([rho.get(l, 1.0) for l in labs.tolist()])
+    shp = np.zeros(len(labs), dtype=bool)
+    if SHAPES:
+        for d in [os.path.dirname(os.path.abspath(__file__)) if '__file__' in globals() else '', os.path.expanduser('~/drone_revB/stage6/scripts')]:
+            if d and d not in sys.path:
+                sys.path.insert(0, d)
+        import keels_r4
+        for sh in SHAPES:
+            m = keels_r4.SHAPES[sh](cen[:, 0], cen[:, 1], cen[:, 2])
+            shp |= m
+            nf = int((m & ~isdes).sum())
+            add = m & (r_el < ISO)
+            print('shape %s: %d TUB elements (%d of them fixed), volume %.1f mm^3 = %.2f g; not solid at iso %.2f before: %.1f mm^3 = %.2f g' % (
+                sh, int(m.sum()), nf, vols[m].sum(), vols[m].sum() * 1.30e-3, ISO, vols[add].sum(), vols[add].sum() * 1.30e-3))
+    if CLEAN:
+        x0, x1, y0, y1, z0, z1 = CLEAN
+        inb = (cen[:, 0] >= x0) & (cen[:, 0] <= x1) & (cen[:, 1] >= y0) & (cen[:, 1] <= y1) & (cen[:, 2] >= z0) & (cen[:, 2] <= z1)
+        cl = inb & isdes & ~shp
+        for l in labs[cl].tolist():
+            boxiso[l] = 2.0                      # never reached by a density: air
+        was = cl & (r_el >= ISO)
+        print('clean box %s: %d TUB elements inside (%d design, %d fixed kept, %d in shapes); leftover design material removed (solid at iso %.2f, outside the shapes): %d elements, %.1f mm^3 = %.2f g' % (
+            CLEAN, int(inb.sum()), int((inb & isdes).sum()), int((inb & ~isdes).sum()), int((inb & shp).sum()), ISO, int(was.sum()), vols[was].sum(), vols[was].sum() * 1.30e-3))
+    for l in labs[shp].tolist():
+        boxiso[l] = 0.0                          # forced solid (overrides the clean box)
+    # summary of the TUB after the overrides (elements in the TUB only)
+    fin = np.asarray([r_el[i] >= boxiso.get(labs[i], ISO) for i in range(len(labs))])
+    print('TUB solid after overrides: %d elements, %.1f mm^3 = %.2f g (before: %d elements, %.1f mm^3 = %.2f g)' % (
+        int(fin.sum()), vols[fin].sum(), vols[fin].sum() * 1.30e-3, int((r_el >= ISO).sum()), vols[r_el >= ISO].sum(), vols[r_el >= ISO].sum() * 1.30e-3))
 if BOXES:
     inst = o.rootAssembly.instances[list(o.rootAssembly.instances.keys())[0]]
     tubk = [k for k in inst.elementSets.keys() if k.upper().endswith('ALL_TUB')]
