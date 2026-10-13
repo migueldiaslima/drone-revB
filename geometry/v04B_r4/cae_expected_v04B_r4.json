@@ -1,0 +1,95 @@
+{
+ "TUB_top_z21.5_external_total": [
+  493.131,
+  8
+ ],
+ "TIE_LIDRIM_secondary_TUB_top_under_lid (x -32..32, |y|<=17)": 363.229,
+ "TUB_top_|y|<=17_all_x (rev 2 style partition, y only)": 372.229,
+ "TUB_top_keel_strip_x_-32.5..-32_outside_lid": 9.0,
+ "TIE_LIDRIM_main_LID_bottom_z21.5": [
+  2314.021,
+  1
+ ],
+ "LID_top_z24_total": [
+  2283.862,
+  1
+ ],
+ "S_BATT_SEAT frame + band, x +-32": 1056.0,
+ "S_BATT_SEAT_expected 64x34 - 2 x 20x28": 1056,
+ "LID_top_within_x+-32 (frame, band, pads, links, design)": 2130.635,
+ "LID_FIXED_top_within_x+-32": 1187.844,
+ "S_GPS_SEAT": [
+  209.194,
+  1,
+  [
+   -52.8,
+   -35.2,
+   -6.3,
+   6.3
+  ]
+ ],
+ "boss_tops": [
+  20.232,
+  20.232,
+  20.232,
+  20.232
+ ],
+ "pad_bottoms (lid bottom inside dia 6)": [
+  24.473,
+  24.473,
+  24.473,
+  24.473
+ ],
+ "deck_bottom_faces_on_air (TUB external, z 21.5, x<-32.5, facing down)": 122.686,
+ "gap_LID_to_GPS_deck_mm": 0.5,
+ "deck_cell": {
+  "vol": 1218.564,
+  "bbox": [
+   -54.0,
+   -32.5,
+   -12.0,
+   12.0,
+   21.5,
+   26.5
+  ]
+ },
+ "TUB_FIXED_cells": [
+  133.45,
+  133.45,
+  133.45,
+  240.24,
+  240.24,
+  240.24,
+  240.24,
+  1094.4,
+  1094.4,
+  1094.4,
+  1094.4,
+  1094.4,
+  1094.4,
+  1094.4,
+  1094.4,
+  1218.56,
+  1461.19
+ ],
+ "LID_cells": {
+  "design": [
+   1139.11,
+   1217.86
+  ],
+  "fixed": [
+   3417.08
+  ]
+ },
+ "sha256": {
+  "ARM_mm.step": "fb5bdbe236c3a25be3a7296b6b597d3d89d485c78aa21501ae8dc02f5fb7a80e",
+  "ARM_mp.step": "c16619cbdbfacecf1c94e49b031a8223b081c2741b2a3e1c1cfc30fdc8635eab",
+  "ARM_pm.step": "a05da458ba13f5d9cf6a4e691c8d3f22e697f8f4f030a618d7c80566a838a644",
+  "ARM_pp.step": "86fd02c98fed0e8b47715c05321970773def02369f1f6db057de5325b05ee2e8",
+  "COMPONENTS_v04B.step": "d1ca02ad8d055946c851a959e3df1687382982b3469b03a15f25c54f8fb1c291",
+  "KEEPOUTS_v04B.step": "b47d5f1907b5ec8a6c49bd9b9746e31d6e67e069a8de79a55c34caa218b0ccc2",
+  "LID.step": "f6dc02661b054b2886dedd0f9aad5c80bdf9a0a73118a4cd2a60220c3862ffa5",
+  "TUB.step": "1fb13ecf779d447b6ba7d6a120c8f59a8d7fee144db4cbe856f5ec0d15327f10",
+  "reference_points_v04B.csv": "dd7fe63666af0013dd5ab86af17af984d2cdf82259cd724cff60f1b7fbc203d8"
+ }
+}

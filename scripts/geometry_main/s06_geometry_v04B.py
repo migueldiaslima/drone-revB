@@ -1,6 +1,12 @@
 # -*- coding: ascii -*-
 """
-s06_geometry_v04B.py - v04-B geometry, revision 3 (2026-10-12, F-17): antenna spine replaces the
+s06_geometry_v04B.py - v04-B geometry, revision 4 (2026-10-13, F-18): the GPS deck (deck plate, pocket rim,
+cap bosses) moves from the LID to the TUB and sits on the keel, so the GPS mass is carried by the tub and not
+by the lid-tub interface; the keel lid boss (-30, 0) is deleted (lid held by the four wall bosses); the lid
+ends at the plate (x -32), each lid screw pad gets a fixed link to the plate frame (D-085 per part); K9 runs up
+through the deck to the pocket floor. Everything else as revision 3.
+
+Revision 3 (2026-10-12, F-17): antenna spine replaces the
 antenna boss; antenna channel K8 rerouted (z 6.5, one R7 bend, exit at (-49, +3.5)); GPS channel K9
 and the lid GPS hole moved 1.5 mm to -y; straight T antenna hanging stem-up under the K8 exit in a
 TPU holder (components). Spine shape, clearances and the holder are defined and checked in
@@ -15,7 +21,8 @@ through the keel at receiver height, the 11 x 7 pigtail window and the C cutout 
 
 Writes stage6/abaqus_v04B/:
   TUB.step              TUB_DESIGN, TUB_FIXED (fin bosses, FC bosses, lid bosses, antenna spine)
-  LID.step              LID_DESIGN, LID_FIXED (plate frame and strap band, GPS deck with pocket
+  LID.step              LID_DESIGN, LID_FIXED (rev 4: plate frame and strap band, front tab, 4 screw pads with links;
+                        before rev 4 also the GPS deck with pocket
                         rim and cap bosses, screw pads, front tab)
   ARM_xx.step           the v03-B arms (D-054, D-059), unchanged in shape, moved 3 mm in x and
                         3 mm in y away from the centre with their corner
@@ -49,7 +56,7 @@ REFPTS_REV2 = None
 if not os.path.isdir(SRC_ARMS):                    # GitHub repo layout (drone-revB): inputs under geometry/
     _ROOT = os.path.dirname(os.path.dirname(HERE))
     SRC_ARMS = os.path.join(_ROOT, "geometry", "v03B_arms")
-    OUT = os.path.join(_ROOT, "geometry", "v04B_r3")
+    OUT = os.path.join(_ROOT, "geometry", "v04B_r4")
     REFPTS_REV2 = os.path.join(_ROOT, "geometry", "v04B", "reference_points_v04B.csv")   # MOT / JNT already moved
 RHO = 1.30e-3
 SHIFT = 3.0                                   # per axis; 4.243 mm along each diagonal
@@ -57,13 +64,13 @@ M_NEW = g.M + SHIFT                           # motor axis coordinate, 52.497
 R_KEEP = g.R_KEEP                             # 47.45, prop radius + 3 mm
 
 P = {
-    "version": "v04B rev 3",
+    "version": "v04B rev 4",
     "body_half": 23.0, "rim_z": 21.5, "floor_z": -15.0, "chamfer_z": 10.0,
     "motor_xy": M_NEW, "wheelbase": 2.0 * M_NEW * math.sqrt(2.0),
     "bay": {"xy": 20.5, "z": [-6.0, 21.5]},
     "fc_boss": {"pitch": 25.5, "d": 6.4, "hole_d": 2.2, "cb_d": 4.2, "cb_depth": 1.5},
     "lid_boss": {"d": 6.0, "z": [15.5, 21.5], "insert_d": 3.2, "insert_depth": 4.5,
-                 "xy": [(21.0, 9.5), (21.0, -9.5), (-21.0, 5.0), (-21.0, -5.0), (-30.0, 0.0)]},
+                 "xy": [(21.0, 9.5), (21.0, -9.5), (-21.0, 5.0), (-21.0, -5.0)]},   # rev 4: keel boss (-30, 0) deleted
     "boss_wedge_z": [11.5, 15.5],          # 45 deg design support under the wall bosses, into the bay
     "inner_chamfer_wall": 2.5,             # corner walls above z = 10 (octagon restored)
     "fillets": {"keel_root": 2.0, "bay_corner": 2.0, "pigtail_window": 0.75,
@@ -91,11 +98,14 @@ P = {
     "strap_notch": {"x": [-9.0, 9.0], "z": [18.0, 21.5]},
     "nut_col": {"d": 8.0, "z": [1.6, 21.5]},
     "lid": {"plate": [64.0, 34.0], "z": [21.5, 24.0], "frame_w": 3.0, "band_half_x": 9.0,
-            "deck_x": [-54.0, -30.0], "deck_y": 10.0,
+            "deck_x": [-54.0, -32.5], "deck_y": 9.0,        # rev 4: GPS deck is TUB, 0.5 mm gap to the lid plate (x -32);
+                                                             # y +-9 flush with the keel sides (+-10 left a 1 mm underside strip, G3)
             "pocket_in": {"x": [-52.8, -35.2], "y": 6.3}, "rim_t": 1.2, "rim_z": [24.0, 26.5],
             "cap_boss": {"d": 5.4, "y": 9.3, "x": -44.0, "z": [21.5, 26.5], "insert_d": 3.2, "insert_depth": 6.0},
-            "pad_d": [6.0, 6.0, 6.0, 6.0, 6.0], "pad_hole_d": 2.2, "csk_d": 3.8,
-            "gps_hole": (-38.2, -3.0, 4.0),                                      # rev 3 (rev 2: y -1.5)
+            "pad_d": [6.0, 6.0, 6.0, 6.0], "pad_hole_d": 2.2, "csk_d": 3.8,
+            "pad_link_w": 4.5,                               # rev 4: fixed link pad -> plate frame (D-085 per part); 4.5 for G4
+                                                             # (4.0: 2 tets gamma 0.046 at h 1.5; 4.5: min 0.229), corner 41 deg
+            "gps_hole": (-38.2, -3.0, 4.0),                  # rev 4: made by K9, which now runs up through the TUB deck
             "tab": {"x": [32.0, 42.0], "y": 9.0},
             "c_cut": {"pocket_x": [35.8, 39.2], "pocket_y": 3.2, "entry_half": 1.3}},
     "gps_cg": (-44.0, 0.0, 26.5),
@@ -198,7 +208,7 @@ def gps_channel():
     rad = c["d"] / 2.0
     xv, yv, zb, R, zh = c["x_v"], c["y_v"], c["z_bend"], c["R"], c["z_h"]
     xw, yw = c["wall_hole"]
-    vert = zcyl(xv, 0.0, rad, zb, P["rim_z"] + 0.5)
+    vert = zcyl(xv, 0.0, rad, zb, P["lid"]["z"][1] + 0.5)      # rev 4: up through the TUB deck to the pocket floor
     disc = cq.Workplane("XY").workplane(offset=zb).center(xv, 0.0).circle(rad).extrude(0.001).faces("<Z").val()
     bend = None
     for sgn in (1, -1):
@@ -279,6 +289,22 @@ def keepouts():
 
 
 # ------------------------------------------------------------------ tub
+def gps_deck_tools():
+    """Rev 4: GPS deck plate, pocket rim and cap bosses (all TUB fixed) and the cap insert holes."""
+    L = P["lid"]
+    z0, z1 = L["z"]
+    dx, dy = L["deck_x"], L["deck_y"]
+    deck = box(dx[0], dx[1], -dy, dy, z0, z1)
+    pin = L["pocket_in"]; rt = L["rim_t"]
+    rim = box(pin["x"][0] - rt, pin["x"][1] + rt, -pin["y"] - rt, pin["y"] + rt, *L["rim_z"]).cut(
+        box(pin["x"][0], pin["x"][1], -pin["y"], pin["y"], L["rim_z"][0] - 1, L["rim_z"][1] + 1))
+    cb = L["cap_boss"]
+    capb = union_all([zcyl(cb["x"], s * cb["y"], cb["d"] / 2.0, *cb["z"]) for s in (1, -1)])
+    holes = union_all([zcyl(cb["x"], s * cb["y"], cb["insert_d"] / 2.0, cb["z"][1] - cb["insert_depth"] - 0.5, cb["z"][1] + 1)
+                       for s in (1, -1)])
+    return deck.union(rim).union(capb), holes
+
+
 def tub_envelope(cko):
     h = P["body_half"]
     lower = box(-h, h, -h, h, P["floor_z"], P["chamfer_z"])
@@ -294,7 +320,7 @@ def tub_envelope(cko):
         cq.selectors.SumSelector(cq.selectors.BoxSelector((kx - 0.05, ky - 0.05, -0.05), (kx + 0.05, ky + 0.05, 21.6)),
                                  cq.selectors.BoxSelector((kx - 0.05, -ky - 0.05, -0.05), (kx + 0.05, -ky + 0.05, 21.6))),
         cq.selectors.BoxSelector((kx - 0.05, -ky + 0.1, -0.05), (kx + 0.05, ky - 0.1, 0.05)))).fillet(R)
-    return env.union(boss_wedges())
+    return env.union(boss_wedges()).union(gps_deck_tools()[0])
 
 
 def tub_fixed_tools():
@@ -307,7 +333,8 @@ def tub_fixed_tools():
     sp = P["ant_spine"]
     ant_holes = union_all([zcyl(sp["insert_xy"][0], sp["insert_xy"][1], sp["insert_d"] / 2.0, -1.0, sp["insert_depth"]),
                            zcyl(sp["peg_xy"][0], sp["peg_xy"][1], sp["peg_d"] / 2.0, -1.0, sp["peg_depth"])])
-    return fc, lid, ant, union_all([lid_holes, ant_holes])
+    gdeck, gholes = gps_deck_tools()
+    return fc, lid, ant.union(gdeck), union_all([lid_holes, ant_holes, gholes])
 
 
 def antenna_spine():
@@ -339,65 +366,64 @@ def build_tub(K, cko):
     design = env_cut.cut(tools).cut(fin_nd)
     fixed = env_cut.intersect(tools).union(fin_nd)
     regions = {"fixed_fin_bosses": fin_nd, "fixed_fc_bosses": env_cut.intersect(fc),
-               "fixed_lid_bosses": env_cut.intersect(lidb), "fixed_antenna_spine": env_cut.intersect(ant)}
+               "fixed_lid_bosses": env_cut.intersect(lidb), "fixed_antenna_spine": env_cut.intersect(antenna_spine()),
+               "fixed_gps_deck_rim_bosses": env_cut.intersect(gps_deck_tools()[0])}
     return design, fixed, regions, env
 
 
 # ------------------------------------------------------------------ lid
 def lid_parts():
+    """Rev 4: plate, front tab and four screw pads; the GPS deck is TUB (gps_deck_tools)."""
     L = P["lid"]
     z0, z1 = L["z"]
     px, py = L["plate"]
     plate = box(-px / 2, px / 2, -py / 2, py / 2, z0, z1)
-    dx, dy = L["deck_x"], L["deck_y"]
-    deck = box(dx[0], dx[1], -dy, dy, z0, z1)
     t = L["tab"]
     tab = box(t["x"][0], t["x"][1], -t["y"], t["y"], z0, z1)
-    pin = L["pocket_in"]; rt = L["rim_t"]
-    rim = box(pin["x"][0] - rt, pin["x"][1] + rt, -pin["y"] - rt, pin["y"] + rt, *L["rim_z"]).cut(
-        box(pin["x"][0], pin["x"][1], -pin["y"], pin["y"], L["rim_z"][0] - 1, L["rim_z"][1] + 1))
-    cb = L["cap_boss"]
-    capb = union_all([zcyl(cb["x"], s * cb["y"], cb["d"] / 2.0, *cb["z"]) for s in (1, -1)])
     lb = P["lid_boss"]
     pads = union_all([zcyl(x, y, d / 2.0, z0, z1) for (x, y), d in zip(lb["xy"], L["pad_d"])])
+    # fixed links pad -> plate frame (inner frame edge at |y| = py/2 - w for the front pads, x = -px/2 + w for the rear)
+    w, hw = L["frame_w"], L["pad_link_w"] / 2.0
+    links = []
+    for x, y in lb["xy"]:
+        sy = 1.0 if y > 0 else -1.0
+        if x > 0:
+            links.append(box(x - hw, x + hw, min(y, sy * (py / 2 - w + 0.5)), max(y, sy * (py / 2 - w + 0.5)), z0, z1))
+        else:
+            links.append(box(-px / 2 + w - 0.5, x, y - hw, y + hw, z0, z1))
+    links = union_all(links)
     cuts = []
     for x, y in lb["xy"]:
         cuts.append(zcyl(x, y, L["pad_hole_d"] / 2.0, z0 - 1, z1 + 1))
         hcsk = (L["csk_d"] - L["pad_hole_d"]) / 2.0
         cuts.append(cone(x, y, z1 - hcsk, L["pad_hole_d"] / 2.0, z1 + 0.01, L["csk_d"] / 2.0 + 0.01))
-    for s in (1, -1):
-        cuts.append(zcyl(cb["x"], s * cb["y"], cb["insert_d"] / 2.0, cb["z"][1] - cb["insert_depth"] - 0.5, cb["z"][1] + 1))
-    gx, gy, gd = L["gps_hole"]
-    cuts.append(zcyl(gx, gy, gd / 2.0, z0 - 1, z1 + 1))
     cc = L["c_cut"]
     pocket = box(cc["pocket_x"][0], cc["pocket_x"][1], -cc["pocket_y"], cc["pocket_y"], z0 - 1, z1 + 1).edges("|Z").fillet(0.8)
     cuts.append(pocket)
     cuts.append(box(cc["pocket_x"][1] - 0.5, t["x"][1] + 1.0, -cc["entry_half"], cc["entry_half"], z0 - 1, z1 + 1))
-    return plate, deck, tab, rim, capb, pads, union_all(cuts)
+    return plate, tab, pads, links, union_all(cuts)
 
 
 def build_lid():
     L = P["lid"]
     z0, z1 = L["z"]
     px, py = L["plate"]
-    plate, deck, tab, rim, capb, pads, cut = lid_parts()
+    plate, tab, pads, links, cut = lid_parts()
     F = P["fillets"]
-    t = L["tab"]; dx, dy = L["deck_x"], L["deck_y"]
-    base = plate.union(deck).union(tab)
+    t = L["tab"]
+    base = plate.union(tab)
     base = sel(base, (px / 2 - 0.05, -t["y"] - 0.05, z0 - 0.1), (px / 2 + 0.05, t["y"] + 0.05, z1 + 0.1)).fillet(F["lid_tab_root"])
-    base = sel(base, (-px / 2 - 0.05, -dy - 0.05, z0 - 0.1), (-px / 2 + 0.05, dy + 0.05, z1 + 0.1)).fillet(F["lid_deck_root"])
-    env = base.union(rim).union(capb)
+    env = base
     env_cut = env.cut(cut)
     w = L["frame_w"]
     interior = box(-px / 2 + w, -L["band_half_x"], -py / 2 + w, py / 2 - w, z0 - 1, z1 + 1).union(
-        box(L["band_half_x"], px / 2 - w, -py / 2 + w, py / 2 - w, z0 - 1, z1 + 1)).cut(pads)
+        box(L["band_half_x"], px / 2 - w, -py / 2 + w, py / 2 - w, z0 - 1, z1 + 1)).cut(pads).cut(links)
     design = env_cut.intersect(interior)
     fixed = env_cut.cut(interior)
     frame = plate.cut(box(-px / 2 + w, px / 2 - w, -py / 2 + w, py / 2 - w, z0 - 1, z1 + 1))
     band = box(-L["band_half_x"], L["band_half_x"], -py / 2, py / 2, z0, z1)
     regions = {"fixed_plate_frame_band": env_cut.intersect(frame.union(band)),
-               "fixed_gps_deck_rim_bosses": env_cut.intersect(deck.union(rim).union(capb)),
-               "fixed_screw_pads": env_cut.intersect(pads), "fixed_front_tab": env_cut.intersect(tab)}
+               "fixed_screw_pads_links": env_cut.intersect(pads.union(links)), "fixed_front_tab": env_cut.intersect(tab)}
     return design, fixed, regions, env
 
 
@@ -512,7 +538,7 @@ def write_refpoints(path):
             m = MASS["gps"]
             row = ["RP_GPS", "GPS GM10 Nano V3 2.6 g (D-076) + TPU cap 0.84 + 2 M2 screws 0.46 + 2 inserts 0.33 (rev 3; were in the 12 g lump)",
                    "%.1f" % gx, "%.1f" % gy, "%.1f" % gz, "%.2f" % m, "%.3e" % (m * 1e-6), "0", "0", "0",
-                   "S_GPS_SEAT: LID pocket floor (deck top inside the rim, z = 24)", "-"]
+                   "S_GPS_SEAT: TUB pocket floor (deck top inside the rim, z = 24; rev 4 deck is TUB)", "-"]
         elif row[0] == "RP_BATT":
             row[10] = "S_BATT_SEAT: LID top faces of plate frame + strap band (z = 24)"
         elif row[0] == "RP_FC":
