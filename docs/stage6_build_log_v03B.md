@@ -582,3 +582,22 @@ Against the brief limits (surface below 0.8 mm <= 1 %, below 1.2 mm <= 3 %) all 
 
     Ray thickness of the TUB at iso 0.4 (0.2 mm voxels), item 61 against now: surface below 0.8 / 1.2 mm 1.67 / 3.43 % -> 1.02 / 2.76 %, below 0.3 mm (films) 0.81 % -> 0.32 %; keel and wall junction (x -30 to -21, abs(y) < 13, z -4 to 22) below 0.8 mm 189.9 -> 8.0 mm^2. No flap triangles left at the item (b) location at either iso. Next: iso 0.3 surfaces of LID and ARMS from cycle 28 on nexus (`iso_mt.py c28.odb 0.3 LID` / `ARMS`), restoration of the three parts at 0.3 here, T-5 to T-7, assembly STL.
 
+63. Print set at iso 0.3 (Miguel, 2026-10-13; DV-27 and the item 62 restoration). Iso 0.3 surfaces of cycle 28 on nexus (`iso_mt.py c28.odb 0.3 LID` / `ARMS`, /tmp/mdias_H4r4/TH; TUB from item 52); `restore_r4.py` with RESTORE_ISO=0.3 in the set-up workspace (gmsh 0.3 mm, design / fixed volumes within 0.02 % of the export).
+
+| Part | Iso 0.3 (Taubin) mm^3 | Trimmed outside envelope | Fixed restored | Result mm^3 | Mass g (iso 0.4, item 62) | Pieces | Dropped loose pieces |
+|---|---|---|---|---|---|---|---|
+| TUB | 36,151.4 (699.0 in the keel cell, removed) | 1,082.5 | 1,249.1 | 36,318.1 | 47.21 (45.78) | 1 | 0.213, 0.188, 0.017 mm^3 inside the tub |
+| LID | 5,123.8 | 79.2 | 43.0 | 5,087.6 | 6.61 (6.43) | 1 | 0.003 mm^3 |
+| ARM_pp | 6,884.9 | 96.7 | 22.9 | 6,811.1 | 8.85 (8.36) | 1 | none |
+
+Frame (TUB + LID + 4 x ARM_pp) 89.22 g against 85.65 g at iso 0.4 (+3.57 g; the arms take +1.96 g of it, so above the item 62 estimate of +1.2 to +1.8 g, which was based on the TUB alone). T-5: one piece per part, PASS. T-7: 45 keep-out solids x 3 parts, largest overlap 0.215 mm^3 (TUB, keep-out solid 37), parts against each other 0.000 mm^3, PASS. Keel cell: 0.000 mm^3 of non-exact material.
+
+T-6 (`t6_thickness_r4.py`, voxels 0.1 mm LID / ARM_pp, 0.2 mm TUB; maps `figures/fig_t6_r4_iso030_{TUB,LID,ARM_pp}.png`):
+
+| Part | Ray, surface below 0.8 / 1.2 mm (item 61, iso 0.4 box) | Sphere, surface below 0.8 / 1.2 mm | Sphere, volume below 0.8 / 1.2 mm | Ray median |
+|---|---|---|---|---|
+| TUB | 0.95 / 2.27 % (1.67 / 3.43) | 0.39 / 3.25 % | 0.06 / 0.54 % | 3.45 mm |
+| LID | 1.33 / 2.94 % (1.82 / 4.51) | 2.58 / 7.48 % | 0.32 / 1.17 % | 2.52 mm |
+| ARM_pp | 2.05 / 3.52 % (2.78 / 4.36) | 5.47 / 12.17 % | 0.50 / 1.33 % | 4.98 mm |
+
+Against the brief limits (surface below 0.8 mm <= 1 %, below 1.2 mm <= 3 %, ray method): TUB meets both, LID meets 1.2 mm and exceeds 0.8 mm by 0.33 points, ARM_pp exceeds both. Largest remaining thin areas (ray below 0.8 mm, 4 mm cells): TUB the fin roots and the floor edge at z about -2 (x, y about +-18 to +-26), LID the front openings (x 22 to 26, y +-2 to +-6, z 22 to 26), ARM_pp the prong ends (x, y about 18 / 26, z -2) and the motor pad rim (x, y about 30 to 34). Print STLs: `print_{TUB,LID,ARM_pp}_r4_iso030.stl`, assembly `assembly_r4_iso030.stl` (arm rotated by 0, 90, 180, 270 deg about z).
