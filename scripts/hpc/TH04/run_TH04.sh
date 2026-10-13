@@ -7,6 +7,7 @@ NCPU=${1:-30}
 S=~/drone_revB/stage6/scripts
 if [ "$2" = "ni" ]; then SUF=_ni; FLAG=noislands; else SUF=; FLAG=; fi
 if [ "$TH_REV" = "r4" ]; then
+  [ -n "$TH_ISO" ] && SUF=_i$(awk "BEGIN{printf \"%02d\", $TH_ISO*100+0.5}")$SUF
   abaqus python $S/th04_build.py c28.odb $FLAG || exit 1
   [ -f TH_r4b$SUF.inp ] || { echo "input not built"; exit 1; }
   abaqus job=TH_r4b$SUF input=TH_r4b$SUF.inp cpus=$NCPU mp_mode=threads memory="80%" interactive > TH_r4b${SUF}_run.log 2>&1

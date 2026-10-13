@@ -18,6 +18,8 @@ MODEL = 'TO_v04B_H4-Job.inp'
 R4 = os.environ.get('TH_REV', '') == 'r4'   # rev 4 (build log item 50): H4 r4 deck, seat tie only, jobs TH_r4b
 if R4:
     MODEL = 'TO_v04B_r4_H4-Job.inp'
+ISO = float(os.environ.get('TH_ISO', ISO))     # item 51: other iso levels, job suffix _iNN
+ISUF = ('_i%02d' % int(round(ISO * 100))) if 'TH_ISO' in os.environ else ''
 DIST = 'tosca_distribution.inp'
 
 o = openOdb(odbp, readOnly=True)
@@ -167,10 +169,10 @@ five = ''
 for k in range(1, 6):
     five += re.sub(r'name=TIE_LIDRIM', 'name=TIE_LID_%d' % k, hdr, flags=re.I) + '\n'
     five += 'TUB-1_S_TUB_BOSS_%d, LID-1_S_LID_PAD_%d\n' % (k, k)
-variants = {'TH_r4b': base} if R4 else {'TH04b': base, 'TH04a': base.replace(m.group(0), five)}   # r4: no lid pads (DV-26)
+variants = {'TH_r4b' + ISUF: base} if R4 else {'TH04b': base, 'TH04a': base.replace(m.group(0), five)}   # r4: no lid pads (DV-26)
 print('TH04a ties:\n' + five)
 
-dname = ('dist_TH_r4%s.inp' if R4 else 'dist_TH04%s.inp') % SUF
+dname = ('dist_TH_r4%s%s.inp' % (ISUF, SUF)) if R4 else ('dist_TH04%s.inp' % SUF)
 nsol = 0
 with open(dname, 'w') as f:
     for k, lo in (('S', 1e-6), ('M', 1e-9)):
