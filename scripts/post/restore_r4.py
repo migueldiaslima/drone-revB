@@ -1,7 +1,13 @@
-# restore_r4.py - v04-B rev 4 print set (D-044, D-087; build log item 59): restoration of the H4 rev 4 cycle 28
-# iso 0.4 surfaces with the exact non-design geometry, per part, plus T-5 and T-7 reports.
-#   result = ((iso - KEEL_ZONE_BOX) U fixed U keels) n (envelope U keels)        (TUB)
-#   result = (iso U fixed) n envelope                                             (LID, ARM_pp)
+# restore_r4.py - v04-B rev 4 print set (D-044, D-087; build log items 59, 62): restoration of the H4 rev 4 cycle 28
+# iso surfaces with the exact non-design geometry, per part, plus T-5 and T-7 reports.
+#   result = (iso n ((design - KEEL_CELL) U fixed)) U fixed U keels               (TUB, DV-27)
+#   result = (iso n (design U fixed)) U fixed                                     (LID, ARM_pp)
+# KEEL_CELL: the part of the TUB design solid behind the rear wall face (x < -23, abs(y) <= 11, z -2 to 21.5),
+# replacing the D-087 box (abs(y) <= 9, z 0 to 21.5), which left 34 mm^3 of 0.15 to 0.2 mm skins (item 62).
+# The iso surface is cut by the envelope before the exact solids are added, so no face of the result is built on
+# two coincident boundaries (zero-thickness flaps, item 62); the written mesh is cleaned once more (welded,
+# back-to-back faces dropped, sheets of zero volume dropped) and T-5 counts the remaining closed pieces.
+# Iso level: environment variable RESTORE_ISO (default 0.4), input mt_c28_<part>_<iso x100>.stl.
 # iso: marching-tet STL from iso_mt.py, 6 Taubin iterations here (T-3); fixed and envelope: the part STEP meshed
 # with gmsh (each solid closed, design cells recognised by volume), keels from geometry/v04B_r4_keels (STEP).
 # Needs python3 with numpy, manifold3d, gmsh. Run on nexus (see the README at the end of the build log item):
@@ -18,17 +24,23 @@ if not OUT:
     raise SystemExit('usage: python3 restore_r4.py <iso dir> <geometry dir (repo geometry/)> <out dir>')
 os.makedirs(OUT, exist_ok=True)
 RHO = 1.30e-3                                   # g/mm^3 PET-CF
-ZONE = (-54.0, -23.0, -9.0, 9.0, 0.0, 21.5)      # D-087 clean keel zone
+ZONE_X = -23.0                                   # rear wall face: the keel design cell is the design solid behind it
+CELL_V = 8886.8                                  # keel design cell volume (mm^3, item 62, gmsh 0.3 mm)
+ISO = float(os.environ.get('RESTORE_ISO', '0.4'))
+IT = '%03d' % int(round(ISO * 100))
 H = float(os.environ.get('RESTORE_H', '0.3'))    # gmsh surface size of the exact geometry (mm), item 22: 0.3
 PARTS = {
-    'TUB': dict(iso='mt_c28_TUB_040.stl', step='v04B_r4/TUB.step', design=[39538.45], vexp=(39538.45, 12796.26),
+    'TUB': dict(iso='mt_c28_TUB_%s.stl' % IT, step='v04B_r4/TUB.step', design=[39538.45], vexp=(39538.45, 12796.26),
                 keels=['v04B_r4_keels/KEEL_A_r4.step', 'v04B_r4_keels/KEEL_B_r4.step'], zone=True),
-    'LID': dict(iso='mt_c28_LID_040.stl', step='v04B_r4/LID.step', design=[1139.11, 1217.86], vexp=(2356.98, 3417.08),
+    'LID': dict(iso='mt_c28_LID_%s.stl' % IT, step='v04B_r4/LID.step', design=[1139.11, 1217.86], vexp=(2356.98, 3417.08),
                 keels=[], zone=False),
-    'ARM_pp': dict(iso='mt_c28_ARMS_040.stl', step='v04B_r4/ARM_pp.step', design=[8036.91], vexp=(8036.91, 2933.50),
+    'ARM_pp': dict(iso='mt_c28_ARMS_%s.stl' % IT, step='v04B_r4/ARM_pp.step', design=[8036.91], vexp=(8036.91, 2933.50),
                    keels=[], zone=False, quadrant=(1, 1)),
 }
 report = {}
+ONLY = [w for w in os.environ.get('RESTORE_PARTS', '').replace(',', ' ').split() if w]   # e.g. RESTORE_PARTS='TUB LID'
+if ONLY:
+    PARTS = dict((k, v) for k, v in PARTS.items() if k in ONLY)
 
 
 def stop(msg):
@@ -197,6 +209,60 @@ def step_solids(fn, h):
     return out
 
 
+def clean_tris(T, tol=1e-5, vmin=1.0):
+    """weld, drop degenerate and back-to-back triangles, split into edge-connected sheets, keep the sheets with
+    volume above vmin; returns triangles, report"""
+    from scipy.sparse import coo_matrix
+    from scipy.sparse.csgraph import connected_components
+    P = T.reshape(-1, 3)
+    _, inv = np.unique(np.round(P / tol).astype(np.int64), axis=0, return_inverse=True)
+    inv = inv.ravel()
+    V = np.zeros((inv.max() + 1, 3))
+    np.add.at(V, inv, P)
+    V /= np.bincount(inv)[:, None]
+    F = inv.reshape(-1, 3)
+    n0 = len(F)
+    F = F[(F[:, 0] != F[:, 1]) & (F[:, 1] != F[:, 2]) & (F[:, 0] != F[:, 2])]
+    ndeg = n0 - len(F)
+    _, ki, kc = np.unique(np.sort(F, axis=1), axis=0, return_inverse=True, return_counts=True)
+    keep = kc[ki.ravel()] == 1
+    npair = int((~keep).sum())
+    F = F[keep]
+    e = np.sort(np.vstack([F[:, [0, 1]], F[:, [1, 2]], F[:, [2, 0]]]), axis=1)
+    t = np.tile(np.arange(len(F)), 3)
+    o = np.lexsort((e[:, 1], e[:, 0]))
+    es = e[o]
+    i = np.nonzero(np.all(es[1:] == es[:-1], axis=1))[0]
+    n, lab = connected_components(coo_matrix((np.ones(len(i)), (t[o][i], t[o][i + 1])), shape=(len(F), len(F))), directed=False)
+    sv = np.einsum('ij,ij->i', V[F[:, 0]], np.cross(V[F[:, 1]], V[F[:, 2]])) / 6.0
+    vs = np.bincount(lab, weights=sv, minlength=n)
+    good = np.nonzero(vs > vmin)[0]
+    Fall, laball = F, lab
+    F = F[np.isin(lab, good)]
+    _, ec = np.unique(np.sort(np.vstack([F[:, [0, 1]], F[:, [1, 2]], F[:, [2, 0]]]), axis=1), axis=0, return_counts=True)
+    drop = []
+    for L in np.nonzero((vs <= vmin) & (np.abs(vs) > 1e-3))[0]:
+        c = V[Fall[laball == L]].reshape(-1, 3).mean(axis=0)
+        drop.append((round(float(vs[L]), 3), [round(float(x), 1) for x in c]))
+    rep = dict(degenerate=int(ndeg), back_to_back=npair, sheets=int(n), pieces=[round(float(v), 2) for v in sorted(vs[good])[::-1]],
+               dropped=drop,
+               dropped_vol=round(float(vs[vs <= vmin].sum()), 4), edges_not_2=int((ec != 2).sum()))
+    return V[F], rep
+
+
+def write_tris(fn, T):
+    n = np.cross(T[:, 1] - T[:, 0], T[:, 2] - T[:, 0])
+    n /= np.maximum(np.linalg.norm(n, axis=1)[:, None], 1e-12)
+    rec = np.zeros(len(T), dtype=[('n', '<f4', 3), ('v', '<f4', (3, 3)), ('a', '<u2')])
+    rec['n'] = n
+    rec['v'] = T
+    with open(fn, 'wb') as f:
+        f.write(b'restore_r4 print set'.ljust(80, b' '))
+        f.write(struct.pack('<I', len(T)))
+        f.write(rec.tobytes())
+    return len(T)
+
+
 def union(ms):
     r = ms[0]
     for m in ms[1:]:
@@ -227,7 +293,20 @@ for name, P in PARTS.items():
             keels.append(to_manifold(V, F, '%s %.1f' % (k, v)))
         print('%s: %d solids, %.1f mm^3' % (k, len(ks), sum(v for v, _, _ in ks)))
     fixed = union(fix + keels) if (fix + keels) else None
-    env = union(des + fix + keels)
+    env = union(des + fix)
+    cell = None
+    if P['zone']:
+        half = Manifold.cube((100.0, 200.0, 200.0)).translate((ZONE_X - 100.0, -100.0, -100.0))
+        cells = [p for p in (union(des) ^ half).decompose()
+                 if p.bounding_box()[1] > -12.0 and p.bounding_box()[4] < 12.0 and vol(p) > 100.0]
+        if len(cells) != 1 or abs(vol(cells[0]) - CELL_V) > 0.005 * CELL_V:
+            stop('keel design cell not found as expected: %s mm^3 (expected one piece of %.1f)' % (
+                [round(vol(p), 1) for p in cells], CELL_V))
+        cell = cells[0]
+        b = cell.bounding_box()
+        print('keel design cell %.1f mm^3, x %.2f..%.2f y %.2f..%.2f z %.2f..%.2f (cleaned: exact solids only)' % (
+            vol(cell), b[0], b[3], b[1], b[4], b[2], b[5]))
+        env = union([d - cell for d in des] + fix)
     # iso surface
     T = read_stl(os.path.join(ISO_DIR, P['iso']))
     if 'quadrant' in P:
@@ -238,28 +317,36 @@ for name, P in PARTS.items():
     V = taubin(V, F)
     iso = to_manifold(V, F, '%s iso surface' % name)
     v_iso = vol(iso)
-    print('iso 0.4 (6 Taubin iterations): %.1f mm^3, %d pieces' % (v_iso, len(iso.decompose())))
-    base = iso
-    if P['zone']:
-        x0, x1, y0, y1, z0, z1 = ZONE
-        box = Manifold.cube((x1 - x0, y1 - y0, z1 - z0)).translate((x0, y0, z0))
-        base = iso - box
-        print('keel zone cleaned: %.1f mm^3 removed (fixed solids and keels added back below)' % (v_iso - vol(base)))
-    kept = base ^ env
-    if vol(base) - vol(kept) > 0.2 * vol(base):
+    print('iso %.2f (6 Taubin iterations): %.1f mm^3, %d pieces' % (ISO, v_iso, len(iso.decompose())))
+    if cell is not None:
+        print('in the keel design cell (removed): %.1f mm^3' % vol(iso ^ cell))
+    kept = iso ^ env
+    if v_iso - vol(kept) > 0.25 * v_iso:
         stop('%s: %.0f of %.0f mm^3 of the iso surface lie outside the envelope: STEP and iso not in the same position?' % (
-            name, vol(base) - vol(kept), vol(base)))
-    res = (base + fixed) ^ env if fixed is not None else kept
+            name, v_iso - vol(kept), v_iso))
+    res = kept + fixed if fixed is not None else kept
+    if cell is not None:
+        left = vol((res ^ cell) - fixed)
+        print('material in the keel cell that is not exact geometry: %.3f mm^3' % left)
+        if left > 0.05:
+            stop('keel cell not clean (%.3f mm^3)' % left)
     v_res = vol(res)
-    pieces = res.decompose()
-    rep.update(iso=round(v_iso, 1), after_zone=round(vol(base), 1), trimmed=round(vol(base) - vol(kept), 1),
-               restored=round(v_res - vol(kept), 1), result=round(v_res, 1), mass_g=round(v_res * RHO, 2),
-               pieces=[round(vol(p), 2) for p in sorted(pieces, key=lambda p: -vol(p))][:5])
+    fn = 'restored_%s_r4_c28_iso%s.stl' % (name, IT)
+    me = res.to_mesh()
+    Tr = np.asarray(me.vert_properties)[:, :3].astype(float)[np.asarray(me.tri_verts).astype(np.int64)]
+    Tc, cr = clean_tris(Tr)
+    rep.update(iso=round(v_iso, 1), trimmed=round(v_iso - vol(kept), 1), restored=round(v_res - vol(kept), 1),
+               result=round(v_res, 1), mass_g=round(v_res * RHO, 2), clean=cr)
     print('trimmed outside the envelope %.1f, fixed restored %.1f mm^3' % (rep['trimmed'], rep['restored']))
-    print('RESULT %s: %.1f mm^3 = %.2f g, %d piece(s) %s  -> T-5 %s' % (name, v_res, v_res * RHO, len(pieces), rep['pieces'],
-          'PASS' if len(pieces) == 1 else 'CHECK (more than one piece)'))
-    nt = write_stl(os.path.join(OUT, 'restored_%s_r4_c28_iso040.stl' % name), res)
-    print('written restored_%s_r4_c28_iso040.stl (%d triangles)' % (name, nt))
+    print('mesh clean-up: %d degenerate, %d back-to-back triangles, %d sheets, dropped %.4f mm^3, edges used 4 times %d '
+          '(two faces touching along an edge)' % (cr['degenerate'], cr['back_to_back'], cr['sheets'], cr['dropped_vol'], cr['edges_not_2']))
+    for v, c in cr['dropped']:
+        print('  dropped loose piece %.3f mm^3 at %s' % (v, c))
+    t5 = len(cr['pieces']) == 1 and cr['dropped_vol'] < 1.0
+    print('RESULT %s: %.1f mm^3 = %.2f g, closed pieces %s  -> T-5 %s' % (name, v_res, v_res * RHO, cr['pieces'][:5],
+          'PASS' if t5 else 'CHECK'))
+    nt = write_tris(os.path.join(OUT, fn), Tc)
+    print('written %s (%d triangles)' % (fn, nt))
     rep['manifold'] = res
     report[name] = rep
 
@@ -284,6 +371,7 @@ bad = [r for r in t7 if r[3] > 1.0]
 print('T-7: %d keep-out solids x %d parts checked; overlaps above 1 mm^3 (meshing noise of coincident faces is below that): %d -> %s' % (len(ko), len(report), len(bad), 'PASS' if not bad else 'CHECK'))
 for name in report:
     report[name].pop('manifold')
-json.dump(dict(parts=report, t7=t7, h=H, zone=ZONE), open(os.path.join(OUT, 'restore_r4.json'), 'w'), indent=1)
-tot = report['TUB']['mass_g'] + report['LID']['mass_g'] + 4 * report['ARM_pp']['mass_g']
-print('frame mass (TUB + LID + 4 x ARM_pp): %.2f g' % tot)
+json.dump(dict(parts=report, t7=t7, h=H, iso=ISO, keel_cell=dict(x_max=ZONE_X, volume=CELL_V)), open(os.path.join(OUT, 'restore_r4_iso%s.json' % IT), 'w'), indent=1)
+if all(k in report for k in ('TUB', 'LID', 'ARM_pp')):
+    tot = report['TUB']['mass_g'] + report['LID']['mass_g'] + 4 * report['ARM_pp']['mass_g']
+    print('frame mass (TUB + LID + 4 x ARM_pp): %.2f g' % tot)
