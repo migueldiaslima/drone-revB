@@ -21,6 +21,8 @@ PART = [w for w in WORDS if w in ('TUB', 'LID', 'ARMS')]
 PART = PART[0] if PART else ''
 KEEL = 'KEEL' in WORDS
 KEEL_BOX = ((-42.0, -12.0, 4.0), (-18.0, 12.0, 24.0))     # boss 5 at (-30, 0), top z 21.5
+DECK = 'DECK' in WORDS
+DECK_BOX = ((-56.0, -15.0, -2.0), (-24.0, 15.0, 28.0))   # rev 4 GPS deck and the keel under it (item 52)
 keep = None
 if PART:
     keep = set()
@@ -163,6 +165,10 @@ for iso in isos:
         cen = tris.mean(axis=1)
         inb = np.all((cen >= KEEL_BOX[0]) & (cen <= KEEL_BOX[1]), axis=1)
         sets.append((fn.replace('.stl', '_keel.stl'), tris[inb]))
+    if DECK:
+        cen = tris.mean(axis=1)
+        inb = np.all((cen >= DECK_BOX[0]) & (cen <= DECK_BOX[1]), axis=1)
+        sets.append((fn.replace('.stl', '_deck.stl'), tris[inb]))
     for fn, tris in sets:
         write_stl(fn, tris)
         print('iso %.2f: %d triangles -> %s' % (iso, len(tris), fn))
