@@ -44,7 +44,7 @@ Maximum principal stress against S_xy is not used as a separate check: in the la
 
 ## (e) Capacity check D-050
 
-Confirmed: geometric, on the print STL `print_ARM_pp_r4_iso030.stl` (arm frame, as restored). Section at the fork exit, u about 50 mm along the arm axis from the joint, normal to the arm axis; elastic section modulus for up-down bending, Z = I_h / c_max, I_h about the horizontal axis through the section centroid, c_max the largest vertical distance from it. Requirement Z <= 260 mm^3. Report Z for u from 45 to 55 mm in 1 mm steps and the value at the fork exit; the sideways ordering (8.5 x, D-050) is not rechecked.
+Confirmed: geometric, on the print STL `print_ARM_pp_r4_iso030.stl` (arm frame, as restored). Section at the fork exit, u about 50 mm along the arm diagonal from the frame centre (corrected 2026-10-13; after the D-079 shift the fork exit is near u 54), normal to the arm axis; elastic section modulus for up-down bending, Z = I_h / c_max, I_h about the horizontal axis through the section centroid, c_max the largest vertical distance from it. Requirement Z <= 260 mm^3. Report Z for u from 45 to 55 mm in 1 mm steps and the value at the fork exit; the sideways ordering (8.5 x, D-050) is not rechecked.
 
 ## (f) Limitations and future work (stated in the report)
 
