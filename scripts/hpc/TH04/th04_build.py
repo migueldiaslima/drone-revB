@@ -31,6 +31,99 @@ for b in [t for t in os.environ.get('TH_BOXES', '').split(';') if t.strip()]:
         raise SystemExit('TH_BOXES entry needs 7 numbers: %s' % b)
     BOXES.append(v)
 
+# item 64: TH_KEELS = 'KEEL_A_r4.stl,KEEL_B_r4.stl' : TUB elements whose corner-node centroid lies inside one of these
+# closed STLs (the exact D-087 keels, meshed from the STEP) are forced solid; same role as TH_SHAPES, exact geometry.
+# Files looked up as given, then in the scripts folder and its keels/ subfolder. Expected keel volume inside the TUB
+# mesh: TH_KEELS_V (mm^3); the build stops if the selected element volume differs by more than 10 %.
+KEELS = [t.strip() for t in os.environ.get('TH_KEELS', '').split(',') if t.strip()]
+KEELS_V = float(os.environ.get('TH_KEELS_V', '0') or 0)
+
+
+def read_stl_tris(fn):
+    import struct
+    d = open(fn, 'rb').read()
+    n = struct.unpack('<I', d[80:84])[0]
+    if len(d) != 84 + 50 * n:
+        raise SystemExit('%s: not a binary STL (%d bytes for %d triangles)' % (fn, len(d), n))
+    a = np.frombuffer(d[84:84 + 50 * n], dtype=np.dtype([('n', '<f4', (3,)), ('v', '<f4', (3, 3)), ('a', '<u2')]))
+    return a['v'].astype(float)
+
+
+def inside_mesh(T, P, d, cell=1.0):
+    """parity of ray crossings from points P along direction d through triangles T (Moller-Trumbore).
+    The ray is nearly parallel to one axis (main component of d); triangles are binned on a grid in the other two
+    axes (cell size 'cell', bins widened by the ray drift over the mesh extent) and each point is tested only against
+    the triangles of its bin."""
+    d = np.asarray(d, dtype=float)
+    k = int(np.argmax(np.abs(d)))
+    a1, a2 = [j for j in range(3) if j != k]
+    ext = (T.reshape(-1, 3).max(axis=0) - T.reshape(-1, 3).min(axis=0))[k]
+    drift = ext * max(abs(d[a1]), abs(d[a2])) / abs(d[k]) + 1e-6
+    lo = T.reshape(-1, 3).min(axis=0)
+    tmin = (T.min(axis=1) - lo - drift) // cell
+    tmax = (T.max(axis=1) - lo + drift) // cell
+    bins = {}
+    for i in range(len(T)):
+        for g1 in range(int(tmin[i, a1]), int(tmax[i, a1]) + 1):
+            for g2 in range(int(tmin[i, a2]), int(tmax[i, a2]) + 1):
+                bins.setdefault((g1, g2), []).append(i)
+    pg1 = ((P[:, a1] - lo[a1]) // cell).astype(int)
+    pg2 = ((P[:, a2] - lo[a2]) // cell).astype(int)
+    cnt = np.zeros(len(P), dtype=int)
+    keys = pg1 * 100003 + pg2
+    order = np.argsort(keys, kind='mergesort')
+    ks = keys[order]
+    starts = np.nonzero(np.r_[True, ks[1:] != ks[:-1]])[0]
+    ends = np.r_[starts[1:], len(ks)]
+    for s0, s1 in zip(starts.tolist(), ends.tolist()):
+        idx = order[s0:s1]
+        tri = bins.get((int(pg1[idx[0]]), int(pg2[idx[0]])))
+        if not tri:
+            continue
+        Tt = T[tri]
+        e1 = Tt[:, 1] - Tt[:, 0]
+        e2 = Tt[:, 2] - Tt[:, 0]
+        h = np.cross(d, e2)
+        a = np.einsum('ij,ij->i', e1, h)
+        ok = np.abs(a) > 1e-14
+        if not ok.any():
+            continue
+        T0, e1, e2, h, f = Tt[ok, 0], e1[ok], e2[ok], h[ok], 1.0 / a[ok]
+        for i0 in range(0, len(idx), 64):
+            ii = idx[i0:i0 + 64]
+            sv = P[ii][:, None, :] - T0[None, :, :]
+            u = f[None, :] * np.einsum('pij,ij->pi', sv, h)
+            q = np.cross(sv, e1[None, :, :])
+            v = f[None, :] * np.einsum('j,pij->pi', d, q)
+            t = f[None, :] * np.einsum('ij,pij->pi', e2, q)
+            hit = (u >= 0.0) & (v >= 0.0) & (u + v <= 1.0) & (t > 0.0)
+            cnt[ii] = hit.sum(axis=1)
+    return cnt % 2 == 1
+
+
+def keel_mask(fn, cen):
+    paths = [fn, os.path.join(os.path.dirname(os.path.abspath(odbp)), fn)]
+    for dd in [os.path.dirname(os.path.abspath(__file__)) if '__file__' in globals() else '', os.path.expanduser('~/drone_revB/stage6/scripts')]:
+        if dd:
+            paths += [os.path.join(dd, fn), os.path.join(dd, 'keels', fn)]
+    path = [q for q in paths if os.path.isfile(q)]
+    if not path:
+        raise SystemExit('keel STL %s not found (looked in %s)' % (fn, paths))
+    T = read_stl_tris(path[0])
+    sv = np.einsum('ij,ij->i', T[:, 0], np.cross(T[:, 1], T[:, 2])).sum() / 6.0
+    lo, hi = T.reshape(-1, 3).min(axis=0), T.reshape(-1, 3).max(axis=0)
+    cand = np.nonzero(np.all((cen >= lo - 1e-6) & (cen <= hi + 1e-6), axis=1))[0]
+    r1 = inside_mesh(T, cen[cand], np.array([1.0, 0.0123, 0.0071]))
+    r2 = inside_mesh(T, cen[cand], np.array([-0.0089, 0.0157, 1.0]))
+    if (r1 != r2).sum():
+        raise SystemExit('%s: the two ray directions disagree on %d of %d points (STL not closed?)' % (fn, int((r1 != r2).sum()), len(cand)))
+    m = np.zeros(len(cen), dtype=bool)
+    m[cand[r1]] = True
+    print('keel %s: %d triangles, closed volume %.1f mm^3, bbox %s to %s; %d candidate elements, %d inside (two ray directions agree)' % (
+        path[0], len(T), sv, np.round(lo, 2).tolist(), np.round(hi, 2).tolist(), len(cand), int(m.sum())))
+    return m
+
+
 o = openOdb(odbp, readOnly=True)
 st = o.steps['FREQ']
 fr = [f for f in st.frames if any('MAT_PROP_NORMALIZED' in k.upper() for k in f.fieldOutputs.keys())][-1]
@@ -119,7 +212,7 @@ SHAPES = [t.strip() for t in os.environ.get('TH_SHAPES', '').split(',') if t.str
 CLEAN = [float(v) for v in os.environ.get('TH_CLEAN', '').split(',') if v.strip()]
 if CLEAN and len(CLEAN) != 6:
     raise SystemExit('TH_CLEAN needs 6 numbers x0,x1,y0,y1,z0,z1')
-if SHAPES or CLEAN:
+if SHAPES or CLEAN or KEELS:
     inst = o.rootAssembly.instances[list(o.rootAssembly.instances.keys())[0]]
     tubk = [k for k in inst.elementSets.keys() if k.upper().endswith('ALL_TUB')]
     desk = [k for k in inst.elementSets.keys() if k.upper().endswith('DESIGN_TUB')]
@@ -155,6 +248,19 @@ if SHAPES or CLEAN:
             add = m & (r_el < ISO)
             print('shape %s: %d TUB elements (%d of them fixed), volume %.1f mm^3 = %.2f g; not solid at iso %.2f before: %.1f mm^3 = %.2f g' % (
                 sh, int(m.sum()), nf, vols[m].sum(), vols[m].sum() * 1.30e-3, ISO, vols[add].sum(), vols[add].sum() * 1.30e-3))
+    if KEELS:
+        mk = np.zeros(len(labs), dtype=bool)
+        for fn in KEELS:
+            mk |= keel_mask(fn, cen)
+        shp |= mk
+        add = mk & (r_el < ISO)
+        vk = vols[mk].sum()
+        print('exact keels: %d TUB elements (%d of them fixed), volume %.1f mm^3 = %.2f g; not solid at iso %.2f before: %.1f mm^3 = %.2f g' % (
+            int(mk.sum()), int((mk & ~isdes).sum()), vk, vk * 1.30e-3, ISO, vols[add].sum(), vols[add].sum() * 1.30e-3))
+        if KEELS_V > 0:
+            print('exact keels: element volume %.1f against %.1f mm^3 expected inside the TUB mesh (%.1f %%)' % (vk, KEELS_V, 100.0 * (vk / KEELS_V - 1.0)))
+            if abs(vk / KEELS_V - 1.0) > 0.10:
+                raise SystemExit('keel element volume differs from TH_KEELS_V by more than 10 %: check the STL position')
     if CLEAN:
         x0, x1, y0, y1, z0, z1 = CLEAN
         inb = (cen[:, 0] >= x0) & (cen[:, 0] <= x1) & (cen[:, 1] >= y0) & (cen[:, 1] <= y1) & (cen[:, 2] >= z0) & (cen[:, 2] <= z1)
