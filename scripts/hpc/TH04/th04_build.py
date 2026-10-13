@@ -354,6 +354,22 @@ for i, ln in enumerate(lines):
         if re.match(r'^\s*20,\s*,\s*,\s*,', lines[i + 1]):
             lines[i + 1] = '20, , , -100., ,'
         print('frequency data line: %s' % lines[i + 1])
+# item 66: TH_STRESS=1 adds a stress field output (integration points) to every static step (all steps but FREQ)
+if os.environ.get('TH_STRESS', '') == '1':
+    out2, step, nadd = [], None, 0
+    for ln in lines:
+        u = ln.upper().replace(' ', '')
+        if u.startswith('*STEP'):
+            mm = re.search(r'NAME=([^,]+)', u)
+            step = mm.group(1) if mm else '?'
+        if u.startswith('*ENDSTEP') and step not in (None, 'FREQ'):
+            out2 += ['*Output, field', '*Element Output, directions=YES', 'S,']
+            nadd += 1
+        out2.append(ln)
+    lines = out2
+    print('stress output added to %d static steps' % nadd)
+    if nadd != 4:
+        raise SystemExit('expected 4 static steps (LC1, LC2a, LC2b, LC3a), found %d' % nadd)
 base = '\n'.join(lines) + '\n'
 if not re.search(r'^\*Include, input=' + re.escape(DIST), base, flags=re.M | re.I):
     raise SystemExit('include of %s not found in %s' % (DIST, MODEL))
