@@ -113,6 +113,35 @@ if NOISL:
         c = xyz[[econ[i][0] for i in mem]].mean(axis=0)
         print('  %6d elements, centroid about (%.1f, %.1f, %.1f)' % (len(mem), c[0], c[1], c[2]))
 boxiso = {}
+SHAPES = [t.strip() for t in os.environ.get('TH_SHAPES', '').split(',') if t.strip()]   # item 56: keels_r4 shapes forced solid
+if SHAPES:
+    for d in [os.path.dirname(os.path.abspath(__file__)) if '__file__' in globals() else '', os.path.expanduser('~/drone_revB/stage6/scripts')]:
+        if d and d not in sys.path:
+            sys.path.insert(0, d)
+    import keels_r4
+    inst = o.rootAssembly.instances[list(o.rootAssembly.instances.keys())[0]]
+    tubk = [k for k in inst.elementSets.keys() if k.upper().endswith('ALL_TUB')]
+    tub = set(e.label for e in inst.elementSets[tubk[0]].elements)
+    xyzn = dict((n.label, n.coordinates) for n in inst.nodes)
+    labs, cen, vols = [], [], []
+    for e in inst.elements:
+        if e.label not in tub or not e.type.upper().startswith('C3D'):
+            continue
+        p = np.asarray([xyzn[c] for c in e.connectivity[:4]], dtype=float)
+        labs.append(e.label)
+        cen.append(p.mean(axis=0))
+        vols.append(abs(np.dot(p[1] - p[0], np.cross(p[2] - p[0], p[3] - p[0]))) / 6.0)
+    cen = np.asarray(cen)
+    vols = np.asarray(vols)
+    for sh in SHAPES:
+        m = keels_r4.SHAPES[sh](cen[:, 0], cen[:, 1], cen[:, 2])
+        add = 0.0
+        for i in np.nonzero(m)[0].tolist():
+            boxiso[labs[i]] = 0.0
+            if rho.get(labs[i], 1.0) < ISO:
+                add += vols[i]
+        print('shape %s: %d TUB elements, volume %.1f mm^3; added against iso %.2f: %.1f mm^3 = %.2f g' % (
+            sh, int(m.sum()), vols[m].sum(), ISO, add, add * 1.30e-3))
 if BOXES:
     inst = o.rootAssembly.instances[list(o.rootAssembly.instances.keys())[0]]
     tubk = [k for k in inst.elementSets.keys() if k.upper().endswith('ALL_TUB')]
