@@ -18,28 +18,27 @@ Quadcopter frame rev B (3.5 inch true X, PET-CF, topology-optimised with Abaqus/
 
 Not in the repo (size): odb, inp, par, cae, stl. Those live on nexus (`/tmp/mdias_*`, `~/drone_revB/stage6`) and on Miguel's laptop.
 
-## Status (2026-10-13)
+## Status (2026-10-14)
 
 | Item | State |
 |---|---|
-| Journal | v0.56 (D-001 to D-088) |
-| Build log | items 1 to 58, DV-1 to DV-26 |
+| Journal | v0.59 (D-001 to D-090) |
+| Build log | items 1 to 69, DV-1 to DV-28 |
 | H4 (v04-B rev 2) | converged at cycle 31; TH04b_ni passes, TH04a_ni fails as expected (N-06-17, N-06-18); antenna boss island F-036 |
 | v04-B revision 3 (D-084, antenna spine) | exported to `geometry/v04B_r3/`, gates G0 to G5 pass (`docs/stage6_v04B_r3_export_note.md`); boss 5 island in H4 cycle 31 (F-037) |
 | v04-B revision 4 (D-086, GPS deck on the TUB, four lid bosses) | exported to `geometry/v04B_r4/`, gates G0 to G5 pass (`docs/stage6_v04B_r4_export_note.md`) |
 | H4 (v04-B rev 4) | converged at cycle 28; TH at iso 0.4 fails on the GPS deck (F-038); keels A + B with the keel zone cleaned pass (TH_r4b_cAB, N-06-21) |
 | Keels A and B (D-087) | exact solids in `geometry/v04B_r4_keels/` (`docs/stage6_v04B_r4_keels_export_note.md`) |
-| Receiver cradle | v2 in `geometry/retainers/` (`docs/retainer_rx_cradle_note.md`) |
+| Receiver cradle, GPS cap | v2 in `geometry/retainers/` (`docs/retainer_rx_cradle_note.md`, `docs/retainer_gps_cap_note.md`) |
+| Stages 6 and 7 | closed 2026-10-14: print set iso 0.3 (frame 89.22 g), strength PASS (about 25 x), D-050 not met (F-040, D-090); `docs/stage6_v04B_H4_report.md`, `docs/stage7_strength_report.md` |
 
 ## Open tasks
 
 | # | Task | Owner |
 |---|---|---|
-| 1 | Restoration of H4 rev 4 cycle 28 at iso 0.4 with the clean keel zone and the exact fixed solids (spine, deck, keels A and B); optional confirmation TH with the exact keels | set-up chat |
-| 2 | T-1 to T-7 and the H4 report | set-up chat |
-| 3 | Tub print orientation (floor-down or rim-down, D-082 flatness) | Miguel |
-| 4 | Optional: ALLWK vs ALLSE check on an older odb (G7 report, "Also noted") | set-up chat |
-| 5 | Q-58, Q-59 (GM10 wiring and plugs); Q-60 at the first cradle fit | Miguel |
-| 6 | TPU skid plate, GPS cap | main chat |
+| 1 | Report (about 15 pages, LaTeX) from journal Section 4 | Miguel, main chat |
+| 2 | TPU skid | main chat |
+| 3 | Q-58, Q-59, Q-63 (GPS wiring, plugs, height); Q-60 at the first cradle fit | Miguel |
+| 4 | Future work: joint redesign for a defined up-down fuse (D-090); mass against R-01 (F-039) | - |
 
 See `CLAUDE.md` for the working rules.
