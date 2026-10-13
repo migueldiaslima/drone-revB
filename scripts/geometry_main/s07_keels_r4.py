@@ -9,9 +9,10 @@ A: twin tapered keels hanging from the deck underside (z 21.5), mirrored in y.
    Plan: outer abs(y) = 9 (deck edge), flaring at the wall to 11.0 at x -23 and 12.5 at x -22; inner
    abs(y) = INNER with a U to the centreline at the wall; clipped by the prop sweep + 3 mm (K12), K8, K9.
    Depth: z_bot = 21.5 - 11.5 (0.6 t + 0.4 t^2), t = (x + 50) / 28.
-B: web under the antenna tunnel, y 2.5 to 4.5, from x X0_B to the wall; top inside the sleeve wall,
-   bottom z_b = 3.25 (1 - t)^1.5, t = (x + 40) / 14, then z 0 to the wall; extension down the outside of
-   the rear wall (x < -23) below z 0, a 45 deg gusset ending 1 mm above the K11 motor-lead opening.
+B: web under the antenna tunnel, y 2.5 to 4.5, from x X0_B to the wall; top inside the sleeve wall;
+   lower edge one straight line (Miguel, rev b) from the front face (z 2.25) down past the keel underside
+   to the rear wall face at 1 mm above the K11 motor-lead opening (z -2.0). The TH shape had a curved
+   edge to z 0 at x -26 plus a 45 deg wall gusset; the straight edge is deeper near the wall everywhere.
 
 Deviations from the TH definition (keels_r4.py), all for printable, mesh-clean solids (G3 rules):
   D1 A starts at x -46 (depth 1.08) with a vertical end face instead of a zero-depth feather at x -50
@@ -47,6 +48,7 @@ INNER = 4.6                        # D2
 X0_A, X0_B = -46.0, -36.9          # D1, D4
 WMIN = 1.2
 B_Y, B_TOP = (2.5, 4.5), 4.0       # D3
+ZF_B = 3.25 - 1.0                  # D4: B front face 1 mm below the sleeve underside
 WALL_X = -23.0                     # tub outer face (body_half 23)
 
 
@@ -102,16 +104,15 @@ def keel_A():
 
 
 def keel_B(K):
-    xs = np.linspace(X0_B, -26.0, 23)
-    prof = [(X0_B, B_TOP)] + [(x, b_zbot(x)) for x in xs] + [(-26.0, 0.0), (-22.0, 0.0), (-22.0, B_TOP)]
-    web = xz_profile(prof, B_Y[0], B_Y[1])
-    # extension down the outside of the rear wall: 45 deg gusset to 1 mm above the K11 opening
+    """Rev b (Miguel, 2026-10-13): straight lower edge from the front face (1 mm below the sleeve) to the
+    gusset bottom on the rear wall face, 1 mm above the K11 opening: depth grows linearly towards the wall,
+    where the bending moment is largest."""
     k11 = K["K11_motor_lead_passages"].intersect(ext_box(WALL_X - 0.3, WALL_X + 0.1, B_Y[0], B_Y[1], -15.0, 0.0))
     z_open_top = k11.val().BoundingBox().zmax
     z_end = z_open_top + 1.0
-    h = -z_end
-    ext = xz_profile([(WALL_X - h, 0.0), (WALL_X + 0.5, 0.0), (WALL_X + 0.5, z_end), (WALL_X, z_end)], B_Y[0], B_Y[1])
-    b = web.union(ext).cut(K["K8_antenna_channel"]).cut(K["K11_motor_lead_passages"])
+    prof = [(X0_B, B_TOP), (X0_B, ZF_B), (WALL_X, z_end), (-22.0, z_end), (-22.0, B_TOP)]
+    web = xz_profile(prof, B_Y[0], B_Y[1])
+    b = web.cut(K["K8_antenna_channel"]).cut(K["K11_motor_lead_passages"])
     return b, z_open_top, z_end
 
 
@@ -187,7 +188,7 @@ def main():
                for x in np.linspace(X0_A, -27, 200))
     rec("A minimum width in plan (mm)", round(wmin, 3), ">= 1.2", wmin >= 1.2 - 1e-3)
     rec("A depth at the rear end x %g (mm)" % X0_A, round(21.5 - a_zbot(X0_A), 3), ">= 1.0", 21.5 - a_zbot(X0_A) >= 1.0)
-    rec("B depth at the front end x %g (mm)" % X0_B, round(B_TOP - b_zbot(X0_B) - (B_TOP - 3.25), 3), ">= 1.0 below the sleeve", 3.25 - b_zbot(X0_B) >= 1.0 - 1e-6)
+    rec("B depth at the front end x %g (mm)" % X0_B, round(3.25 - ZF_B, 3), ">= 1.0 below the sleeve", 3.25 - ZF_B >= 1.0 - 1e-6)
     # files
     cq.exporters.export(A, os.path.join(OUT, "KEEL_A_r4.step"))
     cq.exporters.export(B, os.path.join(OUT, "KEEL_B_r4.step"))
