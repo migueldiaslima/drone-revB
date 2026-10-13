@@ -1,0 +1,181 @@
+{
+ "checks": {
+  "A solids / volume mm^3 / mass g": {
+   "value": [
+    2,
+    1315.1,
+    1.71
+   ],
+   "required": "2 solids",
+   "pass": true
+  },
+  "B solids / volume mm^3 / mass g": {
+   "value": [
+    1,
+    105.7,
+    0.137
+   ],
+   "required": "1 solid",
+   "pass": true
+  },
+  "K11 opening top at the rear wall face, y 2.5 to 4.5 (z)": {
+   "value": -3.0,
+   "required": "-",
+   "pass": true
+  },
+  "B extension bottom (z)": {
+   "value": -2.0,
+   "required": "opening top + 1.0",
+   "pass": true
+  },
+  "A overlap with keep-outs K1 to K12 (mm^3)": {
+   "value": {},
+   "required": "none",
+   "pass": true
+  },
+  "A overlap with component dummies (mm^3)": {
+   "value": {},
+   "required": "none",
+   "pass": true
+  },
+  "A clearance to prop sweep + 3 / motors (K12) (mm)": {
+   "value": 0.0,
+   "required": ">= 0",
+   "pass": true
+  },
+  "B overlap with keep-outs K1 to K12 (mm^3)": {
+   "value": {},
+   "required": "none",
+   "pass": true
+  },
+  "B overlap with component dummies (mm^3)": {
+   "value": {},
+   "required": "none",
+   "pass": true
+  },
+  "B clearance to prop sweep + 3 / motors (K12) (mm)": {
+   "value": 6.716,
+   "required": ">= 0",
+   "pass": true
+  },
+  "A overlap with LID (mm^3; A top at z 21.5 under the plate x -32 to -22 is part of the seat)": {
+   "value": 0,
+   "required": 0,
+   "pass": true
+  },
+  "A outside the TUB design envelope (print only, mm^3)": {
+   "value": 13.9,
+   "required": "-",
+   "pass": true
+  },
+  "B outside the TUB design envelope (print only, mm^3)": {
+   "value": 2.3,
+   "required": "-",
+   "pass": true
+  },
+  "A +y touches the GPS deck (gap mm)": {
+   "value": 0.0,
+   "required": 0,
+   "pass": true
+  },
+  "A -y touches the GPS deck (gap mm)": {
+   "value": 0.0,
+   "required": 0,
+   "pass": true
+  },
+  "B merges with the spine sleeve (common mm^3)": {
+   "value": 20.799,
+   "required": "> 0",
+   "pass": true
+  },
+  "A -y to K9 (groove, gap mm)": {
+   "value": 0.0,
+   "required": "0 (cut, not tangent)",
+   "pass": true
+  },
+  "A to the antenna spine (mm)": {
+   "value": 0.0,
+   "required": ">= 1.0 outside the wall or merged",
+   "pass": true
+  },
+  "B clearance to the antenna coax and holder dummies (mm)": {
+   "value": 1.9,
+   "required": ">= 0",
+   "pass": true
+  },
+  "A minimum width in plan (mm)": {
+   "value": 1.2,
+   "required": ">= 1.2",
+   "pass": true
+  },
+  "A depth at the rear end x -46 (mm)": {
+   "value": 1.08,
+   "required": ">= 1.0",
+   "pass": true
+  },
+  "B depth at the front end x -36.9 (mm)": {
+   "value": 1.017,
+   "required": ">= 1.0 below the sleeve",
+   "pass": true
+  },
+  "G2 KEEL_A_r4.step (solids, faces, smallest mm^2, narrowest mm, failing)": {
+   "value": [
+    2,
+    124,
+    0.633,
+    0.364,
+    0
+   ],
+   "required": "failing 0",
+   "pass": true
+  },
+  "G2 KEEL_B_r4.step (solids, faces, smallest mm^2, narrowest mm, failing)": {
+   "value": [
+    1,
+    32,
+    0.992,
+    0.397,
+    0
+   ],
+   "required": "failing 0",
+   "pass": true
+  },
+  "G3 keel zone wedges / strips": {
+   "value": [
+    0,
+    0
+   ],
+   "required": "0 / 0 (or explained)",
+   "pass": true
+  },
+  "G3 keel A min angle deg / min dist mm": {
+   "value": [
+    null,
+    null
+   ],
+   "required": ">= 30 / >= 1.0",
+   "pass": true
+  },
+  "G3 keel B min angle deg / min dist mm": {
+   "value": [
+    null,
+    null
+   ],
+   "required": ">= 30 / >= 1.0",
+   "pass": true
+  }
+ },
+ "g3_flags": [],
+ "all_pass": true,
+ "params": {
+  "INNER": 4.6,
+  "X0_A": -46.0,
+  "X0_B": -36.9,
+  "WMIN": 1.2,
+  "B_Y": [
+   2.5,
+   4.5
+  ],
+  "B_TOP": 4.0
+ }
+}
