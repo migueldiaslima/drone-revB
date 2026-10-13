@@ -46,6 +46,24 @@ for b in fr.fieldOutputs[key].bulkDataBlocks:
     for l, v in zip(np.asarray(b.elementLabels).tolist(), d.tolist()):
         dens[(iname, l)] = max(v, dens.get((iname, l), -1.0))
 
+# item 53: ISO_DIST=<TH distribution file> replaces the densities by the TH solid indicator (stiffness factor 1 -> 1,
+# else 0), so iso 0.5 shows the thresholded TH geometry as analysed; ISO_TAG is added to the file names.
+import os
+if os.environ.get('ISO_DIST'):
+    inst0 = list(ra.instances.keys())[0]
+    sol = {}
+    cur = None
+    for ln in open(os.environ['ISO_DIST']):
+        if ln.startswith('*DISTRIBUTION TABLE'):
+            cur = 'S' if 'Stiffness' in ln else 'M'
+            continue
+        if cur != 'S' or ln.startswith('*') or ln.startswith(' ') or not ln.strip():
+            continue
+        p = ln.split(',')
+        sol[int(p[0])] = 1.0 if float(p[1]) > 0.5 else 0.0
+    for l, v in sol.items():
+        dens[(inst0, l)] = v
+    print('densities replaced from %s: %d elements, %d solid' % (os.environ['ISO_DIST'], len(sol), int(round(sum(sol.values())))))
 # global node index and tets (corner nodes)
 gid = {}
 X = []
@@ -158,7 +176,7 @@ for iso in isos:
     if caps:
         out.append(np.asarray(caps))
     tris = np.concatenate(out, axis=0)
-    tag = path.rsplit('/', 1)[-1].replace('.odb', '')
+    tag = path.rsplit('/', 1)[-1].replace('.odb', '') + os.environ.get('ISO_TAG', '')
     fn = 'mt_%s%s_%03d.stl' % (tag, ('_' + PART) if PART else '', int(round(iso * 100)))
     sets = [(fn, tris)]
     if KEEL:
