@@ -92,6 +92,7 @@ for iname in insts.keys():
         einst.append(iname)
         econ.append([nid[(iname, c)] for c in e.connectivity])
 nel = len(elab)
+partnodes = set(n for c in econ for n in c)
 corner = np.asarray([c[:4] for c in econ], dtype=int)
 p = xyz[corner]
 a = p[:, 1] - p[:, 0]
@@ -190,6 +191,7 @@ for iso in ISOS:
         for bi, (bx, by) in enumerate(LIDBOSS):
             r = np.hypot(xyz[:, 0] - bx, xyz[:, 1] - by)
             top = np.nonzero((np.abs(xyz[:, 2] - 21.5) < 0.01) & (r > 1.55) & (r < 3.05))[0].tolist()
+            top = [n for n in top if n in partnodes]     # LID pad nodes share these coordinates: skip them
             cs = {}
             for n in top:
                 cmp_ = node_comp.get(n)
