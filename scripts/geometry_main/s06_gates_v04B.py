@@ -203,20 +203,17 @@ def features():
     fc, lidb, ant, ins = v4.tub_fixed_tools()
     lb = v4.P["lid_boss"]
     tub = {k: w for k, w in K.items() if k not in ("K4_components_above_fc", "K5_nut_columns", "K12_props_motors_arm_clearances")}
-    tub.update({"FC bosses dia 6.4": fc, "lid bosses dia 6": lidb, "antenna spine": ant,
-                "insert holes (lid bosses, antenna spine)": ins,
+    tub.update({"FC bosses dia 6.4": fc, "lid bosses dia 6": lidb, "antenna spine": v4.antenna_spine(),
+                "GPS deck, pocket rim and cap bosses (rev 4 TUB)": v4.gps_deck_tools()[0],
+                "insert holes (lid bosses, antenna spine, GPS cap bosses)": ins,
                 "boss support wedges": v4.boss_wedges()})
     L = v4.P["lid"]; z0, z1 = L["z"]
-    cb = L["cap_boss"]
     lid = {"screw pads": v4.union_all([v4.zcyl(x, y, d / 2.0, z0, z1) for (x, y), d in zip(lb["xy"], L["pad_d"])]),
            "pad holes and countersinks": v4.union_all([v4.zcyl(x, y, L["pad_hole_d"] / 2.0, z0 - 1, z1 + 1).union(
                v4.cone(x, y, z1 - (L["csk_d"] - L["pad_hole_d"]) / 2.0, L["pad_hole_d"] / 2.0, z1 + 0.01, L["csk_d"] / 2.0 + 0.01)) for x, y in lb["xy"]]),
-           "GPS cap bosses": v4.union_all([v4.zcyl(cb["x"], s * cb["y"], cb["d"] / 2.0, *cb["z"]) for s in (1, -1)]),
-           "GPS hole": v4.zcyl(L["gps_hole"][0], L["gps_hole"][1], L["gps_hole"][2] / 2.0, z0 - 1, z1 + 1),
            "C cutout": v4.box(L["c_cut"]["pocket_x"][0], L["tab"]["x"][1] + 1, -L["c_cut"]["pocket_y"], L["c_cut"]["pocket_y"], z0 - 1, z1 + 1),
            "front tab": v4.box(L["tab"]["x"][0], L["tab"]["x"][1], -L["tab"]["y"], L["tab"]["y"], z0, z1),
-           "pocket rim": v4.box(L["pocket_in"]["x"][0] - L["rim_t"], L["pocket_in"]["x"][1] + L["rim_t"], -L["pocket_in"]["y"] - L["rim_t"],
-                                L["pocket_in"]["y"] + L["rim_t"], *L["rim_z"]),
+           "pad links to the plate frame (rev 4)": v4.lid_parts()[3],
            "plate frame inner edge": v4.box(-L["plate"][0] / 2 + L["frame_w"], L["plate"][0] / 2 - L["frame_w"],
                                            -L["plate"][1] / 2 + L["frame_w"], L["plate"][1] / 2 - L["frame_w"], z0, z1)}
     return tub, lid
