@@ -120,7 +120,7 @@ for i in range(1, min(21, len(st.frames))):
         else:
             lab = 'arms'
     else:
-        lab = 'TUB (keel)' if xyz[0] < -20 else 'TUB'
+        lab = 'TUB: GPS deck' if (xyz[0] < -32.4 and xyz[2] > 21.4) else ('TUB (keel)' if xyz[0] < -20 else 'TUB')   # rev 4: deck on the TUB
     if bat > 0.5:
         lab += ', battery moving'
     is_local = where[0] == 'LID-1' or sh['LID-1'] / tot > 0.5
