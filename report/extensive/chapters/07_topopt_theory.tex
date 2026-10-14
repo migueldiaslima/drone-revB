@@ -83,9 +83,10 @@ The sensitivity is negative, because adding material always stiffens, and propor
 
 \begin{theorybox}{Worked example: two springs in series}
 A wall, spring 1, node 1, spring 2, node 2, with $F = \SI{10}{N}$ at node 2. Solid stiffness $k_0 = \SI{100}{N/mm}$, $p = 3$, densities $x_1 = 1$ and $x_2 = 0.5$, so $k_1 = \SI{100}{N/mm}$ and $k_2 = 0.5^3 \times 100 = \SI{12.5}{N/mm}$. The displacements are $u_1 = F/k_1 = \SI{0.1}{mm}$ and $u_2 = u_1 + F/k_2 = \SI{0.9}{mm}$, so $C = 10 \times 0.9 = \SI{9.0}{N.mm}$. For spring 2 the localised product is the square of its own elongation, $(u_2 - u_1)^2$. The sensitivities are
-\begin{equation*}
-\frac{\dd C}{\dd x_1} = -3 \times 1^2 \times 100 \times 0.1^2 = \SI{-3.0}{N.mm}, \qquad \frac{\dd C}{\dd x_2} = -3 \times 0.5^2 \times 100 \times 0.8^2 = \SI{-48}{N.mm}.
-\end{equation*}
+\begin{gather*}
+\frac{\dd C}{\dd x_1} = -3 \times 1^2 \times 100 \times 0.1^2 = \SI{-3.0}{N.mm},\\
+\frac{\dd C}{\dd x_2} = -3 \times 0.5^2 \times 100 \times 0.8^2 = \SI{-48}{N.mm}.
+\end{gather*}
 Raising $x_2$ from 0.5 to 0.501 lowers $C$ by \SI{0.0478}{N.mm}, a slope of $-47.8$, matching the formula. The weak spring is sixteen times more valuable per unit of material: the optimiser adds material where the structure strains most.
 \end{theorybox}
 
