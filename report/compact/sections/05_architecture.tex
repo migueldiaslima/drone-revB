@@ -1,7 +1,7 @@
 % 05_architecture.tex
-\section{Architecture and design space}\label{sec:architecture}
+\section{Structural architecture and design space}\label{sec:architecture}
 
-\subsection{Layout}
+\subsection{Configuration}
 
 The motors sit on a true X with a wheelbase of \SI{148.5}{mm}, which leaves \SI{16.1}{mm} between adjacent propeller discs. A true X gives the shortest arms for a given propeller gap, and the bending stiffness $EI$ an arm needs for a given frequency grows with the cube of its free length, so every millimetre of arm is expensive. The battery sits on top, on a plate between 21.5 and \SI{24}{mm} above the arm top face, clear of the blades (13 to \SI{18.5}{mm}). This keeps the wheelbase short and puts the centre of gravity close to the rotor plane.
 
@@ -13,7 +13,7 @@ The frame has six printed parts (\cref{fig:exploded}). The tub is an open centre
 \caption{Exploded view of the printed frame: tub, lid and four identical arms in PET-CF, retainers in TPU.}\label{fig:exploded}
 \end{figure}
 
-\subsection{Arm joint}
+\subsection{Arm-to-body joint}
 
 Four joint concepts were drawn and compared: a corner pocket, a socket, a fin and fork, and a lap joint. The corner pocket did not fit beside the 33\,mm flight controller, and the lap joint put an insert in tension across the layers when thrust lifts the arm. The fin and fork fits, keeps the deep arm section continuous into the body and loads the bolts in shear. A \SI{10}{mm} fin on each tub corner sits between the two \SI{5}{mm} prongs of the arm root, and two steel M3 bolts stacked \SI{13}{mm} apart pass through prong, fin and prong into a heat-set insert (\cref{fig:joint}). Bearing at the bolt holes governs the joint capacity: \SI{1632}{N} per bolt, and \SI{21216}{N.mm} in vertical bending. Because the four arms are identical, one spare fits every position, and the optimisation enforces this with a cyclic symmetry constraint on the arm design.
 
@@ -23,7 +23,7 @@ Four joint concepts were drawn and compared: a corner pocket, a socket, a fin an
 \caption{Fin and fork joint: the tub fin between the arm prongs, two M3 bolts stacked vertically.}\label{fig:joint}
 \end{figure}
 
-\subsection{Design space}
+\subsection{Design-space definition}
 
 The optimiser needs three kinds of region. Design regions are the envelope it may fill or empty. Fixed regions are material it must keep: motor pads and screw bosses, bolt bosses of the joint, flight-controller bosses, the battery-plate frame and strap band, the lid screw bosses and the GPS deck. Keep-outs are space it must leave empty: the propeller sweep plus \SI{3}{mm}, the flight-controller bay, the cable channels and the USB access.
 
