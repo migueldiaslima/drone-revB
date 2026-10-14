@@ -20,5 +20,13 @@ def frame(S):
     n=S.shape[0]; labs=np.repeat(np.arange(1,n+1),4)
     return O(fieldOutputs=K({'S':O(bulkDataBlocks=[O(instance=inst,elementLabels=labs,data=S.reshape(-1,6))]),'U':None}))
 steps=K({k:O(frames=[frame(v)]) for k,v in D['steps'].items()})
+if 'modes' in D:
+    fr=[]
+    for k,u in enumerate(D['modes']):
+        fr.append(O(description='Mode %d: Value = 1. Freq = %.4f (cycles/time)'%(k,D['freqs'][k]) if k<len(D['freqs']) else '',
+                    fieldOutputs=K({'U':O(bulkDataBlocks=[O(instance=inst,nodeLabels=np.arange(1,len(u)+1),data=u)])})))
+    steps['FREQ']=O(frames=fr)
+rpsets=K({k:O(nodes=[[nodes[i-1] for i in v]]) for k,v in D.get('rp',{}).items()})
+inst.nodeSets=K({'ARM_PP-1_RP_FLAT':O(nodes=[nodes[0],nodes[1]])})
 def openOdb(p,readOnly=True):
-    return O(steps=steps,rootAssembly=O(instances=K({'PART-1-1':inst}),surfaces=surfs),close=lambda:None)
+    return O(steps=steps,rootAssembly=O(instances=K({'PART-1-1':inst}),surfaces=surfs,nodeSets=rpsets),close=lambda:None)
