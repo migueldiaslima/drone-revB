@@ -183,6 +183,29 @@ def campbell():
     fig.savefig(os.path.join(OUT, "plot_campbell.pdf"))
 
 
+def merit():
+    """Frequency merit index E^(1/3)/rho in the layer plane and across layers (Bambu data sheets, dry)."""
+    data = [("PLA", 11.2, 10.4, "heat"), ("PLA-CF", 11.5, 10.6, "heat"), ("PETG HF", 9.5, 9.0, "heat"),
+            ("PETG-CF", 10.8, 8.8, ""), ("ASA", 12.8, 12.2, ""), ("PET-CF", 13.0, 10.0, ""),
+            ("PAHT-CF", 14.8, 12.2, ""), ("PPA-CF", 18.2, 13.0, "printer")]
+    fig, ax = plt.subplots(figsize=(6.4, 2.8))
+    w = 0.38
+    for i, (name, xy, z, gate) in enumerate(data):
+        a = 0.35 if gate else 1.0
+        ax.bar(i - w / 2, xy, width=w * 0.92, color=C[0], alpha=a, label="in the layer plane" if i == 3 else None)
+        ax.bar(i + w / 2, z, width=w * 0.92, color=C[1], alpha=a, label="across the layers" if i == 3 else None)
+        if gate:
+            ax.text(i, max(xy, z) + 0.4, "fails " + gate, ha="center", fontsize=7, color=MUTED)
+    ax.set_xticks(range(len(data)))
+    ax.set_xticklabels([d[0] for d in data], fontsize=8)
+    ax.set_ylabel("$E^{1/3}/\\rho$ (MPa$^{1/3}$ cm$^3$/g)")
+    ax.set_ylim(0, 20.5)
+    ax.legend(loc="upper left", fontsize=8)
+    ax.grid(axis="x", visible=False)
+    fig.tight_layout()
+    fig.savefig(os.path.join(OUT, "plot_merit.pdf"))
+
+
 if __name__ == "__main__":
     history()
     keels()
@@ -190,4 +213,5 @@ if __name__ == "__main__":
     strength()
     power_models()
     campbell()
+    merit()
     print("ok")
