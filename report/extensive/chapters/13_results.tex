@@ -1,4 +1,80 @@
 % 13_results.tex
 \chapter{Results, limitations and future work}\label{sec:results}
 
-% to be written (see docs/report_brief.md section 6)
+\section{Requirements against results}\label{sec:res-table}
+
+\begin{table}[htbp]
+\centering\small
+\caption{Requirements against results on the printed geometry.}\label{tab:res-table}
+\begin{tabularx}{\linewidth}{@{}lXl@{}}
+\toprule
+Requirement & Result & Status\\
+\midrule
+R1 Take-off mass & about \SI{289}{g} against \SI{250}{g}; frame \SI{89.22}{g} against a budget of \SI{61.4}{g} & not met\\
+R2 Stiffness & first elastic mode \SI{431.0}{Hz}, modes 7 to 12 from 431.0 to \SI{533.4}{Hz}; goal \SI{417}{Hz}, minimum \SI{290}{Hz} & met\\
+R3 Strength & highest utilisation 0.04 with a factor of safety of 1.5, no element above any limit & met\\
+R4 Crash behaviour & sideways order 8.5; vertical arm-to-joint failure force ratio 0.95 against at most 0.67 & not met\\
+R5 Temperature & heat deflection \SI{86.7}{\celsius} unannealed against \SI{70}{\celsius} & met\\
+R6 Interfaces & motors, flight controller, battery, receiver, GPS and antenna seated with exact fixed regions & met\\
+R7 Assembly & thirteen-step sequence with insertion, tool and cable paths; clash test passed & met (to confirm on the print)\\
+R8 Manufacture & one piece per part; keep-out overlaps at most \SI{0.215}{mm^3}; slicer check passed; thin-wall limits exceeded locally on the lid and the arm & met, with a print-quality risk\\
+R9 Cost & about \SI{3.6}{EUR} of filament against \SI{37.91}{EUR} & met\\
+R10 Repairability & bolt-on arms, one design for all four positions & met\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{keybox}
+\small
+\begin{tabularx}{\linewidth}{@{}Xr@{}}
+Frame mass: tub \SI{47.21}{g}, lid \SI{6.61}{g}, four arms \SI{8.85}{g} each & \SI{89.22}{g}\\
+Design volume removed by the optimiser & \SI{55.4}{\percent}\\
+First elastic mode, printed geometry & \SI{431.0}{Hz}\\
+Highest stress utilisation & 0.04\\
+Filament cost at \SI{40}{EUR/kg} & about \SI{3.6}{EUR}\\
+Hover flight time at about \SI{289}{g} (at \SI{250}{g}) & about \SI{6.8}{min} (\SI{8.2}{min})\\
+\end{tabularx}
+\end{keybox}
+
+The take-off mass follows from the frame and the model's point masses: $89.22 + 199.58 = \SI{288.8}{g}$. The extra \SI{39}{g} above the design point cost about $39 \times 0.036 = \SI{1.4}{min}$ of hover by the mass sensitivity of \cref{sec:sizing-gram}, from 8.2 to about \SI{6.8}{min}; the linear sensitivity is an approximation this far from \SI{250}{g}.
+
+\section{The mass result}\label{sec:res-mass}
+
+The frame misses its budget by about \SI{28}{g} because the frequency requirement, not strength, sizes it. The strength utilisation of 0.04 says that almost none of the frame's material is needed to carry the loads; it is there to hold the first elastic mode at \SI{417}{Hz}. The printed material has a modulus of \SI{5058}{MPa} in the layer plane, and a frequency target does not relax with the material: by the Rayleigh quotient, the stiffness the arms and the joint need is set by the target and by the masses they carry, so a less stiff material must buy that stiffness with depth and with mass. The first design space reached \SI{76.8}{g} cut at iso 0.4. The assembly paths, the separate lid, the antenna spine and the GPS deck on the tub brought the same cut to \SI{85.65}{g}, and the print level of 0.3, chosen for wall thickness, added \SI{3.57}{g}.
+
+Two levers remain, and both are measurable. The \SI{417}{Hz} goal places the first mode at the geometric middle of the hover excitations; the hard requirement is \SI{290}{Hz}. A sweep of the frequency constraint between these values, run on the final design space, gives the mass the frame would save for each hertz of separation given up, which is the input a decision on the \SI{250}{g} target needs. A one-piece frame, without the joint, would show the mass the repairability costs.
+
+\section{Limitations}\label{sec:res-limits}
+
+The analyses carry the following limitations, each with its consequence.
+\begin{itemize}
+\item \textbf{Element-level stresses.} The strength check uses the thresholded mesh, with stepped surfaces; the acceptance rule (volume-weighted 99.9th percentile and clusters) is built for that, but the stresses are not those of the smoothed print surface. With a margin of 25 this does not change the verdict.
+\item \textbf{Survivability cases not analysed.} The motor cut onto hard ground and the arm strike were not analysed; the failure order is the design argument for both, and it holds sideways only.
+\item \textbf{Seat contact.} The design relies on the lid seat staying in contact: held at its screw bosses only, the thresholded body of the second design space fell to \SI{192.1}{Hz}. The flatness requirement of \SI{0.1}{mm} carries the risk, and the drop with the contact lost was not analysed on the final geometry.
+\item \textbf{Bolt bearing.} The bearing allowable is assumed equal to the in-plane tensile strength; a coupon test would replace the assumption.
+\item \textbf{Fatigue.} Not analysed. The static stresses are at most about \SI{2.4}{MPa} in the four design cases, against about 870,000 cycles per hour of hover at 1P.
+\item \textbf{Thin walls.} The tub meets the wall-thickness limits; the lid exceeds the \SI{0.8}{mm} limit by 0.33 percentage points of its surface, and the arm exceeds both limits at the prong ends and the motor-pad rim. The slicer check passed, and these areas are the first to inspect.
+\item \textbf{Inputs.} The hover point is extrapolated below the bench data; the battery resistance, the motor-mount temperature, the landing stopping distances and the material's shear moduli are assumptions with stated bands.
+\item \textbf{Outside the model.} The retainers and the skid are not part of the structural model.
+\end{itemize}
+
+\section{Lessons}\label{sec:res-lessons}
+
+Three lessons carry over to any printed airframe optimised this way.
+\begin{enumerate}
+\item \textbf{The design space must include how parts get in, not only where they sit.} The optimiser fills every path that the design space leaves open, because material that helps stiffness at no cost under the constraints is material it keeps.
+\item \textbf{The thresholded model is the acceptance test.} Every fixed region needs a reason to be kept within its own part, and a connected region can still be carried by material that no threshold keeps. Only the solid body at the print level shows what will be printed.
+\item \textbf{Capacity design has to be imposed on the joint.} An optimised member is strong where it is deep and weak where it does not need stiffness, so the fuse must be designed into the joint or into a defined section of the arm.
+\end{enumerate}
+
+\section{Next steps}\label{sec:res-next}
+
+In order:
+\begin{enumerate}
+\item Print, weigh and assemble the parts; check the lid seat flatness, the cradle floor clearance and the GPS module dimensions; measure the first elastic modes with a tap test against the \SI{431.0}{Hz} prediction.
+\item Redesign the joint so the prongs are the fuse (\cref{sec:capacity}), and repeat the thresholded frequency check.
+\item Run the frequency sweep at 350 and \SI{290}{Hz} on the final design space and choose the frequency goal against the mass target.
+\item Fly the aircraft and record the gyro spectrum, which shows where the frame modes sit against the rotor harmonics in flight; log a hover to replace the extrapolated hover power with a measured one.
+\item Measure the motor-mount temperature after a hard flight, the battery's internal resistance, and the bolt bearing strength on coupons.
+\item Add the camera payload to the mass, loads and analysis.
+\end{enumerate}
