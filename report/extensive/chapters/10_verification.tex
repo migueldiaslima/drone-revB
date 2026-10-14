@@ -1,4 +1,182 @@
 % 10_verification.tex
 \chapter{Thresholded verification and print geometry}\label{sec:verification}
 
-% to be written (see docs/report_brief.md section 6)
+The optimiser ends with a density between 0 and 1 in every element. A printer can only deposit material or leave a gap, so the result has to be turned into a solid part, and the solid part has to be checked again: the frequencies and stiffnesses reported by the optimiser belong to a grey density field that cannot be built. This chapter describes the thresholded model that checks the buildable part against the requirements, the final check on the print geometry, and the steps from the density field to the print files with the checks made on them.
+
+\section{Why a second check}\label{sec:verification-why}
+
+A natural frequency depends on stiffness and moving mass. For a single degree of freedom,
+\begin{equation}
+f = \frac{1}{2\pi}\sqrt{\frac{k}{m}},
+\end{equation}
+and every elastic mode of the frame follows the same rule with the stiffness and mass that the mode shape engages.
+
+The optimiser scales the stiffness and the mass of each element with its density through two interpolation functions. Measured from the optimiser's own output tables, an element at density 0.4 carries a stiffness factor of 0.1024 and a mass factor of 0.400. When the density field is cut at an iso-level below 0.4, that element becomes solid in the printed part:
+\begin{align}
+\text{stiffness:}\quad & \frac{1}{0.1024} = 9.8 \text{ times larger},\nonumber\\
+\text{mass:}\quad & \frac{1}{0.400} = 2.5 \text{ times larger}.
+\end{align}
+An element below the cut disappears, and with it mostly mass: at density 0.2 the element carried 0.200 of its solid mass but only 0.0368 of its solid stiffness. Both effects tend to raise the ratio $k/m$ above what the optimiser credited, so the printed part is usually stiffer than predicted. The exception is a load path that rested on grey material below the cut: when it disappears, the part loses a support the optimiser counted on. The thresholded check exists to find such cases.
+
+\section{The thresholded model}\label{sec:verification-model}
+
+The thresholded model reuses the optimisation model and its mesh unchanged and replaces only the per-element material factors. For a cut at iso-level $c$:
+\begin{itemize}
+\item an element with density at or above $c$ gets stiffness factor 1 and mass factor 1 (solid PET-CF);
+\item an element below $c$ gets stiffness factor \num{1e-6} and mass factor \num{1e-9} (air);
+\item fixed elements are always solid.
+\end{itemize}
+Keeping the air elements in the mesh avoids remeshing and keeps every coupling, tie and support of the optimisation model in place. The air factors are small enough that the air carries no load and adds no mass: \num{1e-6} of the PET-CF stiffness is about \SI{0.005}{MPa}.
+
+The optimisation responses are removed from the input, and the model runs as a plain analysis with the same frequency step, the same four load steps, the same three supports and the same eigenvalue shift. The acceptance criteria are those of the optimisation: modes 7 to 12 at or above \SI{417}{Hz}, the strain energy of every load case at or below its cap, and support reactions below \SI{1e-6}{N}.
+
+Before the frequencies are read, a connectivity check looks for solid pieces that are not joined to the frame. It groups the solid elements into connected components through shared nodes, counting nodes closer than \SI{0.2}{mm} as connected so that the ties across the joint gaps and the lid seat count as connections. A fixed boss held only by elements below the cut appears as a separate small component. Such an island has no load path, and in the frequency step it vibrates as a nearly free body on its air elements: in the case found, six modes between 45 and \SI{200}{Hz} had their largest motion on one island, so the check also explains frequencies that would otherwise be puzzling. The two islands the check found, and the rules that removed them, are described in \cref{sec:iterations}.
+
+\section{Results}\label{sec:verification-results}
+
+\Cref{tab:verification-results} compares the grey optimisation result with three thresholded models of the final cycle.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Grey optimisation result and thresholded models of the final cycle. Model mass includes the \SI{199.58}{g} of point masses. Strain energies are given as a fraction of their caps.}\label{tab:verification-results}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lrrrrrrrrrrr@{}}
+\toprule
+Model & Mass & \multicolumn{6}{c}{Modes 7 to 12 (\si{Hz})} & \multicolumn{4}{c}{Strain energy / cap}\\
+\cmidrule(lr){3-8}\cmidrule(l){9-12}
+ & (\si{g}) & 7 & 8 & 9 & 10 & 11 & 12 & LC1 & LC2a & LC2b & LC3a\\
+\midrule
+Grey result & -- & 416.7 & 417.2 & 418.4 & 423.7 & 461.7 & 496.5 & 0.79 & 0.70 & 0.80 & 1.01\\
+Iso 0.4, no keels & 281.3 & 146.8 & 428.3 & 432.1 & 436.5 & 440.1 & 494.9 & 0.78 & 0.67 & 0.78 & 1.20\\
+Iso 0.4, keel shapes & 282.3 & 428.4 & 430.2 & 434.8 & 437.8 & 455.6 & 529.6 & 0.72 & 0.65 & 0.75 & 0.94\\
+Iso 0.3, print geometry & 283.5 & 431.0 & 432.5 & 437.2 & 441.4 & 457.2 & 533.4 & 0.70 & 0.64 & 0.73 & 0.91\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Cut at iso 0.4 without any change, the frame failed: mode 7 fell to \SI{146.8}{Hz}, with its largest motion at the rear of the GPS deck, and the LC3a strain energy rose to 1.20 times its cap. The other five modes were arm bending modes between 428 and \SI{495}{Hz}, above the requirement. At iso 0.3 the deck mode rose only to \SI{162.3}{Hz} (LC3a 1.12 times the cap). The deck had been carried by grey material under it that disappears at any cut between 0.3 and 0.5; \cref{sec:iterations} describes the diagnosis and the two keels that replaced it. The third row is the check of the keels as first modelled, with the keel region cleaned of the optimiser's leftovers: every requirement met.
+
+The last row is the final check, on the geometry that is printed: cut at iso 0.3, the keels as their exact solids, and the whole keel design region cleaned so that only the exact keels, the deck, the spine and the bosses remain in it. The exact keels enter the model as every tub element whose centroid lies inside the keel solids: \num{10549} elements with \SI{1399.6}{mm^3}, against \SI{1400.5}{mm^3} of keel volume inside the tub (\SI{-0.1}{\percent}). Of this, \SI{1006.5}{mm^3} (\SI{1.31}{g}) had been below the cut. The clean-up removed \SI{205.7}{mm^3} (\SI{0.27}{g}) of leftover design material outside the keels. In all, \num{511770} of the \num{765252} elements are solid.
+
+The print geometry meets every requirement. The six elastic modes lie between 431.0 and \SI{533.4}{Hz}, \SI{3.4}{\percent} above the grey result for the first one, and every strain energy is at or below 0.91 of its cap. Support reactions stayed below \SI{2.2e-9}{N}. Modes 8 and 10 have their largest motion at the motor seats (arm bending). Modes 7, 9, 11 and 12 have it at the rear lower corner of the antenna spine, a fixed region at the tail of the keel; four modes interleaved with the arm modes within \SI{10}{Hz} read as coupled modes of the whole frame in which the spine tail moves most, since a local spine mode would appear as one isolated frequency.
+
+\section{From density field to surface}\label{sec:verification-surface}
+
+The density field is stored per element: a staircase. Cutting it element by element gives jagged faces and loose fragments, so the surface is built the way the optimiser's own smoothing does it:
+\begin{enumerate}
+\item Each corner node gets the mean density of the elements around it.
+\item Inside each tetrahedron the density varies linearly between its four corner values, which gives a continuous field.
+\item On each edge with one end above the iso-level $c$ and one below, the surface crosses at the fraction
+\begin{equation}
+t = \frac{c - \rho_a}{\rho_b - \rho_a}
+\end{equation}
+of the edge from node $a$; with $\rho_a = 0.8$, $\rho_b = 0.2$ and $c = 0.5$ the crossing lies halfway.
+\item A cut tetrahedron has three or four crossed edges, which give a triangle or a quadrilateral split into two triangles. Neighbouring tetrahedra share their crossing points, so the triangles join into one closed skin.
+\item Where material reaches the boundary of the design space, the boundary faces are added and trimmed at the crossing line.
+\item Six iterations of Taubin smoothing remove the facet noise of the mesh. Taubin smoothing alternates a shrinking and an inflating step, so the volume changes only by tenths of a percent.
+\end{enumerate}
+
+\section{Choice of the iso-level}\label{sec:verification-iso}
+
+A lower iso-level keeps more material, as a lower water level leaves more land dry. At both 0.4 and 0.3 every part is one closed piece, and the walls grow at the lower level. Iso 0.3 was chosen for wall margin at the lid front openings and under the motor pads, at a cost of \SI{3.57}{g} on the frame (\cref{tab:verification-masses}).
+
+\begin{table}[htbp]
+\centering\small
+\caption{Masses of the restored print parts at the two iso-levels (PET-CF, \SI{1.30}{g/cm^3}). The arm is printed four times.}\label{tab:verification-masses}
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Part & Iso 0.4 (\si{g}) & Iso 0.3 (\si{g}) & Iso 0.3 (\si{mm^3})\\
+\midrule
+Tub & 45.78 & 47.21 & \num{36318.1}\\
+Lid & 6.43 & 6.61 & \num{5087.6}\\
+Arm, each & 8.36 & 8.85 & \num{6811.1}\\
+\midrule
+Frame (tub, lid, four arms) & 85.65 & 89.22 & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The four arms take \SI{1.96}{g} of the difference. Relative to its mass each arm gains \SI{5.9}{\percent} and the tub \SI{3.1}{\percent}, consistent with the grey arm walls that the mode checks of the optimisation found.
+
+\section{Restoration of the exact features}\label{sec:verification-restoration}
+
+The smooth surface rounds every edge, closes small holes partly and shifts flat faces by tenths of a millimetre. Bolt holes, seats, motor pads and the joint faces must keep their exact geometry, so the print part is rebuilt from the surface and the exact solids of the design files with three Boolean operations (\cref{fig:verification-restoration}). For the tub, with $S$ the smoothed surface, $D$ and $F$ the design and fixed regions, $K$ the keel design region and $A$, $B$ the two keels:
+\begin{equation}
+P = \bigl[\,S \cap \bigl((D \setminus K) \cup F\bigr)\bigr] \cup F \cup A \cup B.
+\end{equation}
+The intersection trims the surface to the design space, which removes everything that grew into holes, slots, seats and keep-outs. The union adds back the exact fixed solids and the keels. The lid and the arm follow the same formula without $K$, $A$ and $B$. The design files are meshed at \SI{0.3}{mm} for the Booleans; the meshed design and fixed volumes match the design files within \SI{0.02}{\percent}.
+
+The order of the operations matters. Adding the fixed solids before trimming builds faces of the result on two coincident boundaries, and those become zero-thickness flaps: a check of the first restored tub found one of \SI{2.3}{mm^2} below a keel, and 550 back-to-back triangles over the whole part. Trimming first and adding the exact solids last removed them. The keel design region was also cleaned as a whole: a cleaning box slightly smaller than the region had left \SI{34.1}{mm^3} of skins \SIrange{0.15}{0.2}{mm} thick on its faces. After the Booleans, the mesh is cleaned once more (vertices welded within \SI{1e-5}{mm}, degenerate and back-to-back triangles removed) and loose pieces up to \SI{1}{mm^3} are dropped and listed: three in the tub (0.213, 0.188 and \SI{0.017}{mm^3}, inside the tub) and one of \SI{0.003}{mm^3} in the lid.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.92\linewidth]{su_restoration_tub}
+\caption{Tub at iso 0.3: the smoothed iso-density surface (left) and the restored print part (right), from above and below. The restoration adds the exact bosses, seats, holes and the two keels under the GPS deck, and trims the surface where it grew into holes and keep-outs.}\label{fig:verification-restoration}
+\end{figure}
+
+\section{Print-geometry checks}\label{sec:verification-checks}
+
+Five checks were made on the restored parts.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Print-geometry checks on the iso 0.3 parts.}\label{tab:verification-checks}
+\begin{tabularx}{\linewidth}{@{}lXl@{}}
+\toprule
+Check & Result & Verdict\\
+\midrule
+One closed piece per part & tub, lid and arm each one closed piece; loose pieces below \SI{1}{mm^3} dropped & pass\\
+Exact features present & against the design files: missing fixed material \SI{0.000}{mm^3}, material inside holes, slots and seats \SI{0.000}{mm^3}, for all three parts (tub 20 exact solids with \SI{14079.8}{mm^3}, lid 1 with \SI{3417.3}{mm^3}, arm 5 with \SI{2934.0}{mm^3}) & pass\\
+Clearances & overlap with each of the 45 keep-out solids at most \SI{0.215}{mm^3} (meshing noise on coincident faces); parts against each other \SI{0.000}{mm^3} & pass\\
+Wall thickness & see \cref{tab:verification-thickness} & slicer check\\
+Slicer preview & no dropped walls in any part & pass\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Wall thickness is measured in two ways, because each is biased in a different direction.
+\begin{itemize}
+\item The sphere method gives each point of the solid the diameter of the largest ball that fits inside the part and contains the point. It is evaluated on a voxel grid (\SI{0.1}{mm} for the lid and the arm, \SI{0.2}{mm} for the tub) by morphological opening. At a sharp convex edge no ball reaches the corner, so every sharp edge counts as thin; the restored parts carry many sharp edges from the exact features.
+\item The ray method follows the inward normal from each surface triangle to the opposite surface. It measures the wall in front of each face, so edges count much less, but a Boolean film of a few hundredths of a millimetre counts as a thin wall.
+\end{itemize}
+
+\begin{table}[htbp]
+\centering\small
+\caption{Wall thickness of the iso 0.3 parts: share of the surface (or of the material volume) thinner than \SI{0.8}{mm} and \SI{1.2}{mm}. The targets were at most \SI{1}{\percent} below \SI{0.8}{mm} and at most \SI{3}{\percent} below \SI{1.2}{mm} of the surface.}\label{tab:verification-thickness}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Part & Ray, surface & Sphere, surface & Sphere, volume & Ray median\\
+ & \SI{0.8}{mm} / \SI{1.2}{mm} & \SI{0.8}{mm} / \SI{1.2}{mm} & \SI{0.8}{mm} / \SI{1.2}{mm} & (\si{mm})\\
+\midrule
+Tub & \SI{0.95}{\percent} / \SI{2.27}{\percent} & \SI{0.39}{\percent} / \SI{3.25}{\percent} & \SI{0.06}{\percent} / \SI{0.54}{\percent} & 3.45\\
+Lid & \SI{1.33}{\percent} / \SI{2.94}{\percent} & \SI{2.58}{\percent} / \SI{7.48}{\percent} & \SI{0.32}{\percent} / \SI{1.17}{\percent} & 2.52\\
+Arm & \SI{2.05}{\percent} / \SI{3.52}{\percent} & \SI{5.47}{\percent} / \SI{12.17}{\percent} & \SI{0.50}{\percent} / \SI{1.33}{\percent} & 4.98\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+By the ray method the tub meets both targets, the lid meets the \SI{1.2}{mm} target and exceeds the \SI{0.8}{mm} target by 0.33 points, and the arm exceeds both. The material volume thinner than \SI{0.8}{mm} stays at or below \SI{0.50}{\percent} in every part. The thin areas that remain are local (\cref{fig:verification-thickness}): the tub at the fin roots and along the floor edge, the lid at its front openings, the arm at the prong ends and the motor pad rim. The slicer preview of all three parts showed no dropped walls, which was taken as the practical acceptance; a local thickening of these regions as exact geometry is the remedy if a print shows a defect there.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{su_t6_tub}
+\includegraphics[width=\linewidth]{su_t6_lid}
+\includegraphics[width=\linewidth]{su_t6_arm}
+\caption{Ray thickness on the surface of the tub, the lid and the arm at iso 0.3, in plan, side and front view: below \SI{0.8}{mm} in red, \SIrange{0.8}{1.2}{mm} in orange. Sharp edges of holes and bosses appear as thin outlines; the thin walls are local.}\label{fig:verification-thickness}
+\end{figure}
+
+% =========================================================================================================
+% Numbers used in this chapter and their source labels; resolved in docs/report_sources/10_verification.md.
+% Interpolation factors 0.1024 / 0.400 at density 0.4, 0.0368 / 0.200 at 0.2: V1; 9.8 and 2.5 computed
+% Air factors 1e-6 / 1e-9, reactions limit 1e-6 N, proximity 0.2 mm, island modes 45 to 200 Hz: V2; 5058 MPa x 1e-6 = 0.005 MPa computed
+% Table of results (masses, modes, strain energy ratios), 162.3 Hz and 1.12 at iso 0.3, 199.58 g: V3
+% Keel elements 10,549, 1,399.6 / 1,400.5 mm^3, -0.1 %, 1,006.5 mm^3, 1.31 g, 205.7 mm^3, 0.27 g, 511,770 / 765,252: V4
+% 3.4 % on f7 computed (431.0 / 416.7); reactions 2.2e-9 N; mode peaks: V4
+% Marching tetrahedra steps, Taubin 6 iterations, volume change tenths of a percent: V5
+% Masses iso 0.4 / 0.3, volumes, 3.57 g, 1.96 g: V6; 5.9 % and 3.1 % computed (8.85 / 8.36, 47.21 / 45.78)
+% Boolean formula, 0.3 mm meshing, 0.02 %, flap 2.3 mm^2, 550 triangles, 34.1 mm^3 skins 0.15 to 0.2 mm, weld 1e-5 mm,
+%   loose pieces 0.213 / 0.188 / 0.017 / 0.003 mm^3, 1 mm^3 threshold: V7
+% Feature cross-check 0.000 mm^3, 20 / 1 / 5 solids, 14,079.8 / 3,417.3 / 2,934.0 mm^3: V8
+% Clearances 45 keep-out solids, 0.215 mm^3, 0.000 mm^3: V6
+% Thickness table, voxel sizes 0.1 / 0.2 mm, targets 1 % / 3 %, thin areas: V9; 0.33 points computed (1.33 - 1.0)
+% =========================================================================================================
