@@ -1,0 +1,32 @@
+% 10_results.tex
+\section{Results and next steps}\label{sec:results}
+
+\begin{table}[htbp]
+\centering\small
+\caption{Requirements against results.}\label{tab:results}
+\begin{tabularx}{\linewidth}{@{}lXl@{}}
+\toprule
+Requirement & Result & Status\\
+\midrule
+Stiffness & first elastic mode \SI{431.0}{Hz} on the printed geometry, goal \SI{417}{Hz} & met\\
+Strength & utilisation at most 0.04 with a factor of safety of 1.5 & met\\
+Temperature & heat deflection \SI{86.7}{\celsius} unannealed, gate \SI{70}{\celsius} & met\\
+Manufacture & all parts printable, exact interfaces, one arm design for all positions & met\\
+Cost & about \SI{3.6}{EUR} of filament against \SI{37.91}{EUR} & met\\
+Crash behaviour & arm-to-joint failure force ratio 0.95, failure location not controlled & not met\\
+Take-off mass & about \SI{289}{g} against \SI{250}{g} & not met\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The take-off mass misses its target because the frequency requirement, not strength, sizes the frame. The printed material has a modulus of \SI{5058}{MPa} in the layer plane, and the frequency requirement does not relax with the material, so the optimiser had to buy stiffness with depth and mass. With a utilisation of 0.04, almost none of that mass is needed for strength. The 417\,Hz goal was chosen to sit at the geometric middle of the rotor excitations; the hard requirement is \SI{290}{Hz}. A sweep of the frequency constraint between these values, planned from the start, gives the mass the frame would save for each hertz of separation given up, which is the input the 250\,g target needs.
+
+Three lessons carry over to any printed airframe optimised this way. The design space must include how parts get in, not only where they sit. Every fixed region needs a reason to be kept within its own part, and a connected region can still be carried by material no threshold keeps, so the thresholded model is the acceptance test. And capacity design has to be applied to the joint itself: an optimised member is strong where it is deep, so the fuse must be designed into the joint.
+
+The next steps, in order:
+\begin{enumerate}
+\item Weigh the printed parts, check the lid seat flatness and measure the first elastic modes with a tap test against the \SI{431.0}{Hz} prediction.
+\item Redesign the joint so that the prongs are the fuse, and re-run the thresholded check.
+\item Run the frequency sweep and choose the frequency goal against the mass target.
+\item Fly the aircraft and record the gyro spectrum, which shows where the frame modes sit against the rotor harmonics in flight.
+\end{enumerate}

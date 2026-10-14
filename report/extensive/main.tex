@@ -1,0 +1,31 @@
+\documentclass[a4paper,11pt,oneside,parskip=half,toc=bibliography]{scrreprt}
+\input{../common/preamble}
+\input{../common/macros}
+\title{From first principles to a printed airframe}
+\subtitle{Sizing, topology optimisation and verification of a 3.5-inch quadcopter in PET-CF\\[4pt]
+  \normalsize 3.5-inch quadcopter frame, Siraya PET-CF, Abaqus/Tosca}
+\author{Miguel Dias de Lima\\ \small migueldiaslima@gmail.com}
+\date{October 2026}
+\titlehead{\centering\includegraphics[width=0.85\linewidth]{R1_assembly}}
+\begin{document}
+\maketitle
+\tableofcontents
+\input{chapters/01_introduction}
+\input{chapters/02_requirements}
+\input{chapters/03_sizing}
+\input{chapters/04_loads}
+\input{chapters/05_material}
+\input{chapters/06_architecture}
+\input{chapters/07_topopt_theory}
+\input{chapters/08_optimisation_model}
+\input{chapters/09_iterations}
+\input{chapters/10_verification}
+\input{chapters/11_strength}
+\input{chapters/12_retainers}
+\input{chapters/13_results}
+\appendix
+\input{chapters/A_logs}
+\input{chapters/B_workflow}
+\bibliographystyle{unsrtnat}
+\bibliography{../common/references}
+\end{document}

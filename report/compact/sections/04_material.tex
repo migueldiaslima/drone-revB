@@ -1,0 +1,27 @@
+% 04_material.tex
+\section{Material}\label{sec:material}
+
+Stiffness, not strength, sizes the arms. An arm carrying the motor and propeller as a tip mass $m$ on a free length $L$ has a first bending frequency $f = \frac{1}{2\pi}\sqrt{k/m}$ with tip stiffness $k = 3EI/L^3$. A frequency target therefore fixes $k$. With the arm width held small to limit download, each material reaches that stiffness with its own height $h \propto E^{-1/3}$, and the arm mass $m \propto \rho h$ becomes
+\begin{equation}
+m \propto \rho\, E^{-1/3}.
+\end{equation}
+The material to maximise is $E^{1/3}/\rho$, Ashby's index for a stiffness-limited beam of fixed width. A material twice as stiff makes the arm only \SI{21}{\percent} shallower, while density counts in full.
+
+Eight filaments with full data sheets were ranked by this index after two gates: a heat deflection temperature of at least \SI{70}{\celsius}, which removes PLA, PLA-CF and PETG HF, and printability on the P1S, which removes PPA-CF. PAHT-CF ranked first on paper and PET-CF third. Independent tests reordered the ranking: the measured across-layer strength of PAHT-CF was 20\,MPa against 64\,MPa on its data sheet, while both PET-CF grades agreed with their sheets within about \SI{20}{\percent}.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Design values for Siraya Fibreheart PET-CF, unannealed: data-sheet moduli and independently measured strengths, each multiplied by 0.85 for scatter and print settings.}\label{tab:material}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+ & In the layer plane ($xy$) & Across the layers ($z$)\\
+\midrule
+Young's modulus & \SI{5058}{MPa} & \SI{2890}{MPa}\\
+Strength & \SI{54.4}{MPa} & \SI{23.9}{MPa} (layer adhesion)\\
+\midrule
+Density & \multicolumn{2}{c}{\SI{1.30}{g/cm^3}}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Siraya Fibreheart PET-CF was chosen~\citep{siraya_petcf,mytechfun_siraya}. It passes the heat gate unannealed (\SI{86.7}{\celsius} at \SI{0.45}{MPa}) and costs \SI{40}{EUR/kg}. A printed part is anisotropic: across the layers it keeps \SI{57}{\percent} of the stiffness and \SI{44}{\percent} of the strength. Every analysis therefore uses a transversely isotropic model with the build direction along the global $z$ axis, and the strength check treats tension across the layers separately (\cref{sec:strength}).

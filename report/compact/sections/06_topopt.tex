@@ -1,0 +1,38 @@
+% 06_topopt.tex
+\section{Topology optimisation}\label{sec:topopt}
+
+\subsection{Formulation}
+
+Topology optimisation describes the part by a density $x_e$ between 0 and 1 in every finite element of the design region. Solid material has density 1; void has density close to 0. The stiffness of each element is interpolated so that intermediate densities are inefficient, which pushes the solution towards solid and void. In the classical SIMP form,
+\begin{equation}
+E(x_e) = x_e^{\,p}\,E_0, \qquad m(x_e) = x_e\, m_0, \qquad p = 3,
+\end{equation}
+so half-density material carries half the mass but only one eighth of the stiffness~\citep{bendsoe_sigmund}. Tosca's interpolation, measured from its output tables, keeps the mass linear and the stiffness at about 0.19 times the density at low density, rising to the cube near solid.
+
+The optimisation minimises the volume under the frequency requirement and one stiffness cap per load case:
+\begin{align}
+\min_{\vect{x}} \quad & V(\vect{x}) \nonumber\\
+\text{subject to} \quad & f_i(\vect{x}) \ge \SI{417}{Hz}, \quad i = 7,\dots,12,\\
+& C_j(\vect{x}) \le 2\,C_{j,0}, \quad j = \text{LC1, LC2a, LC2b, LC3a}. \nonumber
+\end{align}
+The frequency constraint applies to the first six elastic modes of the free-free structure (modes 1 to 6 are rigid-body motions). Each compliance $C_j$, twice the strain energy under load case $j$, is capped at twice its value for the solid design space, which bounds the deflection in every load case without weighting one against another. Strength is checked afterwards on the final geometry. A minimum member size of \SI{2.5}{mm}, six extrusion lines, keeps every member printable.
+
+\subsection{Model and runs}
+
+The model is built in Abaqus/CAE and solved with Abaqus and Tosca Structure~\citep{abaqus_tosca}. The tub, lid and four arms are meshed with quadratic tetrahedra (C3D10) at \SI{1.0}{mm}, \num{765252} elements in total, with the transversely isotropic material of \cref{sec:material}. Components enter as point masses on distributing couplings at their seats (\SI{199.58}{g} in total). The arms are tied to the fins, the lid to the tub seat. Every static step uses inertia relief with three-point supports, and the support reactions are checked to stay below \SI{1e-6}{N}.
+
+The runs were staged so that each one removed one risk before the expensive one: a reference job comparing solver versions within \SI{0.5}{\percent}, a three-cycle smoke test, a coarse run to see the first shape and the mode behaviour, and the production run at \SI{1.0}{mm} on a 64-core server. The production run took 28 cycles in 7\,h\,34\,min, about 15.5 minutes per cycle on 60 threads, and reduced the design volume from \num{74242} to \SI{33100}{mm^3}, \SI{55.4}{\percent} less (\cref{fig:history}). The frequency constraint became active at cycle 4; between cycles 15 and 22 the optimiser overshot, with the first elastic mode down to \SI{325.1}{Hz}, and recovered by cycle 23.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\linewidth]{plot_history}
+\caption{Production run: design volume, the six lowest elastic modes and the compliance of each load case relative to its cap. The shaded cycles mark the overshoot.}\label{fig:history}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.92\linewidth]{R3_design_vs_result}
+\caption{Design space (translucent) and the optimised tub and arm.}\label{fig:result}
+\end{figure}
+
+The optimiser placed the arm depth where the bending moment is largest: the section modulus of the printed arm for vertical bending falls from \SI{815.6}{mm^3} at the root, where the fork ends, to \SI{131.9}{mm^3} just inside the motor pad.
