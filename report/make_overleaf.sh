@@ -12,7 +12,7 @@ for r in extensive compact; do
   # Overleaf compiles main.tex at the project root: flatten paths
   ( cd "$tmp/$r" && sed -i 's#\.\./common/#common/#g' main.tex && mv ../common . )
   rm -f "dist/${r}_overleaf.zip"
-  ( cd "$tmp/$r" && zip -qr "$OLDPWD/dist/${r}_overleaf.zip" . -x '*.aux' '*.log' '*.out' '*.toc' '*.pdf' )
+  ( cd "$tmp/$r" && zip -qr "$OLDPWD/dist/${r}_overleaf.zip" . -x '*.aux' '*.log' '*.out' '*.toc' '*.bbl' '*.blg' '*.fls' '*.fdb_latexmk' 'main.pdf' )
   rm -rf "$tmp"
   echo "dist/${r}_overleaf.zip"
 done
