@@ -1,0 +1,10 @@
+model,description,build_log_item,model_mass_g_incl_point_masses,f7_Hz,f8_Hz,f9_Hz,f10_Hz,f11_Hz,f12_Hz,SE_cap_LC1,SE_cap_LC2a,SE_cap_LC2b,SE_cap_LC3a,result
+Tosca_c28,"grey density field, cycle 28 (reference)",50,,416.7,417.2,418.4,423.7,461.7,496.5,0.79,0.7,0.8,1.01,
+TH_r4b,"iso 0.4, no keels",51,281.3,146.8,428.3,432.1,436.5,440.1,494.9,0.78,0.67,0.78,1.2,FAIL
+TH_r4b_i30,"iso 0.3, no keels",52,282.5,162.3,430.3,435.5,440.6,443.3,504.6,0.75,0.65,0.76,1.12,FAIL
+TH_r4b_S,"iso 0.4, side webs forced solid",53,283.4,430.7,433.1,438.0,443.1,524.3,553.0,0.72,0.65,0.74,0.93,PASS
+TH_r4b_L,"iso 0.4, local iso 0.15 in the keel box",53,281.5,380.6,,,,,,0.73,0.65,0.75,0.99,FAIL
+TH_r4b_cA,"iso 0.4, keel A shape, keel box cleaned",58,282.2,420.7,429.9,431.1,437.0,446.4,458.5,0.72,0.65,0.76,0.95,PASS
+TH_r4b_cB,"iso 0.4, keel B shape, keel box cleaned",58,281.1,7.8,12.9,20.9,29.7,47.1,55.7,7.1,2.55,4.09,28.05,FAIL
+TH_r4b_cAB,"iso 0.4, keels A + B shapes, keel box cleaned",58,282.3,428.4,430.2,434.8,437.8,455.6,529.6,0.72,0.65,0.75,0.94,PASS
+TH_r4b_i30_final,"iso 0.3, exact keels A + B, keel cell cleaned (print geometry)",65,283.5,431.0,432.5,437.2,441.4,457.2,533.4,0.7,0.64,0.73,0.91,PASS
