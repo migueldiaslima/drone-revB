@@ -1,6 +1,7 @@
 """report_plots.py - report plots in one style (vector PDF) from data/report/*.csv.
 Run from the repo root: python3 scripts/figures/report_plots.py
-Writes report/figures/plot_history.pdf, plot_keels.pdf, plot_capacity.pdf, plot_strength.pdf"""
+Writes report/figures/plot_history.pdf, plot_keels.pdf, plot_capacity.pdf, plot_strength.pdf,
+plot_power_models.pdf, plot_campbell.pdf"""
 import csv
 import os
 import matplotlib
@@ -122,9 +123,71 @@ def strength():
     fig.savefig(os.path.join(OUT, "plot_strength.pdf"))
 
 
+BENCH = [(17311.1, 91.2, 25.9), (25611.5, 202.2, 76.6), (30692.7, 292.4, 127.6), (35219.6, 380.5, 182.5),
+         (40750.1, 514.1, 277.8)]      # manufacturer bench: RPM, thrust g, electrical power W
+
+
+def power_models():
+    """Bench power with the four fitted models (coefficients from the sizing chapter) and the hover point."""
+    models = [("M1, $a n^3$", 4.18e-12, 0.0, 0.0, C[3], ":"), ("M2, $a n^3 + c$", 4.00e-12, 0.0, 8.2, C[1], "--"),
+              ("M3, $a n^3 + b n$ (central)", 3.828e-12, 4.668e-4, 0.0, C[0], "-"),
+              ("M4, $a n^3 + b n + c$", 3.64e-12, 1.03e-3, -10.6, C[2], "-.")]
+    n = [8000 + 200 * i for i in range(170)]
+    fig, axs = plt.subplots(1, 2, figsize=(6.4, 2.9), gridspec_kw={"width_ratios": [1.25, 1]})
+    for k, ax in enumerate(axs):
+        ax.axvspan(8000, 17311, color="#f2efe9", lw=0, zorder=0)
+        for name, a, b, c, col, ls in models:
+            ax.plot(n, [a * x ** 3 + b * x + c for x in n], color=col, ls=ls, label=name)
+        ax.plot([r[0] for r in BENCH], [r[2] for r in BENCH], "o", color=INK, ms=4, label="bench data")
+        ax.axvline(14440, color=INK, lw=0.9, ls="--")
+        ax.set_xlabel("Rotor speed (RPM)")
+    axs[0].set_ylabel("Electrical power per motor (W)")
+    axs[0].set_xlim(8000, 42000)
+    axs[0].set_xticks([10000, 20000, 30000, 40000])
+    axs[1].set_xticks([10000, 12500, 15000, 17500, 20000])
+    axs[0].set_ylim(-5, 290)
+    axs[0].legend(loc="upper left", fontsize=7.5)
+    axs[1].set_xlim(10000, 20000)
+    axs[1].set_ylim(0, 40)
+    axs[1].text(14600, 37, "hover", fontsize=8, color=INK, va="top")
+    axs[1].text(17450, 3, "bench\ndata", fontsize=8, color=MUTED)
+    axs[1].text(10300, 3, "extrapolated", fontsize=8, color=MUTED)
+    fig.tight_layout()
+    fig.savefig(os.path.join(OUT, "plot_power_models.pdf"))
+
+
+def campbell():
+    """Rotor excitations against the first six elastic modes of the printed geometry (thresholded check)."""
+    modes = [431.0, 432.5, 437.2, 441.4, 457.2, 533.4]
+    rpm = [0, 45000]
+    fig, ax = plt.subplots(figsize=(6.4, 3.4))
+    ax.axvspan(14440, 40750, color="#f2efe9", lw=0, zorder=0)
+    ax.plot(rpm, [r / 60.0 for r in rpm], color=C[0], label="1P (imbalance)")
+    ax.plot(rpm, [3 * r / 60.0 for r in rpm], color=C[1], label="3P (blade passing)")
+    for k, f in enumerate(modes):
+        ax.axhline(f, color=C[2], lw=1.0 if k else 1.6, alpha=1.0 if k == 0 else 0.55)
+    ax.axhline(290, color=INK, lw=0.9, ls=":")
+    ax.text(600, 296, "290 Hz requirement", fontsize=8, color=INK)
+    ax.text(600, 550, "modes 7 to 12 of the printed frame, 431.0 to 533.4 Hz", fontsize=8, color=C[2])
+    ax.axvline(14440, color=INK, lw=0.9, ls="--")
+    ax.plot([14440, 14440], [241, 722], "o", color=INK, ms=4)
+    ax.text(14700, 236, "241 Hz", fontsize=8, color=INK, va="top")
+    ax.text(14700, 728, "722 Hz", fontsize=8, color=INK, va="bottom")
+    ax.text(27600, 1120, "flight range\n14,440 to 40,750 RPM", fontsize=8, color=MUTED, ha="center")
+    ax.set_xlim(0, 45000)
+    ax.set_ylim(0, 1300)
+    ax.set_xlabel("Rotor speed (RPM)")
+    ax.set_ylabel("Frequency (Hz)")
+    ax.legend(loc="upper left", fontsize=8)
+    fig.tight_layout()
+    fig.savefig(os.path.join(OUT, "plot_campbell.pdf"))
+
+
 if __name__ == "__main__":
     history()
     keels()
     capacity()
     strength()
+    power_models()
+    campbell()
     print("ok")

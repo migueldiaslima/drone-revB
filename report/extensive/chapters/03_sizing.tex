@@ -494,7 +494,13 @@ In plain RPM, $a = \SI{3.828e-12}{W/RPM^3}$ and $b = \SI{4.67e-4}{W/RPM}$. M1 ha
 
 \subsection{The four fits}
 
-Inside the bench range the models agree within a few per cent: M4 fits every row within 1.2\,\%, while M1, M2 and M3 miss the slowest row by $-16$, $+12$ and $+8$\,\%. At hover, 14,442\,RPM, just below the range, they spread from 12.6 to \SI{20.2}{W}, a factor of 1.6 (\cref{tab:sizing-hover}). A good fit inside the data says nothing about the behaviour outside it, and the best fit is not automatically the most trustworthy: M4 has three coefficients for five points, so fitting well is easy for it and proves little.
+Inside the bench range the models agree within a few per cent: M4 fits every row within 1.2\,\%, while M1, M2 and M3 miss the slowest row by $-16$, $+12$ and $+8$\,\%. At hover, 14,442\,RPM, just below the range, they spread from 12.6 to \SI{20.2}{W}, a factor of 1.6 (\cref{tab:sizing-hover,fig:sizing-power-models}). A good fit inside the data says nothing about the behaviour outside it, and the best fit is not automatically the most trustworthy: M4 has three coefficients for five points, so fitting well is easy for it and proves little.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{plot_power_models}
+\caption{The four power models against the bench data. Left: the whole range, where they are indistinguishable. Right: the region below the slowest bench point, where they spread from 12.6 to \SI{20.2}{W} at hover.}\label{fig:sizing-power-models}
+\end{figure}
 
 \begin{table}[htbp]
 \centering\small
