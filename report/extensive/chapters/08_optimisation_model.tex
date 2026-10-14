@@ -1,4 +1,248 @@
 % 08_optimisation_model.tex
 \chapter{Optimisation model and runs}\label{sec:optimisation_model}
 
-% to be written (see docs/report_brief.md section 6)
+This chapter describes the finite element model behind the optimisation, the optimisation task built on it, the sequence of runs that removed one risk at a time, and the production run that produced the frame. The theory of the method is in \cref{sec:topopt_theory}; the design space and its fixed regions are in \cref{sec:architecture}.
+
+\section{Parts, regions and units}\label{sec:optimisation_model-parts}
+
+The model holds six parts: the tub, the lid and four identical arms. Each part is imported from its design file as one solid split into cells: design cells, where the optimiser may remove material, and fixed cells, which keep their geometry (bolt bosses, seats, motor pads, the GPS deck and the antenna spine). Design and fixed cells share their faces, so the elements on both sides share nodes and the fixed regions are connected to the design region without any contact or tie.
+
+The model uses millimetres, newtons, tonnes and seconds, so stresses are in megapascals and a mass of one gram is \SI{1e-6}{t}. The axes are $x$ forward, $y$ left and $z$ up, with the origin at the frame centre and $z = 0$ on the top of the arm under the motor.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Volumes of the design and fixed regions from the design files. The arms are one part placed four times.}\label{tab:optimisation_model-volumes}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Part & Design region (\si{mm^3}) & Fixed region (\si{mm^3})\\
+\midrule
+Tub & \num{39538.5} & \num{12796.3}\\
+Lid & \num{2357.0} & \num{3417.1}\\
+Arm (each of four) & \num{8036.9} & \num{2933.5}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Material}\label{sec:optimisation_model-material}
+
+All cells carry one solid section with the transversely isotropic PET-CF model of \cref{sec:material}: in the layer plane $E_1 = E_2 = \SI{5058}{MPa}$ and $G_{12} = \SI{1873}{MPa}$; across the layers $E_3 = \SI{2890}{MPa}$ and $G_{13} = G_{23} = \SI{1070}{MPa}$; Poisson's ratios $\nu_{12} = \nu_{13} = \nu_{23} = 0.35$; density \SI{1.30}{g/cm^3}. The material orientation is the global system, because every part is printed with its layers in the $xy$ plane, so the build direction is global $z$.
+
+Abaqus defines $\nu_{13}$ as the strain in direction 3 caused by a stress in direction 1. The reverse ratio follows from the symmetry of the compliance matrix:
+\begin{equation}
+\nu_{31} = \nu_{13}\,\frac{E_3}{E_1} = 0.35 \times \frac{2890}{5058} = 0.20,
+\end{equation}
+which lies in the range measured for printed short-fibre materials.
+
+\section{Mesh}\label{sec:optimisation_model-mesh}
+
+Every part is meshed with quadratic tetrahedra (C3D10) at a global size of \SI{1.0}{mm}: \num{391649} elements in the tub, \num{51191} in the lid and \num{80603} in each arm, \num{765252} in total. The four arms are instances of one meshed part, so their meshes are identical; this makes the symmetry restriction of \cref{sec:optimisation_model-task} exact. The mesh check found no errors, and at most \SI{0.02}{\percent} of the elements carried shape warnings, all at small features such as the fin-boss tops and the GPS deck rim.
+
+The element size follows from the minimum member size of \SI{2.5}{mm}. A member-size control only acts when the member is larger than about twice the element size, so the mesh must be finer than \SI{1.25}{mm}. A convergence check on the solid model of an earlier design space compared a coarse mesh (\SI{2.5}{mm} in the body, \SI{1.5}{mm} in the arms) with the \SI{1.0}{mm} mesh: the six lowest elastic frequencies moved by \SIrange{-0.6}{-1.3}{\percent} and the strain energies by \SIrange{1.1}{1.8}{\percent}. The coarse mesh was therefore good enough for set-up runs, and the \SI{1.0}{mm} mesh was used for production.
+
+\section{Components, joints and the lid}\label{sec:optimisation_model-connections}
+
+The components are not modelled as solids. Each one is a point mass on a reference point at its centre of gravity, connected to its seat surface by a distributing coupling (\cref{tab:optimisation_model-masses}, \cref{fig:optimisation_model-setup}).
+
+\begin{theorybox}{Distributing coupling}
+A distributing coupling ties the motion of one reference node to a group of surface nodes in an average sense: the forces and moments applied at the reference node are spread over the surface nodes with weights that keep the force and moment balance, but the surface itself stays free to deform. A kinematic coupling, by contrast, would make the seat rigid. For a battery resting on a printed plate the distributing coupling is the right choice: the battery's inertia loads the plate without stiffening it. In this model the coupling nodes all sit on solid elements, so the solver drops the rotational part of the coupling; moments still reach the frame as force couples over the seat.
+\end{theorybox}
+
+\begin{table}[htbp]
+\centering\small
+\caption{Point masses and the surfaces they act on. Every seat surface lies on fixed material, so loads never enter through elements the optimiser may soften.}\label{tab:optimisation_model-masses}
+\begin{tabularx}{\linewidth}{@{}lrX@{}}
+\toprule
+Item & Mass (\si{g}) & Seat\\
+\midrule
+Battery (rigid box with rotary inertia) & 100.00 & top faces of the lid plate frame and strap band\\
+Flight controller, receiver, hardware and wiring & 22.91 & top faces of the four flight-controller bosses\\
+GPS module, cap, screws and inserts & 4.23 & pocket floor of the GPS deck\\
+Antenna, holder, screw and insert & 2.24 & underside of the antenna spine pad\\
+Motor, propeller and screws (each of four) & 13.75 & motor pad contact ring and screw bosses\\
+Joint bolts and inserts (each of four corners) & 3.80 & outer faces of the prong bosses\\
+\midrule
+Total & 199.58 & \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Each arm joins the tub through two bolts that clamp the arm prongs onto the tub fin. In the model the flat faces of the fin bosses are tied to the facing prong boss faces across the \SI{0.15}{mm} assembly gap, two ties per corner, with a position tolerance of \SI{0.3}{mm} and no adjustment of the initial geometry. The tie stands for the clamping of the bolt preload; away from the bosses the fin and the prongs only face each other across the gap.
+
+The lid is tied to the tub over its whole seat. A check on the solid model of the second design-space iteration showed why this matters: with the lid held only at its screw bosses, the lid plate and the battery on it formed a soft mass on the frame, the first lid mode (\SI{405.1}{Hz}) fell inside the frequency band and pulled the arm saddle mode down from \SIrange{449.7}{389.8}{Hz}. With the seat tied, every mode in the band was an arm mode above \SI{449}{Hz} and the lid modes started at \SI{571}{Hz}. The seat tie requires the lid underside and the tub rim to be printed flat within \SI{0.1}{mm}, so that the screws and the battery inertia hold the lid in full contact.
+
+\Cref{fig:optimisation_model-surfaces} shows the 30 coupling and tie surfaces with their reference points. The optimisation model and the thresholded model of \cref{sec:verification} share the mesh and these surfaces; the figure draws them on the final solid body.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{su_th_setup}
+\caption{Coupling and tie surfaces (surface nodes, drawn through the solid) and the twelve reference points: four motors, four arm joints, battery, flight controller, GPS and antenna. The arm joint couplings carry the three supports of the static steps. Left from above, right from below; the battery reference point lies above the lid at its centre of gravity.}\label{fig:optimisation_model-surfaces}
+\end{figure}
+
+\section{Steps, loads and supports}\label{sec:optimisation_model-steps}
+
+The model has one frequency step and four static load steps, each solved from the unloaded state so that the load cases do not add up.
+
+The frequency step extracts 20 eigenvalues of the free structure with the Lanczos solver. Modes 1 to 6 are rigid-body motions near \SI{0}{Hz}; modes 7 to 12 are the first six elastic modes and carry the frequency requirement.
+
+\begin{theorybox}{Why the eigenvalue solver needs a shift}
+A free structure has six eigenvalues at zero, one for each rigid-body motion. The Lanczos method factorises the stiffness matrix shifted by a value $\sigma$, $\mat{K} - \sigma\mat{M}$, and finds eigenvalues near that shift. With $\sigma = 0$ the shifted matrix is singular, because $\mat{K}$ itself is singular for a free body, and the solver may lose or duplicate rigid-body modes. A small negative shift, $\sigma = -100$ in the solver's units of frequency squared (\si{Hz^2}), far below the square of the first elastic frequency, $417^2 \approx \num{1.7e5}$\,\si{Hz^2}, makes the shifted matrix positive definite, so the six rigid-body modes are found reliably and the count of elastic modes is correct.
+\end{theorybox}
+
+The static steps apply the design load cases of \cref{sec:loads} (\cref{tab:optimisation_model-loads}). The loads are forces and pressures; the frame and the components accelerate under them, and inertia relief adds the matching inertial forces to every mass, so the loads balance without a support carrying anything.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Static load cases in the optimisation model. Thrust acts along $+z$ at the motor reference points; the reaction torques act about $z$.}\label{tab:optimisation_model-loads}
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+Case & Loads\\
+\midrule
+LC1, full thrust & \SI{5.04}{N} on each motor; reaction torque \SI{40}{N.mm} on each, opposite on the two diagonals (zero net yaw)\\
+LC2a, one diagonal pair & \SI{5.04}{N} and \SI{40}{N.mm} on the front-left and rear-right motors (net yaw \SI{80}{N.mm})\\
+LC2b, front pair & \SI{5.04}{N} on the two front motors, torques opposite (pitching moment, zero yaw)\\
+LC3a, landing & \SI{56.4}{N} as a pressure of \SI{0.027371}{MPa} on the \SI{2060.6}{mm^2} floor contact face\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{theorybox}{Inertia relief and the three supports}
+A flying frame has no supports. If the four thrust forces of LC1, \SI{20.16}{N} in total, are applied to an unsupported model, the stiffness matrix is singular and the static problem has no unique solution. Inertia relief resolves this with Newton's second law: the solver computes the rigid-body acceleration $\vect{a}$ that the applied load $\vect{F}$ gives the whole mass,
+\begin{equation}
+\vect{F} = M\,\vect{a},
+\end{equation}
+and applies the inertial force $-m_i\vect{a}$ to every element and point mass. The applied and inertial forces then balance exactly, and the frame deforms as it would in flight: the battery pushes down on its plate with its share of the acceleration, the motors pull the arm tips up.
+
+The balanced problem still has six rigid-body freedoms, so the solver needs six restrained degrees of freedom to fix the position of the body in space. Three reference points at the arm joints carry them: one restrained in $x$, $y$ and $z$, one in $x$ and $z$, one in $z$ only. These supports are statically determinate: they remove the rigid-body motion without restraining any deformation. Because the loads are already balanced, the supports carry no force. The check in every run is that the support reactions stay negligible; in the production model they stayed below \SI{9.0e-10}{N}.
+\end{theorybox}
+
+The supports became necessary with the newer solver version used for production. Without them, the older version factorised the singular stiffness matrix afresh in each load step and regularised it internally. The newer version reused the factorisation of the first load step for the others, and the regularisation was not valid for the other load vectors: the strain energies of LC2a, LC2b and LC3a came out at \SIrange{1e6}{1e9}{N.mm}. With the three supports added, the newer version reproduced the older one on every quantity: mass, six frequencies and four strain energies within \SI{0.001}{\percent}.
+
+No gravity load is applied. Under inertia relief a uniform gravity field is balanced by an equal and opposite acceleration and changes no stress, so leaving it out gives the same result and keeps the loads exactly as tabulated.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{su_model_setup}
+\caption{Optimisation model of the full frame: design regions (grey), fixed regions (orange), motor reference points with the thrust direction, component reference points and the three joint reference points that carry the statically determinate supports.}\label{fig:optimisation_model-setup}
+\end{figure}
+
+\section{Reference job}\label{sec:optimisation_model-reference}
+
+Before any optimisation, the full-density model was solved as a plain analysis. The total mass was \SI{332.182}{g}, against \SI{332.16}{g} expected from the design-file volumes and the point masses (\SI{0.007}{\percent} difference). Modes 1 to 6 stayed below \SI{0.002}{Hz}. The six elastic modes were \num{448.70}, \num{465.11}, \num{476.51} and \SI{483.41}{Hz} (arm modes), \SI{569.85}{Hz} (lid plate) and \SI{648.71}{Hz} (lid front tab); the GPS deck mode appeared only as mode 14, at \SI{836.85}{Hz}. All support reactions stayed below \SI{8.7e-11}{N}, and the seat tie left no node of the lid seat untied.
+
+\section{Optimisation task}\label{sec:optimisation_model-task}
+
+The task uses Tosca Structure with the sensitivity-based (general) algorithm, which is the only one that accepts frequency responses.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Optimisation task. $W_0$ is the strain energy of each load case at cycle 0, where the design region starts fully solid.}\label{tab:optimisation_model-task}
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+Item & Setting\\
+\midrule
+Design region & the design cells of the tub, the lid and the four arms\\
+Objective & minimise the volume of the design region\\
+Frequency constraints & one response per mode, modes 7 to 12, each at least \SI{417}{Hz}\\
+Stiffness constraints & strain energy of LC1, LC2a, LC2b and LC3a each at most $2\,W_0$\\
+Member size & minimum \SI{2.5}{mm} over the design region\\
+Symmetry & the four arm design regions follow one density field, rotated by \ang{90} about $z$\\
+Frozen material & all fixed cells; elements under loads and at supports frozen automatically\\
+Start density & 1.0 (cycle 0 is the solid design space)\\
+Cycles & at most 60, stop criteria at the solver defaults\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Four settings needed checking against the solver's behaviour:
+
+\begin{itemize}
+\item One frequency response over a range of modes adds the frequencies together, so each mode gets its own response and its own bound.
+\item With volume as the objective and no volume constraint, the solver starts at density 0.5 by default. The strain energies of cycle 0 would then be far above those of the solid design space, and caps defined relative to cycle 0 would be wrong. The start density is therefore set to 1.0, and cycle 0 reproduces the reference job.
+\item The 90-degree arm pattern is a rotational symmetry restriction; the restriction named cyclic symmetry is a translational repeat. Applied across the four arm instances, it produced identical density fields in all four arms.
+\item The member-size control requires a minimum above twice the element size, which the \SI{1.0}{mm} mesh satisfies for \SI{2.5}{mm}.
+\end{itemize}
+
+The stiffness caps are strain-energy caps. The compliance of a load case is twice its strain energy, $C = 2W$, so the cap $C_j \le 2\,C_{j,0}$ is the same as $W_j \le 2\,W_{j,0}$. At cycle 0 the strain energies were \num{0.1095564}, \num{0.1022435}, \num{0.0520785} and \SI{0.2020444}{N.mm} for LC1, LC2a, LC2b and LC3a, so the caps were \num{0.2191128}, \num{0.2044869}, \num{0.1041570} and \SI{0.4040888}{N.mm}.
+
+\section{Run sequence}\label{sec:optimisation_model-sequence}
+
+The production run takes hours on a 64-core server, so the runs before it were staged to remove one risk each.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Runs before the production run, in order. Each answered one question before money and time were spent on the next.}\label{tab:optimisation_model-sequence}
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+Run & Question and answer\\
+\midrule
+Inertia relief check & Does inertia relief with three supports give the same deformation as a free run? Strain energy equal within \SI{0.000}{\percent}, reactions below \SI{2.4e-11}{N}.\\
+Chain test, 3 cycles, local solver & Does the optimisation chain work (sensitivities of all five steps, frequencies in hertz, solid start, symmetry, constraints)? Yes, without inertia relief: the local solver version refused inertia relief with the sensitivity-based algorithm.\\
+Version check & Does the server's newer solver give the same answers? Yes, within \SI{0.001}{\percent}, once the three supports were added.\\
+Smoke test, 3 cycles, server & Does the server accept inertia relief inside the optimisation? Yes; volume fell by \SI{19}{\percent} in three cycles with every constraint satisfied.\\
+Coarse run & What shape and mode behaviour does the optimiser produce? On an earlier design space it met \SI{417}{Hz} with the outer arms in grey material (density about 0.2 to 0.35), which a mode check on the saved cycles exposed.\\
+Production run & the result of this chapter (\cref{sec:optimisation_model-production}).\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Two practical settings came out of this sequence. The solver must run in thread mode: at 32 cores across two processor sockets it chose message passing, and that mode refuses sensitivities with inertia relief; the thread setting goes into the solver arguments of the optimisation parameter file. Each saved cycle of the production model needs about \SI{3}{GB} of disk, so only cycles 0, 10, 20 and the last were saved as full result files; the optimisation input of every cycle was kept.
+
+The mode check examines, at every saved cycle, where each of modes 7 to 12 moves most. The peak region of a mode is the set of nodes with displacement at least 0.8 times the largest. A mode is flagged when more than half of those nodes touch only elements of density below 0.3, because such a mode rests on material that will not exist in the printed part. The check is a diagnostic; the thresholded verification of \cref{sec:verification} is the acceptance test.
+
+\section{Production run}\label{sec:optimisation_model-production}
+
+The production run started from the full-density model on 60 threads and stopped on the solver's convergence criteria after cycle 28, after 7\,h\,34\,min, about 15.5 minutes per cycle (cycle 0 took 18.4 minutes). The design volume fell from \num{74242} to \SI{33100}{mm^3}, \SI{55.4}{\percent} less (\cref{fig:optimisation_model-history}).
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\linewidth]{plot_history}
+\caption{Production run: design volume, the six lowest elastic frequencies and the strain energy of each load case relative to its cap, per cycle. The frequency constraint is active from cycle 4; between cycles 15 and 22 the optimiser overshoots and recovers.}\label{fig:optimisation_model-history}
+\end{figure}
+
+The history has three phases.
+\begin{itemize}
+\item Cycles 0 to 14: the volume falls by between \num{1600} and \SI{3500}{mm^3} per cycle. The first elastic frequency drops from \SI{444.3}{Hz} and the frequency constraint becomes active at cycle 4 (\SI{421.2}{Hz}); the strain energies rise steadily from half their caps.
+\item Cycles 15 to 22: the optimiser removes material faster than the constraints allow. The first elastic frequency falls to \SI{325.1}{Hz} at cycle 15 and the LC3a strain energy reaches 2.12 times its cycle-0 value at cycles 17 to 19, above the cap of 2.0. The optimiser then puts material back.
+\item Cycles 23 to 28: the design settles with every constraint within about \SI{1}{\percent} of its bound.
+\end{itemize}
+
+\Cref{fig:optimisation_model-snapshots} shows the iso-density surface at 0.3 for the four saved cycles. Cycle 0 is the full design space, since the run starts from density 1. At cycle 10 the design volume is already \SI{33}{\percent} lower (\num{49844} against \SI{74242}{mm^3}), but the surface has hardly changed: the optimiser first lowers the density almost everywhere, and the material stays above 0.3. Between cycles 10 and 20 the density on the arms and around the motor pads falls below 0.3 and the surface opens there. Cycles 20 and 28 differ little, although the volume went down and back up in between, which agrees with the history: the overshoot was undone in the same places it occurred.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{su_iso_snapshots}
+\caption{Production run: iso-density surface at 0.3 (whole frame, fixed regions included) at cycles 0, 10, 20 and 28, from above (top) and from below (bottom).}\label{fig:optimisation_model-snapshots}
+\end{figure}
+
+At the last cycle the six frequencies were \num{416.7}, \num{417.2}, \num{418.4}, \num{423.7}, \num{461.7} and \SI{496.5}{Hz}, and the strain energies were 1.58, 1.40, 1.60 and 2.02 times their cycle-0 values (LC1, LC2a, LC2b, LC3a). The first frequency lies \SI{0.3}{Hz} under the bound and the LC3a strain energy \SI{1}{\percent} over its cap. These are values of the grey density field; whether the printable part meets the requirements is decided on the thresholded model (\cref{sec:verification}), where the first elastic frequency of the printed geometry is \SI{431.0}{Hz}.
+
+The mode check at cycle 28 found modes 7 to 10 to be arm bending modes with their largest motion at the motor seats. Mode 11 (\SI{461.7}{Hz}) moved most at the rear corner of the GPS deck and mode 12 (\SI{496.5}{Hz}) at the rear underside of the keel, both in a region of mean density about 0.5: the deck itself is fixed material, but the material under it was grey. Of the \num{765252} elements, \num{259292} (\SI{33.9}{\percent}) ended below density 0.3. Cut at an iso-density of 0.3 the kept volume, fixed regions included, was \SI{63912}{mm^3} (\SI{83.1}{g}); at 0.5 it was \SI{61947}{mm^3} (\SI{80.5}{g}). The \SI{1965}{mm^3} between the two levels, \SI{2.6}{g}, measures how much grey material the design holds. The grey support under the GPS deck is the subject of \cref{sec:iterations}.
+
+% =========================================================================================================
+% Numbers used in this chapter and their source labels (S1 to S13); the labels are resolved to files and
+% lines in docs/report_sources/08_optimisation_model.md (outside the report folder).
+% Volumes 39,538.5 / 12,796.3 / 2,357.0 / 3,417.1 / 8,036.9 / 2,933.5 mm^3: S1
+% E1 = E2 5058, E3 2890, G12 1873, G13 = G23 1070 MPa, nu 0.35, density 1.30 g/cm^3: S2; nu31 = 0.20 computed in the text
+% Element counts 391,649 / 51,191 / 80,603 / 765,252, warnings at most 0.02 %: S3
+% Mesh convergence -0.6 to -1.3 % (frequency), +1.1 to +1.8 % (strain energy): S4
+% Member size 2.5 mm, rule "above twice the element size": S5
+% Point masses 100.00 / 22.91 / 4.23 / 2.24 / 13.75 / 3.80, total 199.58 g; battery box 59 x 30 x 32 mm: S6
+% Joint gap 0.15 mm, tie tolerance 0.3 mm: S2
+% Lid connection: 405.1, 449.7, 389.8, 571 Hz; flatness 0.1 mm: S7
+% Loads 5.04 N, 40 N mm, 80 N mm net yaw, 56.4 N, 0.027371 MPa, 2,060.6 mm^2, 20.16 N net thrust: S8
+% Supports and reactions: 9.0e-10 N (production), 2.4e-11 N (inertia relief check), 8.7e-11 N (reference): S3, S4, S9
+% Strain energies 1e6 to 1e9 N mm without supports, agreement 0.001 %: S9
+% Reference job: 332.182 g, 332.16 g, 0.007 %, 0.002 Hz, 448.70 / 465.11 / 476.51 / 483.41 / 569.85 / 648.71 / 836.85 Hz: S3
+% Cycle-0 strain energies 0.1095564 / 0.1022435 / 0.0520785 / 0.2020444 N mm and caps: S10
+% Chain and smoke tests: 0.000 %, 19 % in three cycles: S4, S9
+% Coarse run: arm density 0.2 to 0.35: S11
+% Threads, 32 cores, about 3 GB per saved cycle (34 GB for four saved cycles plus inputs), saved cycles 0, 10, 20, 28: S10, S11
+% Mode check rule 0.8 and 0.3: S11
+% Production run: 60 threads, 28 cycles, 7 h 34 min, 15.5 min, 18.4 min, 74,242 and 33,100 mm^3, -55.4 %,
+%   444.3 Hz cycle 0, cycle 4, 325.1 Hz at 15, 2.12 at 17 to 19, final 416.7 / 417.2 / 418.4 / 423.7 / 461.7 / 496.5 Hz,
+%   1.58 / 1.40 / 1.60 / 2.02, 0.3 Hz, 1 %: S10, S12
+% Mode check cycle 28, mean density 0.5, 259,292 elements (33.9 % computed), 63,912 / 61,947 mm^3, 83.1 / 80.5 g,
+%   1,965 mm^3 and 2.6 g computed: S10
+% Printed-geometry first frequency 431.0 Hz: S13
+% Snapshot cycles 0, 10, 20, 28; volume 49,844 at cycle 10 (33 % below 74,242, computed): S12; 30 surfaces, 12 reference points: S14
+% =========================================================================================================
