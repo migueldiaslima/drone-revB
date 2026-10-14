@@ -18,9 +18,9 @@ for k, (lab, fn) in enumerate(items):
     vol = np.einsum('ij,ij->i', T[:, 0], np.cross(T[:, 1], T[:, 2])).sum() / 6.0
     R.draw(axs[0][k], T, 'iso')
     R.draw(axs[1][k], T, 'below')
-    axs[0][k].set_title('%s (enclosed volume %.0f mm$^3$)' % (lab, vol), fontsize=11)
+    axs[0][k].set_title(lab, fontsize=12)
     print('%s: %d triangles, %.1f mm^3' % (lab, len(T), vol))
-fig.suptitle('Production optimisation: iso-density surface %s at saved cycles (top: view from above, bottom: from below)' % iso, fontsize=12)
+fig.suptitle('Iso-density surface %s at saved cycles of the production run; top: from above, bottom: from below' % iso, fontsize=12)
 plt.tight_layout()
 plt.savefig(out, dpi=200)
 print('written', out)

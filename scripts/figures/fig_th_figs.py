@@ -37,21 +37,27 @@ fig, axs = plt.subplots(1, 2, figsize=(18, 8))
 R.draw(axs[0], T0, 'iso', edge=(0.15, 0.15, 0.15), lw=0.05)
 axs[0].set_title('Solid body of the thresholded model, surface of the 1.0 mm tetrahedral mesh', fontsize=10)
 c = T0.mean(axis=1)
-m = (c[:, 0] > 15) & (c[:, 1] > 15)
+fpn = np.asarray(Z['part_names'])[Z['face_part'].astype(int) - 1] if Z['face_part'].min() >= 1 else np.asarray(Z['part_names'])[Z['face_part'].astype(int)]
+m = (c[:, 0] > 15) & (c[:, 1] > 15) & (c[:, 2] < 11) & np.isin(fpn, ['TUB', 'ARM_pp'])
 if m.sum() < 100:
     m = (c[:, 0] > np.percentile(c[:, 0], 70))
 R.draw(axs[1], T0[m], 'iso', edge=(0.1, 0.1, 0.1), lw=0.15)
-axs[1].set_title('Zoom: +x+y corner (fin, arm root and arm)', fontsize=10)
+axs[1].set_title('Front left corner of the tub with its arm (lid removed)', fontsize=10)
 cnt = Z['counts']
 names = list(Z['part_names'])
-txt = '; '.join('%s %d elements (%d solid)' % (names[int(r[0]) - 1], r[1], r[2]) for r in cnt)
-fig.suptitle(txt, fontsize=9)
+d = dict((names[int(r[0]) - 1], (int(r[1]), int(r[2]))) for r in cnt)
+na = sum(v[0] for v in d.values()); ns = sum(v[1] for v in d.values())
+txt = ('Elements (all / solid): tub {:,} / {:,}; lid {:,} / {:,}; each arm {:,} / {:,}; frame {:,} / {:,}'
+       .format(d['TUB'][0], d['TUB'][1], d['LID'][0], d['LID'][1], d['ARM_pp'][0], d['ARM_pp'][1], na, ns))
+print(txt)
+fig.suptitle(txt, fontsize=10)
 plt.tight_layout()
 plt.savefig(os.path.join(out, 'su_th_mesh.png'), dpi=200)
 plt.close()
 
 # set-up: body in light grey, tie and coupling surfaces by type, reference points
-GROUPS = [('motor seat couplings', ('MOT_SEAT',), '#d62728'), ('joint ties (fin and prong bosses, joint faces)', ('JNT', 'PRONG_BOSS', 'FIN_BOSS'), '#1f77b4'),
+GROUPS = [('motor seat couplings', ('MOT_SEAT',), '#d62728'), ('arm joint couplings (supports)', ('S_JNT',), '#17becf'),
+          ('fin to prong boss ties', ('PRONG_BOSS', 'FIN_BOSS'), '#1f77b4'),
           ('lid seat tie', ('RIM_UNDER_LID', 'LID_BOTTOM'), '#2ca02c'), ('battery seat coupling', ('BATT_SEAT',), '#ff7f0e'),
           ('FC, GPS and antenna seat couplings', ('FC_SEAT', 'GPS_SEAT', 'ANT_PAD'), '#9467bd')]
 fig, axs = plt.subplots(1, 2, figsize=(18, 8))
@@ -69,8 +75,11 @@ for ax, view in zip(axs, ('iso', 'below')):
         ax.set_xlim(min(xl[0], P[:, 0].min() - 3), max(xl[1], P[:, 0].max() + 3))
         ax.set_ylim(min(yl[0], P[:, 1].min() - 3), max(yl[1], P[:, 1].max() + 3))
     ax.set_title('view: %s' % view, fontsize=10)
-axs[0].legend(markerscale=12, fontsize=9, loc='lower left')
-fig.suptitle('Tie and coupling surfaces (nodes, drawn without hidden-point removal) and reference points of the thresholded model', fontsize=11)
+from matplotlib.lines import Line2D
+hs = [Line2D([], [], ls='', marker='o', ms=7, color=col, label=lab) for lab, k, col in GROUPS]
+hs.append(Line2D([], [], ls='', marker='x', ms=7, mew=1.5, color='k', label='reference points'))
+axs[0].legend(handles=hs, fontsize=9, loc='lower left')
+fig.suptitle('Tie and coupling surfaces (nodes, drawn through the solid) and reference points; left from above, right from below', fontsize=11)
 plt.tight_layout()
 plt.savefig(os.path.join(out, 'su_th_setup.png'), dpi=200)
 plt.close()
