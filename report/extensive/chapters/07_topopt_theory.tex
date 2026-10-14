@@ -1,4 +1,243 @@
 % 07_topopt_theory.tex
 \chapter{Topology optimisation theory}\label{sec:topopt_theory}
 
-% to be written (see docs/report_brief.md section 6)
+Topology optimisation answers one question: given a design region, the loads and the requirements, where should material go? This chapter builds the method from its definitions, in the order the project needs it: stiffness first, then several load cases, then frequency, then the problems that frequency brings, and finally the step from an optimised density field to a part that can be printed. Each section ends with what it means for this frame.
+
+\section{Density as the design variable}\label{sec:to-density}
+
+The design region is meshed into finite elements, and each element $e$ receives a number $x_e$ between 0 and 1, its relative density: 1 is solid, a value near 0 is empty, and anything in between is ``grey''. The optimiser changes these numbers. A yes-or-no choice per element cannot be improved step by step with gradients, so the variable is made continuous; the density is never exactly zero (Tosca uses 0.001), so the stiffness matrix stays solvable.
+
+Taken together, the densities form a field, a value at every point, like height on a terrain map: high ground near 1 is where material wants to be, low ground near 0 is where it does not, and slopes are grey transition zones.
+
+\section{Material interpolation}\label{sec:to-simp}
+
+Grey is not a real material, so the optimiser must be made to dislike it. The classical way is the SIMP interpolation (solid isotropic material with penalisation)~\citep{bendsoe_sigmund}:
+\begin{equation}
+E(x_e) = x_e^{\,p}\, E_0, \qquad m(x_e) = x_e\, m_0, \qquad p = 3.
+\end{equation}
+At $x_e = 0.5$ an element costs half the mass but gives $0.5^3 = 1/8$ of the stiffness. Intermediate densities are poor value, so the optimiser pushes elements towards 0 or 1.
+
+Tosca does not publish its interpolation, so it was measured. Every cycle, Tosca writes a stiffness factor and a mass factor for each element; \cref{tab:to-interp} reads them against the density of the production run.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Tosca's interpolation, read from its per-element scale factors, against textbook SIMP.}\label{tab:to-interp}
+\begin{tabular}{@{}rrrrr@{}}
+\toprule
+Density & Stiffness factor & $x^3$ (SIMP) & Mass factor & Stiffness / mass\\
+\midrule
+0.001 & \num{2.00e-4} & \num{1e-9} & \num{1.0e-5} & 20\\
+0.01 & \num{1.97e-3} & \num{1e-6} & 0.0100 & 0.20\\
+0.1 & 0.0181 & 0.0010 & 0.100 & 0.18\\
+0.3 & 0.0627 & 0.0270 & 0.300 & 0.21\\
+0.5 & 0.1625 & 0.1250 & 0.500 & 0.33\\
+0.8 & 0.5312 & 0.5120 & 0.800 & 0.66\\
+1.0 & 1 & 1 & 1 & 1\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Mass is linear in density, except at the minimum density, where it is reduced a hundred times. Stiffness is not $x^3$: at low density it is about $0.19x$, rising towards $x^3$ near solid, an equivalent exponent of about 1.7 at 0.1, 2.3 at 0.3 and 2.6 at 0.5. Grey is still penalised, since the stiffness-to-mass ratio stays below 1 at every intermediate density, but more softly than in textbook SIMP: at 0.5 an element keeps 16\,\% of its stiffness instead of 12.5\,\%. \Cref{sec:to-spurious} explains why the low end is shaped this way.
+
+\section{Stiffness: compliance and its sensitivity}\label{sec:to-compliance}
+
+\subsection{Compliance}
+
+A static finite-element model solves
+\begin{equation}
+\mat{K}\vect{u} = \vect{F},
+\end{equation}
+with $\mat{K}$ the stiffness matrix, $\vect{u}$ the nodal displacements and $\vect{F}$ the loads. The stiffness of a structure under a load is measured by its compliance, the work done by the load:
+\begin{equation}
+C = \vect{F}^{\mathsf{T}}\vect{u} = \vect{u}^{\mathsf{T}}\mat{K}\vect{u},
+\end{equation}
+equal to twice the strain energy stored. A stiffer structure deflects less under the same load and has a lower compliance.
+
+\subsection{Sensitivity}
+
+The optimiser needs to know how $C$ changes when one element's density changes. The loads do not depend on the design, so
+\begin{equation}
+\frac{\dd C}{\dd x_e} = \vect{F}^{\mathsf{T}}\frac{\dd\vect{u}}{\dd x_e}.
+\end{equation}
+Equilibrium holds for every design, so it holds as $x_e$ changes, and both sides of $\mat{K}\vect{u} = \vect{F}$ can be differentiated. The left side is a product of two quantities that both change with $x_e$, and the right side is constant:
+\begin{equation}
+\frac{\dd\mat{K}}{\dd x_e}\vect{u} + \mat{K}\frac{\dd\vect{u}}{\dd x_e} = \vect{0}.
+\end{equation}
+In words: if element $e$ stiffens, the displacements change by exactly the amount that keeps the internal forces equal to the same external loads. Isolating the displacement change:
+\begin{equation}
+\frac{\dd\vect{u}}{\dd x_e} = -\mat{K}^{-1}\frac{\dd\mat{K}}{\dd x_e}\vect{u}.
+\end{equation}
+Substituting into the compliance derivative:
+\begin{equation}
+\frac{\dd C}{\dd x_e} = -\vect{F}^{\mathsf{T}}\mat{K}^{-1}\frac{\dd\mat{K}}{\dd x_e}\vect{u}.
+\end{equation}
+$\mat{K}$ is symmetric (the force at node $i$ from a unit displacement at node $j$ equals the force at $j$ from a unit displacement at $i$, by Maxwell and Betti), so transposing $\mat{K}\vect{u} = \vect{F}$ gives $\vect{F}^{\mathsf{T}} = \vect{u}^{\mathsf{T}}\mat{K}$, and $\vect{F}^{\mathsf{T}}\mat{K}^{-1} = \vect{u}^{\mathsf{T}}$:
+\begin{equation}
+\frac{\dd C}{\dd x_e} = -\vect{u}^{\mathsf{T}}\frac{\dd\mat{K}}{\dd x_e}\vect{u}.
+\end{equation}
+The global matrix is assembled from element matrices, each depending only on its own density, so the derivative picks up only element $e$ and only its nodal displacements $\vect{u}_e$. With SIMP, $\mat{k}_e = x_e^p\mat{k}_0$:
+\begin{equation}
+\frac{\dd C}{\dd x_e} = -p\, x_e^{\,p-1}\, \vect{u}_e^{\mathsf{T}}\mat{k}_0\vect{u}_e.
+\end{equation}
+The sensitivity is negative, because adding material always stiffens, and proportional to the element's strain energy. Elements with high strain energy are valuable; removing material where strain energy is low costs little stiffness.
+
+\begin{theorybox}{Worked example: two springs in series}
+A wall, spring 1, node 1, spring 2, node 2, with $F = \SI{10}{N}$ at node 2. Solid stiffness $k_0 = \SI{100}{N/mm}$, $p = 3$, densities $x_1 = 1$ and $x_2 = 0.5$, so $k_1 = \SI{100}{N/mm}$ and $k_2 = 0.5^3 \times 100 = \SI{12.5}{N/mm}$. The displacements are $u_1 = F/k_1 = \SI{0.1}{mm}$ and $u_2 = u_1 + F/k_2 = \SI{0.9}{mm}$, so $C = 10 \times 0.9 = \SI{9.0}{N.mm}$. For spring 2 the localised product is the square of its own elongation, $(u_2 - u_1)^2$. The sensitivities are
+\begin{equation*}
+\frac{\dd C}{\dd x_1} = -3 \times 1^2 \times 100 \times 0.1^2 = \SI{-3.0}{N.mm}, \qquad \frac{\dd C}{\dd x_2} = -3 \times 0.5^2 \times 100 \times 0.8^2 = \SI{-48}{N.mm}.
+\end{equation*}
+Raising $x_2$ from 0.5 to 0.501 lowers $C$ by \SI{0.0478}{N.mm}, a slope of $-47.8$, matching the formula. The weak spring is sixteen times more valuable per unit of material: the optimiser adds material where the structure strains most.
+\end{theorybox}
+
+\subsection{Update loop and filtering}
+
+Each cycle solves the model, computes the sensitivities, filters them, and updates the densities: up where the sensitivity per unit volume is high, down where it is low, within the constraints. The loop repeats until the layout stops changing.
+
+Without filtering, two artefacts appear. Checkerboards, alternating solid and empty elements, are rated as artificially stiff by the element formulation. And the result depends on the mesh: a finer mesh produces finer members, so the answer never converges. A filter replaces each element's value with a distance-weighted average over its neighbours within a radius $r_\text{min}$, which removes checkerboards and imposes a minimum member size of about that radius.
+
+Tosca's member-size restriction works in the same family. The density used for stiffness and mass is an average of the design values within a radius around each element, so a thin solid wall is smeared into a grey band, and grey is poor value under the penalty. A wall about twice the radius thick keeps a density near 1 in its middle. The radius must span several elements, so the minimum member size must be more than twice the element size. A filter blurs rather than forbids: a strongly wanted thin feature survives as a grey band, which the cut at a density level then thins or removes. The member size is therefore approximate in the density field and must be checked on the printed geometry.
+
+For this frame the member size is \SI{2.5}{mm}, six extrusion lines of \SI{0.42}{mm} with a \SI{0.4}{mm} nozzle, which with a \SI{1.0}{mm} mesh puts 2.5 elements across the thinnest member.
+
+\section{Several load cases}\label{sec:to-loadcases}
+
+Each static load case $i$ has its own compliance $C_i = \vect{F}_i^{\mathsf{T}}\vect{u}_i$, and the cases must be combined into one problem. A weighted sum, $C_w = \sum_i w_i C_i$, is simple, and its sensitivity is the same weighted sum. Its weakness is scale: compliance grows with the square of the load, so with equal weights the landing case, with a load 2.8 times that of the punch-out, would count about eight times as much. Normalising each case by its value in the solid design and then weighting fixes the scale but leaves the weights arbitrary. A min-max formulation, minimising the largest $C_i$, needs no weights, but the maximum has corners where it cannot be differentiated and is solved in a bound form.
+
+A third way removes the weighting problem entirely: give each case its own limit,
+\begin{equation}
+C_i \leq C_{i,\text{cap}},
+\end{equation}
+and let another quantity be the objective. \Cref{sec:to-formulation} uses this.
+
+\section{Frequency}\label{sec:to-frequency}
+
+\subsection{One mass on one spring}
+
+Newton's law for a mass $m$ on a spring of stiffness $k$ is
+\begin{equation}
+m\ddot{x} + kx = 0.
+\end{equation}
+Trying $x(t) = A\sin\omega t$, whose second derivative is $-\omega^2 A\sin\omega t$, and dividing by $A\sin\omega t$:
+\begin{equation}
+k = m\omega^2 \quad\Rightarrow\quad \omega^2 = \frac{k}{m}, \qquad f = \frac{\omega}{2\pi}.
+\end{equation}
+At the natural frequency the spring force equals exactly the force needed to accelerate the mass back and forth. Stiffness raises the frequency and mass lowers it. For the solid arm of \cref{sec:arch-arm}, with \SI{736}{Hz}, the moving mass is the motor and propeller (\SI{13.75}{g}) plus about a quarter of the arm's \SI{5.7}{g}, $m = \SI{15.1}{g}$, and the bending stiffness that gives \SI{736}{Hz} is $k = \SI{323000}{N/m}$.
+
+\subsection{The whole frame}
+
+For the whole frame the same balance is written with matrices:
+\begin{equation}
+\mat{K}\vect{\phi} = \lambda\,\mat{M}\vect{\phi}, \qquad \lambda = \omega^2,
+\end{equation}
+with $\mat{M}$ the mass matrix and $\vect{\phi}$ the mode shape. At a natural frequency the elastic forces of the deformed shape equal the inertial forces of that shape oscillating. Only certain pairs of shape and frequency satisfy this: the modes. For a true X the lowest are the umbrella (four tips up together while the centre moves down), the saddle (one diagonal pair up, the other down), the rocking pair, and the arms swinging in plane.
+
+Multiplying the eigenproblem on the left by $\vect{\phi}^{\mathsf{T}}$ gives the Rayleigh quotient:
+\begin{equation}
+\lambda = \frac{\vect{\phi}^{\mathsf{T}}\mat{K}\vect{\phi}}{\vect{\phi}^{\mathsf{T}}\mat{M}\vect{\phi}}.
+\end{equation}
+This is $k/m$ weighted by the mode shape. The numerator counts stiffness only where the mode bends material, at the arm roots and the joint in the umbrella mode; the denominator counts mass only where the mode moves it, at the motors and the outer arms. A high frequency comes from stiffness where the arms bend and lightness where they move.
+
+A free-free frame translates and rotates without bending. For these six shapes the numerator is zero, so $\lambda = 0$: they are modes 1 to 6, at zero frequency, and the first elastic mode is mode 7. A mode fixes a pattern, not a size, so the shapes are normalised with $\vect{\phi}^{\mathsf{T}}\mat{M}\vect{\phi} = 1$.
+
+\subsection{How material changes the frequency}
+
+For one mass on a spring, a small change of material changes $k$ by $\dd k$ and $m$ by $\dd m$. With the quotient rule and $k/m = \lambda$:
+\begin{equation}
+\dd\lambda = \frac{m\,\dd k - k\,\dd m}{m^2} = \frac{\dd k - \lambda\,\dd m}{m}.
+\end{equation}
+Added stiffness raises the frequency; added mass lowers it, and its effect is multiplied by $\lambda$ itself, so mass costs more the higher the frequency already is.
+
+\begin{theorybox}{Worked example: the same material in two places}
+Add \SI{0.1}{g} to the solid arm ($m = \SI{15.1}{g}$, $k = \SI{323000}{N/m}$, \SI{736}{Hz}). At the root, where the arm bends but hardly moves, assume the stiffness rises by 5\,\% and no moving mass is added: $\dd\lambda = 16{,}100/0.0151 = \SI{1.07e6}{(rad/s)^2}$, and the frequency rises from 736 to \SI{754}{Hz}. At the tip, beside the motor, where the arm moves but hardly bends: $\dd\lambda = -\num{2.14e7} \times 0.0001/0.0151 = \SI{-1.4e5}{(rad/s)^2}$, and the frequency falls to \SI{733.6}{Hz}. Same material, opposite effect; only its place in the mode shape differs.
+\end{theorybox}
+
+For the full model, write the eigenproblem as $(\mat{K} - \lambda\mat{M})\vect{\phi} = \vect{0}$ and differentiate with the product rule, since $\mat{K}$, $\mat{M}$, $\lambda$ and $\vect{\phi}$ all change:
+\begin{equation}
+\left(\frac{\dd\mat{K}}{\dd x_e} - \frac{\dd\lambda}{\dd x_e}\mat{M} - \lambda\frac{\dd\mat{M}}{\dd x_e}\right)\vect{\phi} + (\mat{K} - \lambda\mat{M})\frac{\dd\vect{\phi}}{\dd x_e} = \vect{0}.
+\end{equation}
+Multiplying on the left by $\vect{\phi}^{\mathsf{T}}$, the last term vanishes, because $\mat{K}$ and $\mat{M}$ are symmetric and $\vect{\phi}^{\mathsf{T}}(\mat{K} - \lambda\mat{M}) = \left((\mat{K} - \lambda\mat{M})\vect{\phi}\right)^{\mathsf{T}} = \vect{0}$. The expensive change of the mode shape drops out. With $\vect{\phi}^{\mathsf{T}}\mat{M}\vect{\phi} = 1$:
+\begin{equation}
+\frac{\dd\lambda}{\dd x_e} = \vect{\phi}^{\mathsf{T}}\left(\frac{\dd\mat{K}}{\dd x_e} - \lambda\frac{\dd\mat{M}}{\dd x_e}\right)\vect{\phi}.
+\end{equation}
+Localised to element $e$, with SIMP stiffness and linear mass:
+\begin{equation}
+\frac{\dd\lambda}{\dd x_e} = \vect{\phi}_e^{\mathsf{T}}\left(p\, x_e^{\,p-1}\mat{k}_0 - \lambda\,\mat{m}_0\right)\vect{\phi}_e.
+\end{equation}
+This is $\dd\lambda = (\dd k - \lambda\,\dd m)/m$ element by element. The compliance sensitivity is always negative, so only a volume limit stops the optimiser from filling the domain. The frequency sensitivity has either sign: the optimiser removes material that moves but does not bend, at the outer arms and around the motor pads, even without any volume limit, and produces arms that are deep at the root and taper towards the motor. The point masses of the components must be in the model, or the frequency is wrong, and the frequency constraint shapes the design, not only checks it.
+
+\section{Spurious local modes}\label{sec:to-spurious}
+
+SIMP never deletes elements: empty elements stay in the mesh with a small density and keep a little stiffness and a little mass. A cluster of them behaves as a small mass on a spring of its own, with $k_e = x^3 k_0$ and $m_e = x\,m_0$:
+\begin{equation}
+\omega_e^2 = \frac{x^3 k_0}{x\, m_0} = x^2\frac{k_0}{m_0} \quad\Rightarrow\quad f_e = x\, f_{e,\text{solid}}.
+\end{equation}
+A near-empty region vibrates at $x$ times the frequency it would have if solid. In PET-CF, with a wave speed $c = \sqrt{E/\rho} = \sqrt{\num{5058e6}/1300} = \SI{1970}{m/s}$, a solid feature \SI{20}{mm} long has a local frequency of about $c/(2L) = \SI{49000}{Hz}$. At $x = 0.01$ the same region of near-empty elements vibrates at \SI{490}{Hz}, and at $x = 0.001$ at \SI{49}{Hz}. The solver sorts modes by frequency, so such modes become modes 7, 8, 9: they push the real umbrella mode out of the constrained range, and the optimiser tries to raise them by filling the voids with grey material.
+
+The standard fix makes the mass fall faster than the stiffness below a threshold density, so that the stiffness-to-mass ratio of near-empty regions grows instead of vanishing. Tosca's measured interpolation does exactly that (\cref{tab:to-interp}): at low density the stiffness factor is about $0.19x$ while the mass factor is $x$, so the ratio stays near 0.19 of solid, and at the minimum density the mass is cut a hundred times and the ratio reaches 20. ``Air'' cannot form low-frequency blobs. This protection does not tempt the optimiser towards grey: the objective counts volume linearly in density whatever the mass factor, near-empty elements give almost no stiffness, and in the intermediate range the ratio stays below 1.
+
+\section{Mode switching and repeated modes}\label{sec:to-switching}
+
+The solver numbers modes by frequency, not by shape: ``mode 7'' is whichever elastic shape is currently lowest. Suppose the umbrella mode, set by arm depth, sits at \SI{380}{Hz} and the in-plane swing, set by arm width, at \SI{450}{Hz}. A constraint on mode 7 makes the optimiser deepen the arm roots and, to save volume, narrow them. In the next cycle the umbrella is at \SI{430}{Hz} and the in-plane swing at \SI{410}{Hz}: the swing is now mode 7, the optimiser widens the arms, and the umbrella falls back. The history zigzags and may never settle.
+
+Constraining a band of modes, 7 to 12, each at the target, removes the problem: whichever shape is lowest is always inside the band, so a change of order changes nothing. The requirement asks for the first elastic mode of any shape, so the band is exactly the requirement. The alternative, tracking one shape between cycles by the modal assurance criterion,
+\begin{equation}
+\text{MAC}(a,b) = \frac{\left(\vect{\phi}_a^{\mathsf{T}}\mat{M}\vect{\phi}_b\right)^2}{\left(\vect{\phi}_a^{\mathsf{T}}\mat{M}\vect{\phi}_a\right)\left(\vect{\phi}_b^{\mathsf{T}}\mat{M}\vect{\phi}_b\right)},
+\end{equation}
+which is 1 for the same shape and 0 for unrelated ones, is needed only when one shape has its own target.
+
+The true X also has repeated modes. Front pair up and rear pair down is the same shape as left pair up and right pair down, rotated by \ang{90}, so both have the same frequency; the battery plate breaks the symmetry slightly and gives a near-equal pair. With two equal frequencies any mix of the two shapes is also a mode, so the shape in the sensitivity formula is not unique and the sensitivities jump as the two frequencies cross. Constraining both members of the pair, the band again, avoids chasing one of them. The band must also be wide enough: mode 12 should sit clearly above the target, so no relevant mode lies outside it.
+
+\section{The formulation}\label{sec:to-formulation}
+
+Two formulations fit this frame.
+\begin{enumerate}
+\item[(A)] Stiffness at fixed mass: minimise compliance (weighted or min-max over the four cases) subject to a volume limit and to modes 7 to 12 at least \SI{417}{Hz}.
+\item[(B)] Mass at fixed performance: minimise volume subject to modes 7 to 12 at least \SI{417}{Hz} and one compliance cap per load case.
+\end{enumerate}
+Formulation B states what the project wants, the lightest frame that meets the frequency goal, and it gives each load case its own limit, so the weighting problem disappears. A frequency sweep is direct: the same run with the bound at 350 and \SI{290}{Hz}. Formulation A needs a volume fraction instead, which a sweep would have to find. B was chosen:
+\begin{align}
+\min_{\vect{x}} \quad & V(\vect{x}) \nonumber\\
+\text{subject to} \quad & f_i(\vect{x}) \geq \SI{417}{Hz}, \quad i = 7,\dots,12, \label{eq:to-formulation}\\
+& C_j(\vect{x}) \leq 2\,C_{j,0}, \quad j = \text{LC1, LC2a, LC2b, LC3a}. \nonumber
+\end{align}
+The difficulty of B is the caps. No stiffness requirement exists, so each cap stands in for strength until the strength check: twice the compliance of the solid design space, $C_{j,0}$, on the same mesh, with the same ties, loads and supports, because a finer mesh makes a model more flexible and caps from a coarser mesh would be too tight. If the strength check found stresses above the allowables, the cap would be tightened, for example to 1.5, and the run repeated. In Tosca, frequency constraints need the sensitivity-based topology algorithm; the faster condition-based algorithm handles only stiffness under a volume constraint.
+
+\section{From density field to part}\label{sec:to-part}
+
+\subsection{The iso level}
+
+The optimiser returns a density field, not a part. The part is the region where the density is at least a chosen level $c$, bounded by the iso surface at $c$, the surface that joins all points of equal density, as a contour line joins points of equal height. Flooding the terrain to a water level $c$, everything above the water is printed. A low level keeps more land dry, including the lower slopes; a high level floods them.
+
+\begin{table}[htbp]
+\centering\small
+\caption{One row of seven elements across a wall, cut at two levels.}\label{tab:to-iso}
+\begin{tabular}{@{}lccccccc@{}}
+\toprule
+Element & 1 & 2 & 3 & 4 & 5 & 6 & 7\\
+\midrule
+Density & 0.001 & 0.2 & 0.4 & 0.9 & 1.0 & 0.6 & 0.1\\
+Kept at 0.3 & no & no & yes & yes & yes & yes & no\\
+Kept at 0.5 & no & no & no & yes & yes & yes & no\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+In \cref{tab:to-iso} the wall is four elements thick at 0.3 and three at 0.5; element 3 is the grey one the cut decides. The optimiser counts the volume as the density-weighted sum, $\sum_e x_e v_e$, which here is \SI{3.2}{mm^3} for elements of \SI{1}{mm^3}. After the cut every kept element is solid: \SI{4}{mm^3} at 0.3 and \SI{3}{mm^3} at 0.5. The level at which the printed volume equals the weighted volume is the volume-preserving cut, the most faithful translation of the optimised volume into a part.
+
+\subsection{Separation}
+
+A well-separated result has two tall peaks in its density histogram, near 0 and near 1, with grey only in thin bands where they meet; the filter always blurs an edge over one or two elements. A poorly separated result has a broad hump in the middle, whole regions that never decided, and then the cut level decides the topology: members appear or vanish between 0.3 and 0.5, and no cut is faithful to the design. Separation is checked on every result before a cut is chosen.
+
+\subsection{What the cut does to stiffness}
+
+Above the cut, grey becomes solid: an element at density 0.4 gains a factor 2.5 in mass but, under textbook SIMP, a factor 15.6 in stiffness. Below the cut, grey disappears, and with it mostly dead weight: 40\,\% of the mass of a solid element for a few per cent of its stiffness. Both tend to raise $k/m$ against the optimiser's grey accounting, unless the removed grey was a load path. Most of the moving mass of this aircraft is the components, about 200 of 280 grams, so frequencies of the cut part are expected at or above the optimiser's, and a lower cut, heavier, is expected to be stiffer still.
+
+Two comparisons must be kept apart. Validation compares the real part with the requirements, and it is exact for whichever geometry is analysed: a cut at 0.3 is validated as accurately as a cut at 0.5. Correspondence compares the real part with the optimised design, and the volume-preserving cut is closest to it. The optimiser's \SI{417}{Hz} is a prediction for a grey model that cannot be built. The cut is therefore chosen by validation: the lightest cut that meets the frequency target, the compliance caps and a printable wall thickness, checked on the thresholded model in which every element above the level is solid and every other element has near-zero stiffness (\cref{sec:verification}).
+
+\subsection{A smooth surface}
+
+The optimiser stores one density per element, a staircase field. The printed surface is built as Tosca's own smoothing does: each node receives the mean density of the elements around it; inside each tetrahedron the density then varies linearly between its four corners, as a finite-element shape function does; on each edge with one end above $c$ and one below, the surface crosses at $t = (c - x_a)/(x_b - x_a)$; the crossings of a cut tetrahedron form a triangle or a quadrilateral, and neighbours share them, so the triangles join into one closed skin. Where material reaches the boundary of the design region, the boundary faces are added and trimmed at the crossing line. A few iterations of Taubin smoothing remove facet noise without shrinking the part. The fixed regions are then restored from their exact solids, so every hole, seat and boss is exact.
+
+\section{What this means for the frame}\label{sec:to-impact}
+
+The formulation \eqref{eq:to-formulation} asks for the lightest frame whose six lowest elastic modes all reach \SI{417}{Hz} and whose compliance in each load case stays within twice that of the solid design space. The components enter as point masses, because the frequency depends on them. Modes 1 to 6 are excluded, the band 7 to 12 absorbs mode switching and the symmetric pairs, Tosca's measured interpolation protects empty regions against spurious modes, and the member size of \SI{2.5}{mm} keeps members printable. The result is accepted only after it has been cut at a density level and checked again as a solid body.
