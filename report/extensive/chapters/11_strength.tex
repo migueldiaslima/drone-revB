@@ -1,4 +1,113 @@
 % 11_strength.tex
 \chapter{Strength and capacity}\label{sec:strength}
 
-% to be written (see docs/report_brief.md section 6)
+The optimisation constrained frequencies and stiffness only; strength was left to a check on the final geometry. This chapter gives that check: the allowables and the criteria (\cref{sec:strength-criteria}), the way stresses are read from a thresholded mesh (\cref{sec:strength-evaluation}), the results (\cref{sec:strength-results}), and the capacity ordering between the arm and its joint (\cref{sec:strength-capacity}).
+
+\section{Allowables and criteria}\label{sec:strength-criteria}
+
+The design values of the PET-CF are the independent test strengths multiplied by 0.85, which covers scatter and print settings (\cref{sec:material}). Dividing by the factor of safety of 1.5 on the limit loads gives the allowable stresses:
+\begin{align}
+\text{in the layer plane:}\quad & \frac{S_{xy}}{1.5} = \frac{0.85 \times \SI{64}{MPa}}{1.5} = \frac{\SI{54.4}{MPa}}{1.5} = \SI{36.3}{MPa},\\
+\text{across the layers:}\quad & \frac{S_{z}}{1.5} = \frac{0.85 \times \SI{28.1}{MPa}}{1.5} = \frac{\SI{23.9}{MPa}}{1.5} = \SI{15.9}{MPa}.
+\end{align}
+No compressive or interlaminar shear strengths exist for this material. Compression is taken equal to tension, which is conservative for printed parts, and the shear between layers is checked against the layer adhesion strength $S_z$.
+
+Every part is printed with its layers in the $xy$ plane; the tub stands on its landing face, where the flight-controller screws enter. The global $z$ axis is therefore the build direction in every part, and three checks apply to every element (\cref{tab:strength-criteria}).
+
+\begin{table}[htbp]
+\centering\small
+\caption{Strength checks. Each element must satisfy all three in every load case.}\label{tab:strength-criteria}
+\begin{tabularx}{\linewidth}{@{}lXr@{}}
+\toprule
+Stress & Reason & Limit\\
+\midrule
+von Mises & combined stress state in the layer plane & \SI{36.3}{MPa}\\
+$\sigma_{zz}$, tension only & tension across the layers opens them; compression across the layers does not & \SI{15.9}{MPa}\\
+$\sqrt{\tau_{xz}^2 + \tau_{yz}^2}$ & shear in the planes between the layers & \SI{15.9}{MPa}\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The maximum principal stress is not checked separately in the layer plane. For plane stress with $\sigma_2 = \sigma_1/2$, where the two criteria differ most,
+\begin{equation}
+\sigma_\text{vM} = \sqrt{\sigma_1^2 - \sigma_1\sigma_2 + \sigma_2^2} = \sqrt{1 - \tfrac{1}{2} + \tfrac{1}{4}}\;\sigma_1 = 0.866\,\sigma_1,
+\end{equation}
+so the maximum principal stress exceeds von Mises by at most \SI{15}{\percent}, which the margins found below absorb many times over.
+
+The loads are the four design load cases of the optimisation (\cref{tab:optimisation_model-loads}), with the same inertia relief and supports. The model is the final thresholded check of the print geometry (\cref{sec:verification-results}): \SI{1.0}{mm} quadratic tetrahedra, \num{511770} of the \num{765252} elements solid.
+
+\section{Reading stresses from a thresholded mesh}\label{sec:strength-evaluation}
+
+The thresholded body is built from whole elements, so its surface is a staircase of element faces. At a re-entrant step a single element can show a stress peak that the smooth printed surface does not have. Three rules keep such peaks from deciding the result while still catching a real hot spot.
+
+\paragraph{Element values.} Each element is represented by its centroid stress, the mean of the stress components at its four integration points. The three checked quantities are computed from these mean components.
+
+\paragraph{Volume-weighted percentile.} For each part, load case and check, the elements are sorted by their stress $s_e$, and the 99.9th percentile is the stress below which \SI{99.9}{\percent} of the solid volume lies:
+\begin{equation}
+P_{99.9} = \min\Bigl\{\, s \;:\; \sum_{e:\,s_e \le s} V_e \;\ge\; 0.999 \sum_e V_e \Bigr\}.
+\end{equation}
+Weighting by volume keeps the many small elements at the stepped surface from setting the level. In the tub, \SI{0.1}{\percent} of the checked solid volume is about \SI{33}{mm^3}, a block \SI{3.2}{mm} on a side, so a hot spot that size can hide below the percentile.
+
+\paragraph{Clusters.} Every element above a limit is therefore listed, and elements that share an edge are grouped into clusters. A cluster passes only if its volume is below \SI{1}{mm^3}, about eight elements of \SI{1.0}{mm}, and it lies on the surface (at least one of its elements has a face on the outside of the solid body). A larger cluster, or one inside the material, fails the part whatever the percentile.
+
+\paragraph{Exclusions.} Elements with a node on a coupling or tie surface are excluded from both rules and reported separately: distributing couplings and ties introduce load over a surface in a way that concentrates stress in the first layer of elements. Thirty such surfaces exist in the model (motor seats, joint faces, prong and fin bosses, the flight-controller, GPS, antenna and battery seats, and the lid seat); \num{78733} elements touch them, \num{71564} of them solid.
+
+The evaluation script was tested on a synthetic model with six parts, a small surface hot spot, a \SI{27}{mm^3} block of high stress inside the material and a stress peak on a tie surface. Every one of its 72 results (part, load case and check) matched an independent calculation, the surface hot spot passed, the block failed and the tie peak was excluded.
+
+\section{Results}\label{sec:strength-results}
+
+Every part passes every check in every load case. No element exceeds any limit, so no cluster exists. \Cref{tab:strength-results} gives the worst case of each part and check.
+
+\begin{table}[htbp]
+\centering\footnotesize
+\caption{Strength results: volume-weighted 99.9th percentile as a fraction of the limit, in the load case where it is highest, and the largest element value over all four load cases. Limits \SI{36.3}{MPa} (von Mises) and \SI{15.9}{MPa} (the two across-layer checks).}\label{tab:strength-results}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lllll@{}}
+\toprule
+Part & von Mises & $\sigma_{zz}$ tension & $\sqrt{\tau_{xz}^2+\tau_{yz}^2}$ & Clusters\\
+\midrule
+Tub & 0.02 (LC3a), \SI{1.60}{MPa} & 0.01 (LC2a), \SI{0.57}{MPa} & 0.02 (LC3a), \SI{0.77}{MPa} & 0\\
+Lid & 0.04 (LC3a), \SI{2.43}{MPa} & 0.02 (LC3a), \SI{0.74}{MPa} & 0.02 (LC3a), \SI{0.57}{MPa} & 0\\
+Arm, front left & 0.02 (LC2a), \SI{1.47}{MPa} & 0.01 (LC3a), \SI{0.21}{MPa} & 0.02 (LC2a), \SI{0.47}{MPa} & 0\\
+Arm, front right & 0.02 (LC1), \SI{1.36}{MPa} & 0.01 (LC3a), \SI{0.20}{MPa} & 0.01 (LC1), \SI{0.43}{MPa} & 0\\
+Arm, rear left & 0.02 (LC1), \SI{1.39}{MPa} & 0.01 (LC3a), \SI{0.18}{MPa} & 0.01 (LC1), \SI{0.44}{MPa} & 0\\
+Arm, rear right & 0.02 (LC2a), \SI{1.48}{MPa} & 0.01 (LC3a), \SI{0.21}{MPa} & 0.02 (LC2a), \SI{0.47}{MPa} & 0\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The governing case is the lid in the landing case, with a von Mises 99.9th percentile of \SI{1.42}{MPa}, \SI{4}{\percent} of the allowable (a margin of about 25), and a largest element value of \SI{2.43}{MPa}, \SI{7}{\percent} of the allowable. The excluded elements at couplings and ties stay below \SI{2.24}{MPa} (lid, landing) and \SI{2.11}{MPa} (tub, landing), so including them would not change the verdict.
+
+The arms reach their highest stresses in the full-thrust and diagonal-pair cases (\SIrange{1.36}{1.48}{MPa}); in the landing case their largest element value is \SIrange{0.57}{0.64}{MPa}, because they then carry only the deceleration of the motors. In every case the most stressed arm elements lie at about \SIrange{61}{62}{mm} from the frame centre on the arm axis, just inside the motor pad, and not at the joint. This is the slimmest section of the arm, the same section that governs its capacity in \cref{sec:strength-capacity}. The tub and the lid reach their highest stresses in the landing case, in which every mass is decelerated at 23 times its weight: the lid plate at its rear edge under the battery, the tub floor at the flight-controller bosses and the tub walls at the fin roots.
+
+\Cref{fig:strength-vm} shows the von Mises field of the landing case on two scales. On the scale of the limit the whole frame is the lowest colour. On the scale of the volume-weighted 99.9th percentile of the whole frame, \SI{0.89}{MPa}, the load paths appear: the tub floor and walls, the lid plate and the arm sections near the motor pads.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{su_strength_vm_LC3a}
+\caption{von Mises stress at the element centroids in the landing case, solid elements only, in plan, side and front view; elements at couplings and ties in grey. Top: scale from 0 to the \SI{36.3}{MPa} limit. Bottom: scale from 0 to the volume-weighted 99.9th percentile of the whole frame, which shows the load paths.}\label{fig:strength-vm}
+\end{figure}
+
+The frame is sized by the frequency requirement: to keep its first elastic mode at or above \SI{417}{Hz}, the frame carries far more material than the design loads need. Strength becomes a question only in the cases outside these four: a hard landing, a strike on an arm or a crash. For those the design relies on the order in which the parts fail, which \cref{sec:strength-capacity} examines.
+
+\section{Capacity ordering}\label{sec:strength-capacity}
+
+% section 11.4 written by the main chat
+
+% =========================================================================================================
+% Numbers used in sections 11.1 to 11.3 and their source labels; resolved in docs/report_sources/11_strength.md.
+% 0.85, 64 MPa, 28.1 MPa, 54.4 MPa, 23.9 MPa, 1.5, 36.3 MPa, 15.9 MPa: W1
+% 0.866 and 15 % computed in the text
+% 511,770 / 765,252 elements, 1.0 mm: W2
+% Centroid rule, P99.9 volume-weighted, cluster rule 1 mm^3 (about 8 elements), exclusion: W1, W3
+% 0.1 % of the checked tub solid volume: 32,812.9 mm^3 x 0.001 = 32.8 mm^3, cube side 32.8^(1/3) = 3.2 mm: W8
+% 30 surfaces, 78,733 elements, 71,564 solid: W3
+% Offline test: 6 parts, 27 mm^3 block, 72 rows: W4
+% Results table, 1.42 MPa, 2.43 MPa, 4 %, 25, 7 % (2.43 / 36.3), 2.24 / 2.11 MPa: W3, W5
+% Arm maxima per case (1.36 to 1.48 MPa thrust cases, 0.57 to 0.64 MPa landing), peak element positions
+%   (40.0, 47.0, 0.1) etc., u = (x + y) / sqrt(2) = 61.5 mm; lid peaks x -17.4; tub peaks at FC bosses
+%   (+-9.5, +-10, -12) and fin roots (+-15, +-23, 9.8): W3 (top 10 element lists)
+% Frame volume-weighted P99.9 0.89 MPa (440,206 checked elements): W8
+% Landing load factor 23: W6
+% 417 Hz: W7
+% =========================================================================================================
