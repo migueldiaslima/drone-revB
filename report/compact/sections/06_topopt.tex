@@ -19,14 +19,26 @@ The frequency constraint applies to the first six elastic modes of the free-free
 
 \subsection{Model and runs}
 
-The model is built in Abaqus/CAE and solved with Abaqus and Tosca Structure~\citep{abaqus_tosca}. The tub, lid and four arms are meshed with quadratic tetrahedra (C3D10) at \SI{1.0}{mm}, \num{765252} elements in total, with the transversely isotropic material of \cref{sec:material}. Components enter as point masses on distributing couplings at their seats (\SI{199.58}{g} in total). The arms are tied to the fins, the lid to the tub seat. Every static step uses inertia relief with three-point supports, and the support reactions are checked to stay below \SI{1e-6}{N}.
+The model is built in Abaqus/CAE and solved with Abaqus and Tosca Structure~\citep{abaqus_tosca}. The tub, lid and four arms are meshed with quadratic tetrahedra (C3D10) at \SI{1.0}{mm}, \num{765252} elements in total, with the transversely isotropic material of \cref{sec:material}. Components enter as point masses on distributing couplings at their seats (\SI{199.58}{g} in total). The arms are tied to the fins, the lid to the tub seat. Every static step uses inertia relief with three-point supports, and the support reactions are checked to stay below \SI{1e-6}{N} (\cref{fig:modelsetup}).
 
-The runs were staged so that each one removed one risk before the expensive one: a reference job comparing solver versions within \SI{0.5}{\percent}, a three-cycle smoke test, a coarse run to see the first shape and the mode behaviour, and the production run at \SI{1.0}{mm} on a 64-core server. The production run took 28 cycles in 7\,h\,34\,min, about 15.5 minutes per cycle on 60 threads, and reduced the design volume from \num{74242} to \SI{33100}{mm^3}, \SI{55.4}{\percent} less (\cref{fig:history}). The frequency constraint became active at cycle 4; between cycles 15 and 22 the optimiser overshot, with the first elastic mode down to \SI{325.1}{Hz}, and recovered by cycle 23.
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.82\linewidth]{cp_model_setup}
+\caption{Optimisation model: design regions (grey), fixed regions (orange), motor thrust (red), component masses on distributing couplings (black) and the 3-2-1 supports at three arm joints (blue). The supports carry no load; the inertia of the frame and components balances the thrust.}\label{fig:modelsetup}
+\end{figure}
+
+The runs were staged so that each one removed one risk before the expensive one: a reference job comparing solver versions within \SI{0.5}{\percent}, a three-cycle smoke test, a coarse run to see the first shape and the mode behaviour, and the production run at \SI{1.0}{mm} on a 64-core server. The production run took 28 cycles in 7\,h\,34\,min, about 15.5 minutes per cycle on 60 threads, and reduced the design volume from \num{74242} to \SI{33100}{mm^3}, \SI{55.4}{\percent} less (\cref{fig:history}). The frequency constraint became active at cycle 4; between cycles 15 and 22 the optimiser overshot, with the first elastic mode down to \SI{325.1}{Hz}, and recovered by cycle 23. \Cref{fig:isocycles} shows the shape forming.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.95\linewidth]{plot_history}
 \caption{Production run: design volume, the six lowest elastic modes and the compliance of each load case relative to its cap. The shaded cycles mark the overshoot.}\label{fig:history}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{cp_iso_cycles}
+\caption{Iso-density surface 0.3 at cycles 0, 10, 20 and 28 of the production run. Cycle 10 is still close to the solid design space; by cycle 20 material has left the motor pads, the outer arms and the keel, and cycle 28 refines the same layout.}\label{fig:isocycles}
 \end{figure}
 
 \begin{figure}[htbp]

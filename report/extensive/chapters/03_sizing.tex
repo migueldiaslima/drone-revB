@@ -1,4 +1,670 @@
 % 03_sizing.tex
 \chapter{Sizing from first principles}\label{sec:sizing}
 
-% to be written (see docs/report_brief.md section 6)
+The frame cannot be designed until the rest of the aircraft has been described in numbers: how heavy it is, how hard each motor pulls and twists, how fast the rotors spin and what a gram of frame costs in flight time. This chapter derives those numbers from the selected components. Two operating points carry almost everything. Hover, where the aircraft spends most of its time, sets performance: power, current, flight time, and the frequency at which the rotors shake the frame most of the time. Full throttle sets the loads: the largest forces and torques the frame must carry, which \cref{sec:loads} turns into load cases.
+
+The chain runs in six steps, each answering one question and handing its result to the next: the mass and the thrust it needs (\cref{sec:sizing-mass}); the rotor speed that makes this thrust (\cref{sec:sizing-thrust}); the least power physics allows for it (\cref{sec:sizing-momentum}); where the real power is lost (\cref{sec:sizing-losses}); the real hover power (\cref{sec:sizing-power}); and the flight time with its sensitivity to frame mass and arm width (\cref{sec:sizing-endurance}).
+
+The only measured propulsion data is the manufacturer's bench test of the selected motor with the selected propeller~\citep{tmotor_p1604}: five rows of throttle, voltage, current, speed, thrust and electrical power (\cref{tab:sizing-bench}). A bench test clamps the motor on a load cell, spins the propeller at fixed throttle steps and records the thrust, the speed and the battery voltage and current. Every result in this chapter is either read from this table or derived from physics and checked against it.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Manufacturer bench data, T-Motor P1604 3800\,KV with the Gemfan 3520 three-blade propeller.}\label{tab:sizing-bench}
+\begin{tabular}{@{}rrrrrr@{}}
+\toprule
+Throttle & Voltage (V) & Current (A) & Speed (RPM) & Thrust (g) & Power (W)\\
+\midrule
+20\,\% & 16.8 & 1.5 & 17,311 & 91.2 & 25.9\\
+40\,\% & 16.7 & 4.6 & 25,612 & 202.2 & 76.6\\
+60\,\% & 16.7 & 7.7 & 30,693 & 292.4 & 127.6\\
+80\,\% & 16.6 & 11.0 & 35,220 & 380.5 & 182.5\\
+100\,\% & 16.5 & 16.8 & 40,750 & 514.1 & 277.8\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Mass and hover thrust}\label{sec:sizing-mass}
+
+\subsection{How a quadcopter flies}
+
+A quadcopter has four fixed-pitch propellers. The blades cannot change angle, so the only quantity the flight controller can change is the speed of each motor. All four speed up or slow down together to climb or descend. The motors on one side run faster than those on the other to tilt the aircraft, and a tilted aircraft points part of its thrust horizontally and moves. Two propellers turn clockwise and two counter-clockwise, so their reaction torques cancel in steady flight; speeding up one pair and slowing the other leaves a net torque that turns the aircraft about its vertical axis.
+
+Every force on the frame therefore comes from rotor speed. If thrust and torque are known as functions of speed, the loads follow.
+
+\subsection{The mass budget}
+
+The take-off mass is capped at \SI{250}{g} by R1. Everything except the frame is known, so the frame receives what is left (\cref{tab:sizing-budget}). The model is evaluated at \SI{250}{g}, the heaviest allowed mass, which is the worst case for flight time and for every load that scales with mass.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Mass budget at the design point. Component masses are the manufacturers' values; hardware and GPS were estimates when the budget was set.}\label{tab:sizing-budget}
+\begin{tabular}{@{}lr@{}}
+\toprule
+Item & Mass (g)\\
+\midrule
+Motors (4) & 46.4\\
+Propellers (4) & 7.0\\
+Flight controller with ESC & 13.6\\
+Receiver and antenna & 1.6\\
+Battery & 100.0\\
+\midrule
+Fixed components & 168.6\\
+Screws, strap, wiring, capacitor (estimate) & 12\\
+GPS allowance (estimate) & 8\\
+\midrule
+Frame budget & 61.4\\
+\midrule
+Total & 250\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Hover: the first estimate}
+
+In hover nothing accelerates, so the vertical forces cancel. If the four rotors shared the weight equally and nothing else acted, each would carry a quarter of it:
+\begin{equation}
+4T = W = mg.
+\end{equation}
+With $m = \SI{0.250}{kg}$ the weight is \SI{2.45}{N}, and each rotor carries \SI{0.613}{N}, or \SI{62.5}{g} of thrust.
+
+\subsection{Arm download}
+
+This first estimate misses one force. A propeller makes thrust by throwing air downwards, and the arm sits directly under the propeller, inside that jet. The jet hits the arm like wind hitting a plate and pushes it down. This force is called download. The rotor's thrust is unchanged, but the aircraft receives the rotor thrust minus the download, so each rotor must produce slightly more than a quarter of the weight.
+
+The drag of a flow on a flat plate is the dynamic pressure times the plate area times a drag coefficient $C_d$. For an arm of width $w$ with a length $L$ under the disc,
+\begin{equation}
+F_d = \tfrac12 \rho V^2 C_d\, w L,
+\end{equation}
+where $V$ is the speed of the jet at the arm. \Cref{sec:sizing-momentum} shows that the air passes through the disc at the induced velocity $v_i$, keeps accelerating below it and reaches $2v_i$ far downstream, and that
+\begin{equation}
+v_i^2 = \frac{T}{2\rho A},
+\end{equation}
+with $A$ the disc area. The arm sits just below the disc, where the jet speed lies between $v_i$ and $2v_i$. Writing it as $V = \kappa v_i$, with a wake factor $\kappa = 1.4$ and a band of 1.2 to 1.6, and substituting:
+\begin{equation}
+F_d = \tfrac12 \rho\, \kappa^2 \frac{T}{2\rho A}\, C_d\, w L.
+\end{equation}
+Dividing by the thrust gives the download fraction:
+\begin{equation}
+f = \frac{F_d}{T} = \frac{C_d\, \kappa^2\, w L}{4A}.
+\end{equation}
+Density and thrust cancel. The fraction depends only on how much of the disc the arm blocks ($wL/A$), on the arm's shape ($C_d$) and on the jet speed factor ($\kappa$), so it is the same percentage at hover and at full throttle.
+
+For a flat strip broadside to the flow $C_d \approx 1.2$. With an arm \SI{8}{mm} wide, a blocked length $L = R - \SI{5}{mm} = \SI{39.5}{mm}$ (the motor hides the inner \SI{5}{mm}) and a disc area $A = \pi D^2/4 = \SI{6.21e-3}{m^2}$:
+\begin{equation}
+f = \frac{1.2 \times 1.4^2 \times 0.008 \times 0.0395}{4 \times 6.21 \times 10^{-3}} = \SI{3.0}{\percent},
+\end{equation}
+with 2.2\,\% for $\kappa = 1.2$ and 3.9\,\% for $\kappa = 1.6$.
+
+Each rotor must now satisfy $T - F_d = W/4$, that is $T(1-f) = W/4$:
+\begin{equation}
+T_\text{hover} = \frac{W}{4(1-f)} = \frac{62.5}{0.970} = \SI{64.4}{g} = \SI{0.632}{N}.
+\end{equation}
+Every hover number from here on uses \SI{64.4}{g}.
+
+Download makes arm width a design variable with a price. A wider arm is stiffer, but it blocks more of the jet, so each rotor works harder and the battery drains faster. \Cref{sec:sizing-width} puts a number on it.
+
+\section{Thrust and rotor speed}\label{sec:sizing-thrust}
+
+\subsection{The propeller is a rotating wing}
+
+The link between thrust and speed cannot be calculated from the blade geometry: the blades are small, twisted and curved, and their airflow is hard to predict. The form of the law comes from physics, and its constant from the bench.
+
+Each blade section is a small wing, and a wing in a flow makes lift
+\begin{equation}
+L = \tfrac12 \rho V^2 S\, C_L,
+\end{equation}
+with $V$ the air speed over the wing, $S$ its area and $C_L$ a lift coefficient that depends on shape and angle, not on size or speed. On a propeller the speed of a section is $\omega r$, growing from zero at the hub to its maximum at the tip, and the lift of all sections, summed along the shaft axis, is the thrust. Every speed on the blade is proportional to the tip speed, which is proportional to $nD$, with $n$ the speed in revolutions per second and $D$ the diameter. Every area is proportional to $D^2$. Therefore
+\begin{equation}
+T \propto \rho\,(nD)^2 D^2 = \rho\, n^2 D^4.
+\end{equation}
+Doubling the speed gives four times the thrust; doubling the diameter at the same speed gives sixteen times.
+
+\subsection{Dimensional analysis}
+
+The scaling argument can be made exact with the Buckingham theorem~\citep{buckingham}: if a physical law involves $k$ variables built from $r$ base dimensions, it can be rewritten as a law between $k-r$ dimensionless groups.
+
+The analysis concerns one propeller with one shape: airfoil, twist, chord distribution, number of blades and pitch-to-diameter ratio. These do not change between operating conditions, so they are not variables; their effect is built into the unknown function. What can change is collected in
+\begin{equation}
+T = F(\rho, n, D, V, \mu, a),
+\end{equation}
+with $V$ the axial flight speed, $\mu$ the viscosity of air and $a$ the speed of sound. The diameter stays in the list because all shape parameters are ratios or angles: ``the same shape'' describes a family of geometrically similar propellers of any size, and $D$ is the length that says how large a member is.
+
+There are seven variables and three base dimensions (mass, length, time), which leaves four groups. Choosing $\rho$, $n$ and $D$ as the repeating variables and requiring $T/(\rho^x n^y D^z)$ to have no units gives $x = 1$ from mass, $y = 2$ from time and $z = 4$ from length:
+\begin{equation}
+C_T = \frac{T}{\rho\, n^2 D^4}.
+\end{equation}
+The same procedure with the other variables gives the advance ratio $J = V/(nD)$, the distance the propeller moves forward per turn in diameters; the Reynolds number $Re = \rho n D^2/\mu$, inertia against viscosity; and the Mach number $M = nD/a$. The theorem states
+\begin{equation}
+C_T = F(J, Re, M).
+\end{equation}
+It does not give the function. It says that if $J$, $Re$ and $M$ stay the same, $C_T$ stays the same, and thrust follows $T = C_T \rho n^2 D^4$ exactly.
+
+\subsection{Do the three groups stay constant?}
+
+In hover the axial speed is zero, so $J = 0$. A bench test also runs at zero axial speed, so the bench describes hover directly.
+
+The fastest part of the blade is the tip, at $V_\text{tip} = \pi D n$. At hover (14,440\,RPM) the tip moves at \SI{67}{m/s}, Mach 0.20; at full throttle (40,750\,RPM) at \SI{190}{m/s}, Mach 0.55. Air behaves as incompressible below about Mach 0.3, and compressibility effects stay small up to about 0.6 at the tip. Hover is far from them.
+
+The Reynolds number decides whether viscosity matters. At high $Re$ the boundary layer on the blade is thin and the section works well; at low $Re$ it is thick, separates early, and the blade makes less lift for more drag. Aerodynamicists use the blade-section form at 75\,\% radius,
+\begin{equation}
+Re_{0.75} = \frac{\omega\, (0.75R)\, c}{\nu},
+\end{equation}
+with $c$ the chord and $\nu$ the kinematic viscosity. With an assumed chord of \SI{8}{mm} this gives about 27,000 at hover, 33,000 at the slowest bench point and 77,000 at full throttle. Airfoils lose performance quickly below about 100,000, so of the three groups, the Reynolds number is the only one that could make $C_T$ at hover differ from the bench. Because $Re$ is proportional to speed, the ratios are exact even if the chord differs: the bench spans a factor of 2.35 in $Re$, and hover sits 1.2 times below its slowest point.
+
+\subsection{The test}
+
+The bench gives thrust and speed, not $C_T$. Rearranging the definition,
+\begin{equation}
+T = C_T\, \rho\, n^2 D^4,
+\end{equation}
+and looking at what changes between rows: $D$ is the same propeller, $\rho$ is the same air in the same session, and $n$ is what the throttle changes. If the law holds, $C_T \rho D^4$ is one fixed number. With speed in RPM, $n^2 = \text{RPM}^2/3600$, and the law becomes
+\begin{equation}
+T = k\, \text{RPM}^2, \qquad k = \frac{C_T\, \rho\, D^4}{3600}.
+\end{equation}
+The logic also runs backwards: if $T/\text{RPM}^2$ changes from row to row, $C_T$ is changing. Dividing each row's thrust by its speed squared is therefore a direct test of the law, and it does not even need the air density.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Test of the thrust law: $k = T/\text{RPM}^2$ for each bench row.}\label{tab:sizing-ktest}
+\begin{tabular}{@{}rrrrr@{}}
+\toprule
+Throttle & RPM & RPM$^2$ & Thrust (g) & $k$ ($10^{-7}$\,g/RPM$^2$)\\
+\midrule
+20\,\% & 17,311 & $2.997\times10^{8}$ & 91.2 & 3.043\\
+40\,\% & 25,612 & $6.560\times10^{8}$ & 202.2 & 3.083\\
+60\,\% & 30,693 & $9.420\times10^{8}$ & 292.4 & 3.104\\
+80\,\% & 35,220 & $1.240\times10^{9}$ & 380.5 & 3.068\\
+100\,\% & 40,750 & $1.661\times10^{9}$ & 514.1 & 3.096\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The five values of $k$ lie between 3.043 and $3.104\times10^{-7}$, a spread of 2\,\% of the mean, while the thrust changes by a factor of 5.6 (\cref{tab:sizing-ktest}). They also show no trend: they go up, up, down, up. A Reynolds effect would appear as a steady drift with speed, row after row; this looks like measurement scatter. The thrust coefficient is constant within 2\,\% over the tested range, and the factor of 2.35 in Reynolds number has no visible effect.
+
+\subsection{Fitting one constant}
+
+The model needs one value of $k$, and five rows give five slightly different ones. The single value that makes the curve pass as close as possible to all five points minimises the sum of the squared residuals,
+\begin{equation}
+S(k) = \sum_{i=1}^{5} \left(T_i - k\, x_i\right)^2, \qquad x_i = \text{RPM}_i^2.
+\end{equation}
+Squares are always positive, so errors of opposite sign cannot cancel, and the sum is a smooth function of $k$. The curve has no constant term: a propeller at rest makes no thrust, so the fit is forced through the origin. $S(k)$ is a parabola that opens upwards, and its minimum is where the slope is zero:
+\begin{equation}
+\frac{\dd S}{\dd k} = \sum_i 2\left(T_i - k x_i\right)(-x_i) = 0.
+\end{equation}
+Dividing by $-2$ and solving for $k$:
+\begin{equation}
+k = \frac{\sum_i T_i\, x_i}{\sum_i x_i^2} = \frac{1.7611\times10^{12}}{5.7036\times10^{18}} = \SI{3.088e-7}{g/RPM^2}.
+\end{equation}
+Put back into the law, it reproduces every row within 1.5\,\%; the largest residual, +1.46\,\%, is at the slowest row (\SI{92.5}{g} predicted against \SI{91.2}{g} measured).
+
+Converting to the dimensionless coefficient undoes each unit in turn: grams to newtons ($\times\num{9.81e-3}$), RPM to revolutions per second ($\times 3600$), and division by $\rho D^4 = 1.225 \times 0.0889^4 = \SI{7.652e-5}{kg.m}$:
+\begin{equation}
+C_T = \frac{3600 \times 3.0877\times10^{-7} \times 9.81\times10^{-3}}{7.652\times10^{-5}} = 0.1425.
+\end{equation}
+The air density enters only here. The bench air density is not known, so the standard sea-level value of \SI{1.225}{kg/m^3} is used; the test of constancy did not need it.
+
+\subsection{Hover speed}
+
+Inverting the thrust law at the hover thrust:
+\begin{equation}
+\text{RPM}_h = \sqrt{\frac{T_h}{k}} = \sqrt{\frac{64.4}{3.088\times10^{-7}}} = 14{,}440,
+\end{equation}
+or \SI{240.7}{rev/s}. Hover lies 1.2 times below the slowest bench point in speed and in Reynolds number, so this is an extrapolation. Since $k$ showed no trend over a factor of 2.35 in $Re$, a further step of 1.2 is unlikely to change it much; the hover speed is carried with an uncertainty of about 1\,\%.
+
+The hover speed gives the frequencies at which the rotors shake the frame: \SI{241}{Hz} once per revolution and \SI{722}{Hz} at blade passing, the two numbers behind the frequency requirement (\cref{sec:req-frequency}).
+
+\section{The least power physics allows}\label{sec:sizing-momentum}
+
+The next question is power, because power sets current and current sets flight time. The bench power column cannot answer it directly: it is electrical power, which mixes the propeller with motor and ESC losses, and hover lies outside the table. A simpler question comes first: ignoring every loss, what is the least power that can produce this thrust with a rotor of this size? The answer is a floor that no estimate may go below, a yardstick against which the real system is measured, and the form of the power law.
+
+\subsection{The physical idea}
+
+To push the aircraft up, the rotor must push air down, and by Newton's third law the force on the air equals the force on the rotor. Thrust is the rate at which the rotor gives downward momentum to the air: mass of air per second times the speed given to it. Power is the rate at which it gives kinetic energy to the air: half the mass per second times that speed squared. Momentum grows with speed and energy with speed squared, so the cheap way to make thrust is to move a lot of air slowly. A large rotor reaches more air, so it can move it more slowly for the same thrust. That is why large rotors hover efficiently, and the rest of this section makes the idea exact.
+
+\subsection{The actuator disc}
+
+The propeller is replaced by an actuator disc~\citep{leishman}: an infinitely thin disc with the propeller's area that raises the pressure of the air passing through it. It has no blades, so it represents what any rotor must do, not how a particular rotor does it. Each assumption is a reason why the real rotor needs more power: uniform pressure jump and inflow over the disc; no swirl in the wake; no leakage around the tips; no viscosity, so no friction drag on the blades; steady incompressible flow, with the air far above at rest (hover); and one isolated rotor.
+
+\subsection{Derivation}
+
+The air that passes through the disc forms a streamtube, wide far above the rotor and narrow far below it. Four stations along it carry the derivation (\cref{tab:sizing-stations}).
+
+\begin{table}[htbp]
+\centering\small
+\caption{Stations along the streamtube of an actuator disc in hover.}\label{tab:sizing-stations}
+\begin{tabular}{@{}llll@{}}
+\toprule
+Station & Position & Air speed & Pressure\\
+\midrule
+0 & far above & 0 & $p_\infty$\\
+1 & just above the disc & $v_i$ & $p_1$\\
+2 & just below the disc & $v_i$ & $p_2$\\
+3 & far below, in the wake & $w$ & $p_\infty$\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The speed is the same at stations 1 and 2 because the disc is infinitely thin: the same mass per second passes through the same area. The pressure at station 3 is back to ambient because a free jet surrounded by still air cannot hold a different pressure from the air around it.
+
+Mass conservation gives the mass of air crossing the disc each second:
+\begin{equation}
+\dot m = \rho A v_i.
+\end{equation}
+Newton's second law applied to the air gives the thrust as the rate of change of its momentum. The air starts at rest and leaves at $w$:
+\begin{equation}
+T = \dot m\,(w - 0) = \rho A v_i\, w.
+\end{equation}
+Bernoulli's equation holds wherever no energy is added. Above the disc, between stations 0 and 1:
+\begin{equation}
+p_\infty = p_1 + \tfrac12 \rho v_i^2.
+\end{equation}
+Below the disc, between stations 2 and 3:
+\begin{equation}
+p_2 + \tfrac12 \rho v_i^2 = p_\infty + \tfrac12 \rho w^2.
+\end{equation}
+Bernoulli cannot be applied across the disc, because that is where the rotor adds energy; it is used once on each side. Subtracting the first equation from the second, the $v_i$ terms and $p_\infty$ cancel:
+\begin{equation}
+p_2 - p_1 = \tfrac12 \rho w^2.
+\end{equation}
+The thrust is this pressure jump acting on the disc:
+\begin{equation}
+T = (p_2 - p_1)A = \tfrac12 \rho A w^2.
+\end{equation}
+The momentum and pressure expressions describe the same thrust, so
+\begin{equation}
+\rho A v_i\, w = \tfrac12 \rho A w^2 \quad\Rightarrow\quad w = 2v_i.
+\end{equation}
+The air reaches half its final speed at the disc and gains the other half below it, as the pressure falls from $p_2$ back to ambient. This is the result the download estimate used: the arm, just under the disc, sits in air moving between $v_i$ and $2v_i$.
+
+Putting $w = 2v_i$ into the momentum equation gives the thrust in terms of the induced velocity:
+\begin{equation}
+T = 2\rho A v_i^2 \quad\Rightarrow\quad v_i = \sqrt{\frac{T}{2\rho A}}.
+\end{equation}
+The power is the kinetic energy given to the air each second:
+\begin{equation}
+P_\text{ideal} = \tfrac12 \dot m\, w^2 = \tfrac12 (\rho A v_i)(2v_i)^2 = 2\rho A v_i^3 = T\, v_i.
+\end{equation}
+Substituting $v_i$:
+\begin{equation}
+P_\text{ideal} = \frac{T^{3/2}}{\sqrt{2\rho A}}.
+\end{equation}
+The same mass flow passes through the disc at $v_i$ and through the far wake at $2v_i$, so the wake contracts to half the disc area, a radius of $R/\sqrt2 \approx 0.71R$.
+
+\subsection{Reading the result}
+
+Power is thrust times the speed of the air through the disc, so less induced velocity for the same thrust means less power. Dividing $T = 2\rho A v_i^2$ by $A$ shows that thrust and area enter only as their ratio, the disc loading $T/A$: low disc loading means efficient hover. At fixed size, power grows with thrust to the power 1.5, so twice the thrust needs 2.83 times the power. At fixed thrust, power falls with $1/\sqrt{A}$, that is with $1/D$. Thin or warm air costs power through $1/\sqrt{\rho}$.
+
+\subsection{Numbers}
+
+With $2\rho A = 2 \times 1.225 \times \num{6.207e-3} = \SI{0.01521}{kg/m}$, the hover point ($T = \SI{0.632}{N}$) gives
+\begin{equation}
+v_i = \sqrt{\frac{0.632}{0.01521}} = \SI{6.45}{m/s}, \qquad P_\text{ideal} = 0.632 \times 6.45 = \SI{4.1}{W},
+\end{equation}
+a disc loading of \SI{102}{N/m^2}, and a mass flow of \SI{0.049}{kg/s}, about 40 litres of air per second through each rotor. At full throttle ($T = \SI{5.04}{N}$) the induced velocity is \SI{18.2}{m/s} and the ideal power \SI{91.8}{W}: eight times the thrust costs 22.5 times the ideal power, because $7.98^{1.5} = 22.5$.
+
+\Cref{tab:sizing-ideal} applies the same calculation to every bench row. The real system draws three to four times the ideal power; \cref{sec:sizing-losses} explains where the rest goes.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Ideal power for the thrust of each bench row, against the measured electrical power.}\label{tab:sizing-ideal}
+\begin{tabular}{@{}rrrrr@{}}
+\toprule
+Throttle & Thrust (N) & $v_i$ (m/s) & $P_\text{ideal}$ (W) & $P_\text{elec}$ (W)\\
+\midrule
+20\,\% & 0.895 & 7.67 & 6.9 & 25.9\\
+40\,\% & 1.984 & 11.42 & 22.7 & 76.6\\
+60\,\% & 2.868 & 13.73 & 39.4 & 127.6\\
+80\,\% & 3.733 & 15.67 & 58.5 & 182.5\\
+100\,\% & 5.043 & 18.21 & 91.8 & 277.8\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Each assumption of the actuator disc fails in a known direction. Real inflow is stronger outboard than near the hub, and real tips shed vortices that shrink the effective disc: both raise the induced power. The wake rotates, which wastes kinetic energy. Blade friction drag, large at low Reynolds number, adds profile power, the largest loss for small propellers. The four rotors and the frame interact, which is where download comes from. In a fast vertical descent the rotor meets its own wake (vortex ring state), and the theory has no valid solution at all.
+
+\section{Where the real power goes}\label{sec:sizing-losses}
+
+The frame needs three things from the losses: the torque each motor puts on its arm, the reason efficiency falls at light load (which the hover-power estimate depends on), and the reason the bench current at part throttle cannot be used to compute torque.
+
+\subsection{Three converters in a row}
+
+Power travels from the battery to the air through three devices in series. The ESC (electronic speed controller) takes power from the battery and feeds it to the motor at the commanded level; the motor turns electrical power into torque on the shaft; the propeller turns shaft power into a downward jet. Each passes on a fraction of what it receives, its efficiency, so the power that finally does useful work on the air is
+\begin{equation}
+P_\text{ideal} = P_\text{elec}\; \eta_\text{ESC}\; \eta_m\; \text{FoM},
+\end{equation}
+where FoM, the figure of merit, is the propeller's efficiency. The bench gives $P_\text{elec}$ and \cref{sec:sizing-momentum} gives $P_\text{ideal}$, so the product of the three efficiencies can be measured, although not each one alone (\cref{tab:sizing-product}).
+
+\begin{table}[htbp]
+\centering\small
+\caption{Product of the three efficiencies on the bench. It falls steadily as the load falls.}\label{tab:sizing-product}
+\begin{tabular}{@{}rrrrr@{}}
+\toprule
+Throttle & Thrust (g) & $P_\text{ideal}$ (W) & $P_\text{elec}$ (W) & $P_\text{ideal}/P_\text{elec}$\\
+\midrule
+20\,\% & 91.2 & 6.9 & 25.9 & 0.265\\
+40\,\% & 202.2 & 22.7 & 76.6 & 0.296\\
+60\,\% & 292.4 & 39.4 & 127.6 & 0.309\\
+80\,\% & 380.5 & 58.5 & 182.5 & 0.320\\
+100\,\% & 514.1 & 91.8 & 277.8 & 0.331\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+One feature of this table carries into the hover-power estimate: the product falls steadily as the load falls.
+
+\subsection{The propeller's share: figure of merit}
+
+The figure of merit is the share of the shaft power that pushes air straight down, evenly over the disc:
+\begin{equation}
+\text{FoM} = \frac{P_\text{ideal}}{P_\text{shaft}}.
+\end{equation}
+The rest is lost to blade friction drag, uneven inflow, swirl and tip losses, each an assumption of the actuator disc that the real propeller breaks. Full-size helicopter rotors reach 0.7 to 0.8~\citep{leishman}; small propellers reach about 0.4 to 0.6, mostly because the blade sections work poorly at Reynolds numbers near 27,000.
+
+\subsection{Torque is proportional to current}
+
+Inside the motor, permanent magnets sit next to coils of copper wire. Current through the coils lets the magnetic field push on them, and that push turns the shaft; more current gives a proportionally larger push:
+\begin{equation}
+\tau = K_t\, I,
+\end{equation}
+with $K_t$ the torque constant, a property of the magnets, the size and the number of turns. The data sheet gives the speed constant Kv instead, and the two are linked by the motor's other role. A motor is also a generator: spinning it produces a voltage, the back-EMF $E$, proportional to speed. Kv is that proportion in RPM per volt,
+\begin{equation}
+E = \frac{\text{RPM}}{K_v}.
+\end{equation}
+In SI units, with $\text{RPM} = 60\omega/(2\pi)$,
+\begin{equation}
+E = \frac{60}{2\pi K_v}\, \omega = K_e\, \omega.
+\end{equation}
+In an ideal motor all converted electrical power becomes mechanical power:
+\begin{equation}
+E\, I = \tau\, \omega.
+\end{equation}
+Replacing $E$ by $K_e\omega$ and $\tau$ by $K_t I$, the current and the speed cancel and leave $K_t = K_e$. The constant that describes the motor as a generator, in volts per radian per second, is the same number that describes it as a torque producer, in newton-metres per ampere. For the selected motor:
+\begin{equation}
+K_t = \frac{60}{2\pi \times 3800} = \SI{2.513e-3}{N.m/A}.
+\end{equation}
+
+Part of the torque never reaches the propeller: bearing friction, air drag on the bell and magnetic losses in the stator iron consume it. The data sheet measures these losses by spinning the motor without a propeller; all the current drawn then goes into internal losses. This no-load current is $I_0 = \SI{0.8}{A}$, measured at \SI{10}{V}, which is about 37,000\,RPM, close to full throttle. The torque that reaches the shaft is
+\begin{equation}
+\tau = K_t\,(I - I_0).
+\end{equation}
+
+\subsection{Full-throttle torque}
+
+At full throttle the bench recorded \SI{16.8}{A}. At full throttle the ESC connects the battery straight to the motor, so the battery current is the motor current:
+\begin{equation}
+\tau_\text{max} = 2.513\times10^{-3} \times (16.8 - 0.8) = \SI{0.040}{N.m}.
+\end{equation}
+The shaft power checks it. At 40,750\,RPM, $\omega = \SI{4267}{rad/s}$, so $P_\text{shaft} = 0.040 \times 4267 = \SI{172}{W}$, and the propeller's figure of merit is
+\begin{equation}
+\text{FoM} = \frac{91.8}{172} = 0.535,
+\end{equation}
+inside the range expected for small propellers. Two independent pieces of physics, the motor's torque constant and momentum theory, agree, which supports the torque value; momentum theory with a figure of merit of 0.45 to 0.60 gives 0.036 to \SI{0.048}{N.m}.
+
+By Newton's third law the propeller pushes back on the motor, and through the motor mount on the arm, with the same torque. It acts about the motor axis, so it bends the arm sideways, in the plane of the frame, and the clockwise and counter-clockwise motors load their arms in opposite directions. \Cref{sec:loads} uses \SI{0.040}{N.m} per motor.
+
+\subsection{Why efficiency falls at light load}
+
+From full throttle to hover the speed falls by a factor of $40{,}750/14{,}440 = 2.82$. The propeller's power grows with speed cubed, so it falls by $2.82^3 = 22.5$. Bearing friction and iron losses grow roughly in proportion to speed and fall only by about 2.8, and the ESC's own electronics draw a nearly constant power. A rough illustration: at full throttle the internal losses are about $I_0 E = 0.8 \times 10.7 = \SI{8.6}{W}$, with $E = 40{,}750/3800 = \SI{10.7}{V}$, against \SI{172}{W} of shaft power, about 5\,\%. At hover the shaft power is about $172/22.5 = \SI{7.6}{W}$ and the internal losses about $8.6/2.8 = \SI{3.0}{W}$, around 40\,\% of it. The propeller also gets worse at lower Reynolds number. Both effects push the same way and grow as the load falls, which is why the product in \cref{tab:sizing-product} falls from 0.331 to 0.265, and why it must keep falling below the slowest bench point.
+
+\subsection{Battery current is not motor current}
+
+Applying the torque formula at 20\,\% throttle (17,311\,RPM, \SI{1.5}{A}) gives $\tau = K_t(1.5 - 0.8) = \SI{1.76e-3}{N.m}$ and a shaft power of $1.76\times10^{-3} \times 1813 = \SI{3.2}{W}$. The thrust of that row needs at least \SI{6.9}{W} of ideal power, so the propeller would have a figure of merit of 2.2, more than twice the physical limit. The formula is right; the current put into it is not.
+
+At 17,311\,RPM the back-EMF is $17{,}311/3800 = \SI{4.6}{V}$, and the battery supplies \SI{16.8}{V}. The ESC lowers the voltage by switching: it connects the battery to the motor and disconnects it 48,000 times per second, and the fraction of each cycle during which the battery is connected is the duty cycle $d$. The motor windings resist any change of current, as a heavy cart pushed by thousands of small shoves per second moves at a speed set by the average push, so the motor sees the average voltage $dV_\text{batt}$. At 20\,\% throttle the motor needs a little more than \SI{4.6}{V}, so $d \geq 4.6/16.8 = 0.27$.
+
+The motor current keeps flowing during the off part of each cycle, circulating through the motor and the ESC without passing through the battery. The battery supplies it only for the fraction $d$:
+\begin{equation}
+I_\text{batt} = d\, I_\text{motor}.
+\end{equation}
+The same result follows from energy. The switch wastes almost nothing, so battery power equals motor power:
+\begin{equation}
+V_\text{batt}\, I_\text{batt} = (d\, V_\text{batt})\, I_\text{motor}.
+\end{equation}
+The ESC works like a reduction gearbox: it lowers the voltage by the factor $d$ and raises the current by $1/d$ at the same power. At 20\,\% throttle the motor current is roughly $1.5/0.27 = \SI{5.5}{A}$, several times the battery current, which removes the impossible result. At full throttle $d = 1$ and the two currents are equal.
+
+Two rules follow for the model. Torque is computed only at full throttle, the only point the frame needs. Hover power is computed as battery power, which is what drains the battery and what the bench measures directly. Throttle percentage is not a physical quantity at all: the ESC firmware turns the stick command into a duty cycle, and the speed that results depends on the battery voltage at that moment. The hover point is therefore stated as thrust, speed and current, never as a throttle percentage.
+
+\section{Real hover power}\label{sec:sizing-power}
+
+\subsection{Why hover power cannot be read from the bench}
+
+Hover needs \SI{64.4}{g} per motor, and the lightest bench row is \SI{91.2}{g}. There is no row at or below hover, so the power must be extrapolated: a formula is fitted to the five rows and evaluated below them.
+
+The simplest formula would scale battery power with speed cubed, as propeller power does. It can be tested exactly as the thrust law was: if $P = a\,\text{RPM}^3$ holds, $P/\text{RPM}^3$ is the same in every row. It is not. It rises from \num{4.11e-12} at full throttle to \SI{4.99e-12}{W/RPM^3} at the slowest row, by 21\,\%, and it rises steadily, row after row. That is a trend, not scatter: at low speed the battery supplies more power than speed cubed predicts, because some losses fall much more slowly than the propeller's power when the motor slows down.
+
+\subsection{What the power formula should contain}
+
+A formula for battery power needs one term for each kind of loss, according to how it changes with speed.
+\begin{itemize}
+\item Propeller power grows with speed cubed: a term $a\,\text{RPM}^3$.
+\item Bearing friction (a roughly constant friction torque times angular speed) and iron losses (a fixed energy per magnetisation cycle, at a cycle rate proportional to speed) grow in proportion to speed: a term $b\,\text{RPM}$.
+\item The ESC's own electronics draw a roughly constant power: a term $c$.
+\end{itemize}
+One loss has no term of its own. Current heats the copper windings with a loss proportional to current squared; current follows torque, which grows with speed squared, so this loss grows roughly with speed to the fourth power. It is the largest loss at full throttle and nearly negligible at hover, and the fits absorb it into the $a$ term, which is therefore not purely propeller power.
+
+Combining the terms gives four candidate models (\cref{tab:sizing-models}). None of them is proven by physics; each is a plausible shape. The bench decides the coefficients, and a physical test decides which shapes to trust below the data.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Candidate models for battery power per motor, fitted to the five bench rows (speed in RPM).}\label{tab:sizing-models}
+\begin{tabularx}{\linewidth}{@{}llXrrr@{}}
+\toprule
+Model & Formula & Assumption & $a$ (W/RPM$^3$) & $b$ (W/RPM) & $c$ (W)\\
+\midrule
+M1 & $a\,\text{RPM}^3$ & efficiency the same at every load & \num{4.18e-12} & & \\
+M2 & $a\,\text{RPM}^3 + c$ & propeller plus a constant loss & \num{4.00e-12} & & +8.2\\
+M3 & $a\,\text{RPM}^3 + b\,\text{RPM}$ & propeller plus speed-proportional losses & \num{3.83e-12} & \num{4.67e-4} & \\
+M4 & $a\,\text{RPM}^3 + b\,\text{RPM} + c$ & all three & \num{3.64e-12} & \num{1.03e-3} & $-10.6$\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Fitting two coefficients}
+
+The fit follows the same idea as for the thrust constant, with two coefficients chosen together. Writing speed in thousands of RPM, $x = \text{RPM}/1000$, keeps the numbers readable, and M3 becomes
+\begin{equation}
+P = a\,x_1 + b\,x_2, \qquad x_1 = x^3, \quad x_2 = x.
+\end{equation}
+The sum of squared residuals over the five rows is
+\begin{equation}
+S(a,b) = \sum_i \left(P_i - a\,x_{1,i} - b\,x_{2,i}\right)^2.
+\end{equation}
+With two coefficients, $S$ is a bowl over the $(a,b)$ plane, and at the bottom of the bowl the surface is flat in both directions. Setting the slope in the $a$ direction to zero, dividing by $-2$ and moving the known sum to the right gives the first condition:
+\begin{equation}
+a \sum x_1^2 + b \sum x_1 x_2 = \sum x_1 P.
+\end{equation}
+The same steps in the $b$ direction give the second:
+\begin{equation}
+a \sum x_1 x_2 + b \sum x_2^2 = \sum x_2 P.
+\end{equation}
+These are the normal equations. Every sum comes from the bench, so they are two linear equations in two unknowns. With the bench values:
+\begin{align}
+\num{7.6327e9}\, a + \num{5.7037e6}\, b &= \num{3.1882e7},\\
+\num{5.7037e6}\, a + \num{4798.7}\, b &= \num{24074.5}.
+\end{align}
+Multiplying the second equation by $\num{7.6327e9}/\num{5.7037e6} = 1338.2$ and subtracting the first removes $a$:
+\begin{equation}
+0.7180\times10^{6}\, b = 3.352\times10^{5} \quad\Rightarrow\quad b = 0.467\ \text{W per thousand RPM}.
+\end{equation}
+Back in the first equation:
+\begin{equation}
+a = \frac{\num{3.1882e7} - \num{5.7037e6} \times 0.467}{\num{7.6327e9}} = \num{3.828e-3}\ \text{W per (thousand RPM)}^3.
+\end{equation}
+In plain RPM, $a = \SI{3.828e-12}{W/RPM^3}$ and $b = \SI{4.67e-4}{W/RPM}$. M1 has one coefficient and is solved as the thrust constant was; M2 replaces the column $x_2$ by a column of ones; M4 has three coefficients and three normal equations.
+
+\subsection{The four fits}
+
+Inside the bench range the models agree within a few per cent: M4 fits every row within 1.2\,\%, while M1, M2 and M3 miss the slowest row by $-16$, $+12$ and $+8$\,\%. At hover, 14,442\,RPM, just below the range, they spread from 12.6 to \SI{20.2}{W}, a factor of 1.6 (\cref{tab:sizing-hover,fig:sizing-power-models}). A good fit inside the data says nothing about the behaviour outside it, and the best fit is not automatically the most trustworthy: M4 has three coefficients for five points, so fitting well is easy for it and proves little.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{plot_power_models}
+\caption{The four power models against the bench data. Left: the whole range, where they are indistinguishable. Right: the region below the slowest bench point, where they spread from 12.6 to \SI{20.2}{W} at hover.}\label{fig:sizing-power-models}
+\end{figure}
+
+\begin{table}[htbp]
+\centering\small
+\caption{Hover power per motor from each model at 14,442\,RPM, term by term.}\label{tab:sizing-hover}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Model & $a\,\text{RPM}^3$ (W) & $b\,\text{RPM}$ (W) & $c$ (W) & Hover power (W)\\
+\midrule
+M1 & 12.58 & & & 12.6\\
+M2 & 12.06 & & +8.16 & 20.2\\
+M3 & 11.53 & 6.74 & & 18.3\\
+M4 & 10.95 & 14.81 & $-10.57$ & 15.2\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{The physical test}
+
+The test comes from \cref{tab:sizing-product}. The product of the three efficiencies falls from 0.331 at full throttle to 0.265 at the lightest row, for two reasons that both grow stronger as the load falls further: losses that fall slowly with speed take a growing share of a shrinking output, and the propeller's figure of merit drops with the Reynolds number. Nothing reverses them below \SI{91}{g}, so below the data the product must keep falling. Any model to be trusted must predict that.
+
+The test is applied at three thrusts: the lightest bench row, hover, and a lighter point to see the direction of the trend. For each, the speed follows from the thrust law, the ideal power from momentum theory, and the battery power from the model (\cref{tab:sizing-test}).
+
+\begin{table}[htbp]
+\centering\small
+\caption{Efficiency product $P_\text{ideal}/P_\text{model}$ predicted by each model below the bench data. On the bench, the product at \SI{91.2}{g} is 0.265.}\label{tab:sizing-test}
+\begin{tabular}{@{}lrrrll@{}}
+\toprule
+Model & \SI{91.2}{g} & \SI{64.4}{g} (hover) & \SI{40}{g} & Trend & Verdict\\
+\midrule
+$P_\text{ideal}$ & \SI{6.86}{W} & \SI{4.07}{W} & \SI{1.99}{W} & & \\
+\midrule
+M1 & 0.324 & 0.324 & 0.324 & flat & rejected\\
+M2 & 0.241 & 0.201 & 0.142 & falling & accepted\\
+M3 & 0.250 & 0.223 & 0.182 & falling & accepted\\
+M4 & 0.269 & 0.268 & 0.309 & flat, then rising & rejected\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+M1 has only the propeller term, so its efficiency is the same at every load by construction; the bench already shows the efficiency changing, so M1 contradicts the data before it is extrapolated. M4's product stops falling at hover and rises below it, as if the system became more efficient at lighter load. Its coefficients show why: $c = \SI{-10.6}{W}$ is a negative loss, and read literally, a motor standing still would return \SI{10.6}{W} to the battery. The three free coefficients let M4 pass through the five points by combining a large $b$ with a negative $c$, terms that nearly cancel inside the data and diverge outside it. The best-fitting model fails the physics.
+
+M2 passes but is only a bound. Its constant of \SI{8.2}{W} is large for what it represents, the ESC electronics, which draw far less. The motor's no-load power (\SI{0.8}{A} at \SI{10}{V}) looks similar, but it was measured near 37,000\,RPM and is mostly friction and iron loss, which shrink at hover speed. M2 puts too much loss at low speed, so its hover power is high.
+
+\subsection{The choice}
+
+M3 is the central model, at \SI{18.3}{W} per motor: both its terms have a physical meaning, it passes the test, and it fits the data better than M2. M2, at \SI{20.2}{W}, is the conservative bound. With M3 the efficiency product at hover is $4.07/18.3 = 0.22$, which could be, for example, a figure of merit of 0.45 with motor and ESC passing on half of the shaft power: low, as light load and low Reynolds number lead one to expect.
+
+Both accepted models overpredict the lightest bench row, M3 by 8\,\% and M2 by 12\,\%, and that row is the closest to hover. If the same bias continues below it, the true hover power is lower than \SI{18.3}{W}, so the central value is more likely conservative than optimistic.
+
+With four motors and an assumed \SI{1.0}{W} for the flight controller, receiver and GPS, the aircraft draws
+\begin{equation}
+P_\text{total} = 4 \times 18.3 + 1.0 = \SI{74}{W},
+\end{equation}
+or \SI{82}{W} with the bound. At the nominal \SI{14.8}{V} of the battery this is
+\begin{equation}
+I = \frac{74}{14.8} = \SI{5.0}{A}.
+\end{equation}
+
+\section{Flight time and the cost of mass}\label{sec:sizing-endurance}
+
+\subsection{The battery}
+
+The pack is a four-cell lithium-polymer battery of \SI{850}{mAh} and \SI{100}{g}. A cell stores energy chemically and delivers it at a voltage set by its chemistry and its state of charge: \SI{4.20}{V} when full, about \SI{3.70}{V} in the middle of the discharge, and about \SI{3.5}{V} under load near empty, where pilots usually land. Four cells in series add their voltages, as water tanks stacked on top of each other add their pressure heads:
+\begin{equation}
+V_\text{pack} = 4 \times 3.70 = \SI{14.8}{V},
+\end{equation}
+and \SI{16.8}{V} when full. The bench ran at 16.5 to \SI{16.8}{V}, with an almost full pack.
+
+The capacity is the electric charge the pack can deliver. Current is charge per unit time, so $Q = It$: \SI{0.85}{Ah} is \SI{0.85}{A} for one hour, or \SI{5.1}{A} for ten minutes. Energy is power times time, and power is voltage times current, so
+\begin{equation}
+E = V I t = V Q = 14.8 \times 0.85 = \SI{12.6}{Wh},
+\end{equation}
+about \SI{45}{kJ}. In the tank picture, energy is pressure times volume.
+
+Two corrections turn the label energy into energy available for flight. The cell voltage falls from about 4.2 to \SI{3.5}{V} as the pack empties, so the energy delivered is the charge times the average voltage; the model uses \SI{3.70}{V} per cell, with a band of 3.6 to \SI{3.8}{V}. The internal resistance of the pack (\cref{sec:loads}) drops the voltage by only 0.1 to \SI{0.2}{V} at the hover current, inside that band. Draining a lithium-polymer cell completely damages it, and the pilot needs a reserve to land, so the model uses 80\,\% of the capacity, with a band of 75 to 85\,\%. The usable energy is
+\begin{equation}
+E_\text{usable} = 0.80 \times 0.85 \times 14.8 = \SI{10.06}{Wh}.
+\end{equation}
+
+\subsection{Flight time}
+
+Flight time is the usable energy divided by the power drawn:
+\begin{equation}
+t = \frac{E_\text{usable}}{P_\text{total}} = \frac{10.06}{74.1} = \SI{0.136}{h} = \SI{8.2}{min}.
+\end{equation}
+The charge route gives the same result: $680\,\text{mAh} / \SI{5.0}{A} = \SI{0.136}{h}$, because both use the same \SI{14.8}{V}.
+
+Five inputs are uncertain: the power model (M3 or M2), the usable fraction, the average cell voltage, the avionics power (0.5 to \SI{1.5}{W}) and the wake factor of the download (1.2 to 1.6). Setting every input to its pessimistic value at once gives \SI{6.6}{min}; every input optimistic gives \SI{9.0}{min}; changing only the power model to M2 gives \SI{7.4}{min}. The band assumes every input wrong in the same direction at the same time, so it is a bound, not a typical spread, and since M3 probably overestimates hover power, the true time more likely lies in the upper half.
+
+\subsection{What a gram of frame costs}\label{sec:sizing-gram}
+
+Adding mass to the frame sets off a chain: more mass needs more thrust, more thrust needs a faster propeller, a faster propeller needs more power, and more power from the same battery shortens the flight. A small mass increase can be followed through each link with one rule. If $y = x^n$ and $x$ grows by a small fraction $\varepsilon$,
+\begin{equation}
+(1+\varepsilon)^n \approx 1 + n\varepsilon,
+\end{equation}
+so $y$ grows by $n\varepsilon$. One gram on \SI{250}{g} is $\varepsilon = 0.004$, small enough for the rule to be accurate.
+
+Thrust per motor is proportional to the weight, $T = mg/(4(1-f))$, so it grows by $\varepsilon$. Speed is the square root of thrust over $k$, so it grows by $\varepsilon/2$. The hover power of one motor is the M3 formula, whose two terms at hover are \SI{11.53}{W} and \SI{6.74}{W}. The cubic term grows by $3 \times \varepsilon/2$ and the linear term by $\varepsilon/2$:
+\begin{equation}
+\frac{\Delta P_\text{motor}}{P_\text{motor}} = \frac{1.5 \times 11.53 + 0.5 \times 6.74}{18.27}\, \varepsilon = 1.13\,\varepsilon.
+\end{equation}
+The \SI{1}{W} of avionics does not change with mass, and four motors make \SI{73.1}{W} of the \SI{74.1}{W}:
+\begin{equation}
+\frac{\Delta P_\text{total}}{P_\text{total}} = 1.13 \times \frac{73.1}{74.1}\, \varepsilon = 1.12\,\varepsilon.
+\end{equation}
+Flight time is energy over power, power to the exponent $-1$, so it falls by the same fraction:
+\begin{equation}
+\Delta t = -1.12 \times 0.004 \times \SI{8.15}{min} = \SI{-0.036}{min}.
+\end{equation}
+Each gram of frame costs \SI{0.036}{min} of hover, about 2.2 seconds; ten grams cost about 22 seconds. Running the full model at 249 and \SI{251}{g} gives the same value. Momentum theory alone would give an exponent of 1.5 and \SI{0.049}{min} per gram; the real cost is lower because part of the power, the speed-proportional loss and the avionics, grows more slowly than thrust to the power 1.5.
+
+\subsection{What a millimetre of arm width costs}\label{sec:sizing-width}
+
+A wider arm adds mass, and it also blocks more of the jet. The download fraction is proportional to the width, $f = Kw$ with $K = C_d \kappa^2 L/(4A) = \SI{3.74}{m^{-1}}$, so one millimetre more on every arm adds
+\begin{equation}
+\Delta f = 3.74 \times 0.001 = 0.0037,
+\end{equation}
+taking the download from 3.0 to 3.37\,\% of the thrust. The thrust each rotor must make before and after the change is
+\begin{equation}
+T_1 = \frac{W}{4(1-f)}, \qquad T_2 = \frac{W}{4(1-f-\Delta f)}.
+\end{equation}
+Dividing, and taking $(1-f)$ out of the second denominator with $x = \Delta f/(1-f)$:
+\begin{equation}
+\frac{T_2}{T_1} = \frac{1-f}{(1-f)(1-x)} = (1-x)^{-1} \approx 1 + x.
+\end{equation}
+The thrust grows by $\Delta f/(1-f) = 0.00374/0.970 = 0.0039$, and the rest of the chain is the same as for a gram:
+\begin{equation}
+\Delta t = -1.12 \times 0.0039 \times \SI{8.15}{min} = \SI{-0.035}{min}.
+\end{equation}
+Widening all four arms by one millimetre costs \SI{0.035}{min} in download alone, as much as $0.035/0.036 = 0.96$ grams of frame, on top of the mass of the added material.
+
+For the frame this is the central trade. The vertical bending stiffness of a rectangular arm grows linearly with its width and with the cube of its height, and height costs mass but no download. The arms should therefore be narrow and tall, which is what the design space and the material index of \cref{sec:material} are built on.
+
+\subsection{Reference frame and battery size}
+
+With the reference carbon frame the same components reach \SI{259.1}{g}, \SI{9.1}{g} above the design point, and the model gives \SI{7.8}{min}; the cost per gram gives the same, $8.15 - 9.1 \times 0.036 = \SI{7.8}{min}$. A frame exactly at the \SI{250}{g} limit gains about 20 seconds over the reference, which is why flight time is reported as an output of the components (\cref{sec:req-outputs}).
+
+A bigger battery helps less than its capacity suggests, because its mass raises the hover power. Energy grows with capacity and power with mass to the exponent 1.12, so roughly
+\begin{equation}
+t \propto \frac{Q}{m^{1.12}},
+\end{equation}
+with $m$ the whole aircraft. An \SI{1100}{mAh} pack of the same type, at the same energy per gram, weighs \SI{129}{g} and takes the aircraft to \SI{279}{g}: 29\,\% more capacity gives \SI{9.3}{min}, only 14\,\% more time, and the aircraft breaks the \SI{250}{g} limit. With this battery type the mass limit fixes the battery size. What helps is energy per gram: a lighter high-voltage pack of \SI{1100}{mAh} at \SI{88}{g} would give \SI{11.4}{min}.
+
+\section{Results}\label{sec:sizing-results}
+
+\begin{table}[htbp]
+\centering\small
+\caption{Outputs of the sizing chain at \SI{250}{g}.}\label{tab:sizing-results}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Quantity & Value & Used in\\
+\midrule
+Thrust constant $k$ ($C_T$) & \SI{3.088e-7}{g/RPM^2} (0.1425) & speed, loads\\
+Download fraction, \SI{8}{mm} arm & 3.0\,\% (2.2 to 3.9\,\%) & hover thrust\\
+Hover thrust per motor & \SI{64.4}{g} & hover point\\
+Hover speed; 1P and 3P & 14,440\,RPM; \SI{241}{Hz} and \SI{722}{Hz} & frequency requirement\\
+Ideal hover power per rotor & \SI{4.1}{W} & yardstick\\
+Hover power per motor (bound) & \SI{18.3}{W} (\SI{20.2}{W}) & flight time\\
+Aircraft hover power, current & \SI{74}{W}, \SI{5.0}{A} & flight time\\
+Hover flight time & \SI{8.2}{min} (6.6 to 9.0) & output\\
+Cost of one gram & \SI{-0.036}{min} & trades\\
+Cost of \SI{1}{mm} of width on four arms & \SI{-0.035}{min}, about \SI{1}{g} & arm shape\\
+Maximum motor torque & \SI{0.040}{N.m} & loads\\
+Figure of merit at full throttle & 0.535 & torque check\\
+\bottomrule
+\end{tabular}
+\end{table}

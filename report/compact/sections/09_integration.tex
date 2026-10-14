@@ -3,7 +3,13 @@
 
 \subsection{Print geometry}
 
-The printed parts are built from the density field at an iso level of 0.3. The iso surface is smoothed and trimmed to the design envelope, and the fixed regions are restored from the exact CAD solids, so every hole, seat, bolt boss and motor pad is exact. The keel zone behind the tub is cleaned and replaced by the exact keels. Scripted checks on the print geometry confirm that each part is one piece, that no material intrudes into a keep-out (largest overlap \SI{0.215}{mm^3}, meshing noise) and that the parts do not overlap one another. The final thresholded check, run with the exact keels on the same iso level, gives a first elastic mode of \SI{431.0}{Hz} and every compliance at or below 0.91 of its cap.
+The printed parts are built from the density field at an iso level of 0.3. The iso surface is smoothed and trimmed to the design envelope, and the fixed regions are restored from the exact CAD solids, so every hole, seat, bolt boss and motor pad is exact. The keel zone behind the tub is cleaned and replaced by the exact keels. Scripted checks on the print geometry confirm that each part is one piece, that no material intrudes into a keep-out (largest overlap \SI{0.215}{mm^3}, meshing noise) and that the parts do not overlap one another. The final thresholded check, run with the exact keels on the same iso level, gives a first elastic mode of \SI{431.0}{Hz} and every compliance at or below 0.91 of its cap (\cref{fig:modes}). Modes 8 and 10 are arm bending modes; modes 7 and 9 couple the arms with the tail of the antenna spine, which carries the \SI{2.24}{g} antenna; mode 11 is the spine tail itself, \SI{40}{Hz} above the requirement; mode 12 moves the whole frame with the lid plate.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{cp_modes}
+\caption{Elastic modes 7 to 12 of the printed geometry, displacement magnitude normalised per mode, deformation exaggerated. Each title gives the point that moves most.}\label{fig:modes}
+\end{figure}
 
 Wall thickness was measured by casting rays through the printed surfaces. The tub has \SI{0.95}{\percent} of its surface below \SI{0.8}{mm} and \SI{2.27}{\percent} below \SI{1.2}{mm}, inside the limits of \SI{1}{\percent} and \SI{3}{\percent} (\cref{fig:thickness}). The lid exceeds the \SI{0.8}{mm} limit by 0.33 percentage points at its front openings and the arm exceeds both limits at the prong ends and the motor pad rim; all parts passed a slicer check, and these areas are the first to inspect on the printed parts.
 
@@ -14,6 +20,15 @@ Wall thickness was measured by casting rays through the printed surfaces. The tu
 \end{figure}
 
 All parts print in PET-CF with layers in the $xy$ plane. The tub prints on its landing face, where the flight-controller screws enter, which keeps the lid seat on top and lets its flatness be checked with a feeler gauge before assembly.
+
+A fit-test print of the tub, lid and four arms in PLA+ was assembled before the PET-CF parts (\cref{fig:fittest}): the arm forks seat on the tub fins, and the lid closes on the tub rim with the GPS deck behind it.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[height=6.4cm]{photo_fit_hand}\hspace{6mm}%
+\includegraphics[height=6.4cm]{photo_fit_table}
+\caption{Fit-test print of the frame in PLA+: tub, lid and four arms assembled, without components.}\label{fig:fittest}
+\end{figure}
 
 \subsection{Retainers}
 

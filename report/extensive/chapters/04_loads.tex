@@ -1,4 +1,228 @@
 % 04_loads.tex
 \chapter{Loads}\label{sec:loads}
 
-% to be written (see docs/report_brief.md section 6)
+\Cref{sec:sizing} described the aircraft at hover. This chapter moves to the other operating point, full throttle, which sets the forces the frame must carry, and adds the landing, the crash and the vibration the rotors impose. It ends with the load cases used in the optimisation and in the strength check, and with the way a free-flying structure is supported in a static analysis.
+
+\section{Full-throttle forces}\label{sec:loads-thrust}
+
+\subsection{Maximum thrust and torque}
+
+The bench's full-throttle row gives the largest thrust of one motor:
+\begin{equation}
+T_\text{max} = \SI{514.1}{g} = 514.1 \times 9.81\times10^{-3} = \SI{5.04}{N},
+\end{equation}
+measured at \SI{16.5}{V}, close to the full-charge voltage of the pack. In flight the pack voltage drops under the full-throttle current and the thrust drops with it (\cref{sec:loads-sag}), so real flight produces less than \SI{5.04}{N}. A frame sized for the larger force also carries every smaller one, so the loads use the bench value and the performance figures use the lower, sagged values. Each motor also twists its arm with the reaction torque of \SI{0.040}{N.m} derived in \cref{sec:sizing-losses}.
+
+\subsection{Thrust-to-weight ratio and load factor}
+
+The thrust-to-weight ratio compares the total maximum thrust with the weight. In grams, at the \SI{250}{g} design mass,
+\begin{equation}
+\text{TWR} = \frac{4 \times 514.1}{250} = 8.2.
+\end{equation}
+Hover uses about 12\,\% of the available thrust. The rest is what the pilot uses for climbing, manoeuvring and recovering, and its largest steady use is a full-throttle vertical climb from hover, a punch-out. Newton's second law on the whole aircraft, upwards positive, gives its acceleration:
+\begin{equation}
+4T_\text{max} - mg = ma.
+\end{equation}
+Dividing by $mg$:
+\begin{equation}
+\frac{a}{g} = \frac{4T_\text{max}}{mg} - 1 = 8.2 - 1 = 7.2.
+\end{equation}
+Any part of mass $m_i$, the battery for example, must be pushed by its mount hard enough to hold it against gravity and to accelerate it at $7.2g$:
+\begin{equation}
+F_i - m_i g = m_i a \quad\Rightarrow\quad F_i = m_i(g + a) = n_z\, m_i g, \qquad n_z = \frac{g + a}{g} = 8.2.
+\end{equation}
+Every part is pressed into its mount with 8.2 times its own weight, as a person in a lift accelerating upwards feels heavier. The load factor $n_z$ equals the thrust-to-weight ratio in this case, because the one $g$ of gravity and the $7.2g$ of acceleration add up. For the battery:
+\begin{equation}
+F_\text{batt} = 8.2 \times 0.100 \times 9.81 = \SI{8.06}{N}.
+\end{equation}
+All inertial forces together must equal the total thrust, because the thrust is what accelerates everything: $8.2 \times 0.250 \times 9.81 = \SI{20.2}{N} = 4 \times \SI{5.04}{N}$.
+
+The thrust enters at the motor mounts, travels inwards along the arms, and the centre body passes it on to the battery and the flight controller. Each motor and propeller, \SI{13.75}{g} with its screws, needs \SI{1.11}{N} to accelerate itself, so an arm actually carries about \SI{3.9}{N} to the centre. The design moment at the arm root uses the full \SI{5.04}{N}, because the relief from the motor's own inertia disappears in asymmetric manoeuvres and when the aircraft is restrained. On the \SI{41.7}{mm} free arm of the first design space this gives
+\begin{equation}
+M_\text{root} = 5.04 \times 41.7 = \SI{210}{N.mm}.
+\end{equation}
+
+\subsection{Dynamic factor}
+
+The load factor above is quasi-static: it assumes the thrust rises smoothly and the structure follows without vibrating. A structure is a spring with mass, and a load applied suddenly makes it overshoot. For a single undamped spring-mass of stiffness $k$ under a force $F$, a slow load settles at $F/k$, while a step makes the mass swing between 0 and $2F/k$: the force does work $Fx$ on the way to deflection $x$, the spring stores only $kx^2/2$, and the two balance at $x = 2F/k$. For a load that ramps up linearly over a rise time $t_r$ and then stays constant, the classical result for the peak dynamic factor is
+\begin{equation}
+\text{DF}_\text{max} = 1 + \frac{\left|\sin(\pi t_r / T_n)\right|}{\pi t_r / T_n},
+\end{equation}
+with $T_n$ the natural period of the structure. The sine is at most one, so
+\begin{equation}
+\text{DF} \leq 1 + \frac{T_n}{\pi t_r}.
+\end{equation}
+A small motor spins up from hover to full speed in tens of milliseconds, limited by the propeller's inertia and the current the ESC allows; \SI{20}{ms} is an assumed order of magnitude. The frame's first elastic mode lies above \SI{417}{Hz}, so its period is below \SI{2.4}{ms}, and
+\begin{equation}
+\text{DF} \leq 1 + \frac{2.4}{\pi \times 20} = 1.04.
+\end{equation}
+The thrust rises about eight times more slowly than the frame vibrates, so the response is quasi-static and the load cases use a dynamic factor of 1. Impacts are different, with rise times of a millisecond or less, and are treated separately.
+
+\subsection{Battery voltage under load}\label{sec:loads-sag}
+
+The thrust available in flight is lower than the bench value because the pack has internal resistance. Inside the battery the current passes through electrolyte, electrodes, tabs and wires, which act as a resistance $R_\text{int}$ in series with the chemical voltage. The terminal voltage is the open-circuit voltage minus the drop across it:
+\begin{equation}
+V = V_\text{oc} - I R_\text{int}.
+\end{equation}
+The resistance was not measured; the model uses a band of 20 to \SI{40}{\milli\ohm} for the pack. At full throttle the speed follows the voltage, the thrust follows speed squared, and the current follows torque, which also grows with speed squared. To first order, thrust and current both scale with $V^2$:
+\begin{equation}
+T(V) = T_\text{bench}\left(\frac{V}{16.5}\right)^2, \qquad I(V) = 67.2\left(\frac{V}{16.5}\right)^2,
+\end{equation}
+where \SI{67.2}{A} is four times the bench current. Voltage and current depend on each other, so both are found together. Substituting the current into the terminal voltage:
+\begin{equation}
+V = V_\text{oc} - R_\text{int}\, 67.2 \left(\frac{V}{16.5}\right)^2.
+\end{equation}
+With $c = 67.2 R_\text{int}/16.5^2$ this is the quadratic $cV^2 + V - V_\text{oc} = 0$, whose positive root is
+\begin{equation}
+V = \frac{-1 + \sqrt{1 + 4cV_\text{oc}}}{2c}.
+\end{equation}
+For a half-empty pack ($V_\text{oc} = \SI{15.2}{V}$) at the high resistance, $c = \SI{0.00987}{V^{-1}}$ and $V = \SI{13.4}{V}$: the thrust falls to $(13.4/16.5)^2 = 0.66$ of the bench value, and the current to \SI{44}{A}. Across the four corners of the band the usable thrust-to-weight ratio is 5.4 to 7.3. The aircraft keeps ample control authority, and the loads keep the bench thrust, because sag only makes the real forces smaller.
+
+The same numbers check the electrical hardware. The ESC is rated for \SI{40}{A} per motor against at most \SI{16.8}{A}, a margin of 2.4. The pack's label rating of 150C means $150 \times 0.85 = \SI{127.5}{A}$ against \SI{67.2}{A}, a margin of 1.9; manufacturers test this rating without a common standard, so the margin is a sanity check, not a design value.
+
+\section{Top speed and crash energy}\label{sec:loads-speed}
+
+The propellers push only along their shafts, so to move forward the aircraft tilts nose-down by an angle $\theta$. The vertical component of the total thrust holds the aircraft up and the horizontal component pushes it against drag:
+\begin{equation}
+T\cos\theta = W, \qquad T\sin\theta = D = \tfrac12 \rho V^2 (C_D A),
+\end{equation}
+where $C_D A$ is the drag area, the area of a flat plate that would make the same drag. Tilted, the aircraft shows more of its top to the flow, so the model blends a front area of \SI{0.0025}{m^2} and a top area of \SI{0.0090}{m^2}:
+\begin{equation}
+C_D A(\theta) = A_\text{front}\cos\theta + A_\text{top}\sin\theta.
+\end{equation}
+
+If the thrust stayed at its static \SI{20.2}{N} at any speed, the tilt would be $\arccos(2.45/20.2) = \ang{83}$ and the speed \SI{60}{m/s}, unrealistic for this aircraft. Thrust falls with forward speed. Tilted by $\theta$, the disc meets the oncoming air at an angle, and the part of the flight speed along the shaft, $V\sin\theta$, flows into the disc. A blade section then meets air arriving at a steeper angle, closer to the blade's own setting angle, so its angle of attack and its lift shrink. If the aircraft advanced one pitch per revolution, the air would arrive along the blade; this axial speed is the pitch speed,
+\begin{equation}
+V_\text{pitch} = n\,p = 679.2 \times 0.0508 = \SI{34.5}{m/s}.
+\end{equation}
+A cambered blade still makes lift at zero geometric angle, so zero thrust is reached slightly above pitch speed; the model places it at 1.1 times, \SI{38.0}{m/s} of axial inflow, and lets thrust fall linearly in between:
+\begin{equation}
+T = T_0\left(1 - \frac{V\sin\theta}{38.0}\right).
+\end{equation}
+The two balances and this thrust model are solved together. For a trial tilt, the vertical balance gives the thrust needed, the thrust model gives the speed at which the propellers make exactly that thrust, and the horizontal balance compares the forward push $W\tan\theta$ with the drag at that speed. They meet at \ang{64.5} and \SI{30.2}{m/s}, where the propellers make only 28\,\% of their static thrust. The band from the drag area and the zero-thrust point is 27 to \SI{36}{m/s}, and about \SI{28}{m/s} with sag. Pitch speed is the asymptote of zero thrust, not a flight speed.
+
+At top speed the aircraft carries
+\begin{equation}
+E_k = \tfrac12 m V^2 = \tfrac12 \times 0.250 \times 30.2^2 = \SI{114}{J},
+\end{equation}
+up to \SI{160}{J} at the top of the band, the energy of a fall from \SI{46}{m}. In an impact this energy goes into deforming and breaking parts, and the average force is $E_k/s$ over a stopping distance of a few millimetres: tens of kilonewtons, far beyond anything the frame can carry elastically. The crash requirement is therefore about where the frame fails, not about surviving: the arm must fail before the joint and the body, whatever the impact (\cref{sec:loads-capacity}).
+
+\section{Landing}\label{sec:loads-landing}
+
+A landing is an energy balance on a contact that behaves like a spring. A body that falls from an equivalent height $h$ (for a descent speed $v$, $h = v^2/2g$) and stops over a distance $s$ with a force rising linearly to $F_\text{peak}$ satisfies
+\begin{equation}
+mgh = \tfrac12 F_\text{peak}\, s.
+\end{equation}
+The peak load factor on every mass is therefore
+\begin{equation}
+n = \frac{F_\text{peak}}{mg} = \frac{2h}{s}.
+\end{equation}
+The ground bearing stress under the body is small: \SI{294}{N} over a $40\times40$\,mm floor is \SI{0.18}{MPa}. What loads the structure is the deceleration of each mass: the battery presses on its plate with $n m_b g$, and each motor loads its arm tip with $n m_\text{tip} g$, even when only the body touches the ground. The spring model gives a peak of twice the average force; real grass and crushing plastic dissipate energy, so it is conservative. The stopping distances are assumptions: 10 to \SI{15}{mm} on grass and about \SI{3}{mm} on hard ground, from local crushing and the compliance of the body and the battery mount.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Landing scenarios from the spring energy balance at \SI{250}{g}.}\label{tab:loads-landing}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+Scenario & $h$ (m) & $s$ (mm) & $n$ & Battery (N) & Motor at tip (N)\\
+\midrule
+Normal, \SI{1.0}{m/s} onto grass & 0.051 & 15 & 6.8 & 7 & 0.9\\
+Firm, \SI{1.5}{m/s} onto grass & 0.115 & 10 & 23 & 22 & 3.1\\
+Motor cut at \SI{0.3}{m}, grass & 0.30 & 10 & 60 & 59 & 8.1\\
+Motor cut at \SI{0.3}{m}, hard ground & 0.30 & 3 & 200 & 196 & 27\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The firm landing becomes a design case. The motor cut onto hard ground, with $n = 200$, becomes a survivability check: no frame of this mass survives it intact everywhere, so it is assessed by the failure order. A thin sacrificial skid surface on the floor of the centre body takes the scraping, and the arm tips stay above the landing plane: the arm underside rises from the body floor to \SI{9}{mm} of ground clearance at the motor, so the aircraft can tilt about \ang{12} before a tip touches.
+
+\section{Rotor excitation}\label{sec:loads-vibration}
+
+The forces above are steady or one-off. The spinning propellers also push on the frame with forces that repeat many times per second.
+
+\subsection{Once per revolution and once per blade}
+
+If a propeller's centre of mass sits a small distance $e$ off the shaft, the spinning mass pulls outwards with
+\begin{equation}
+F = m\,e\,\omega^2.
+\end{equation}
+The force rotates with the propeller, so the arm feels a push that goes round once per revolution, at the frequency 1P. An assumed error of \SI{2}{mg} at \SI{40}{mm}, about 0.1\,\% of the propeller's mass, gives \SI{0.18}{N} at hover ($\omega = \SI{1512}{rad/s}$) and \SI{1.5}{N} at full throttle: the force grows with speed squared, which is why propellers are balanced. Each time a blade passes over the arm, the arm sits in that blade's pressure pulse and wake, so the download arrives in pulses: with three blades, at 3P. Harmonics (2P, 6P) and the motor's own magnetic frequency appear at lower amplitude.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Rotor excitation frequencies.}\label{tab:loads-frequencies}
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Point & Speed (RPM) & 1P (Hz) & 3P (Hz)\\
+\midrule
+Hover & 14,440 & 241 & 722\\
+Full throttle & 40,750 & 679 & 2038\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+In flight the speed moves between these points continuously, so 1P sweeps from 241 to \SI{679}{Hz} and 3P from 722 to \SI{2038}{Hz}. Hover is where the aircraft dwells, so the hover values matter most.
+
+\subsection{Resonance}
+
+Each arm, and the frame as a whole, has natural frequencies at which it vibrates freely when struck, like a tuning fork; for a single spring-mass, $f_n = \frac{1}{2\pi}\sqrt{k/m}$. Driven by a force at frequency $f$, a spring-mass with damping ratio $\zeta$ vibrates with the static deflection multiplied by
+\begin{equation}
+\frac{X}{X_\text{static}} = \frac{1}{\sqrt{\left(1-r^2\right)^2 + \left(2\zeta r\right)^2}}, \qquad r = \frac{f}{f_n}.
+\end{equation}
+At resonance, $r = 1$, this becomes $1/(2\zeta)$. A printed structure has little damping, and with $\zeta$ between 0.02 and 0.05 the amplification at resonance is 10 to 25. Away from it the factor falls quickly: at $r = 1.25$ it is about 1.8, and at $r = 0.8$ about 2.8.
+
+On a quadcopter the amplified vibration has three consequences. The gyroscope of the flight controller sits on the frame and reads frame vibration as fast spurious rotations; the controller filters them, but every filter adds delay, and delay makes the control loop less responsive and less stable. Noise that passes the filters makes the controller command rapid speed changes, which heat the motors. And the arm roots see many load cycles: at \SI{241}{Hz}, about 870,000 per hour of hover.
+
+\subsection{Campbell diagram}
+
+A Campbell diagram puts excitations and natural frequencies on one plot (\cref{fig:loads-campbell}). Each excitation is a straight line through the origin, 1P with slope $1/60$ and 3P with slope $3/60$ in hertz per RPM. Each natural frequency of the frame is a horizontal line, since the frame's stiffness does not depend on rotor speed. Wherever an excitation line crosses a mode line, some rotor speed drives that mode at resonance.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\linewidth]{plot_campbell}
+\caption{Campbell diagram: rotor excitations against the first six elastic modes of the printed frame (\cref{sec:verification}). At hover the modes sit 1.79 times above 1P and 1.68 times below 3P; during throttle changes 1P crosses them between 25,860 and 32,000\,RPM.}\label{fig:loads-campbell}
+\end{figure}
+
+Any frame mode between 241 and \SI{2038}{Hz} is crossed by 1P or 3P somewhere in the flight range, so crossings during throttle changes cannot be avoided. What matters is to have no crossing at hover. The requirement of \cref{sec:req-frequency} places the first mode between hover 1P and hover 3P with margin from both; the alternative, a first mode above hover 3P with margin (\SI{870}{Hz} with 20\,\%), would need arms 15 to \SI{23}{mm} deep by the first-order estimate of \cref{sec:architecture}. The modal analysis checks the requirement, and a gyro log in flight, transformed to a spectrum, would verify it.
+
+\section{Load cases}\label{sec:loads-cases}
+
+\Cref{tab:loads-cases} collects the load cases. The first four drive the optimisation and the strength check. LC3b and LC4 are survivability cases, judged by the failure order between arm, joint and body.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Load cases. Forces are at the \SI{250}{g} design mass; FoS is the factor of safety.}\label{tab:loads-cases}
+\begin{tabularx}{\linewidth}{@{}l>{\raggedright\arraybackslash}p{0.24\linewidth}X@{}}
+\toprule
+Case & Event & Loads and treatment\\
+\midrule
+LC1 & punch-out, all motors at full thrust & \SI{5.04}{N} and \SI{0.040}{N.m} per motor; $n_z = 8.2$: battery \SI{8.06}{N}, flight controller and receiver \SI{1.23}{N}, GPS \SI{0.65}{N}, motors \SI{1.11}{N} each; FoS 1.5\\
+LC2a & diagonal pair at full thrust, other pair at zero & \SI{5.04}{N} on two diagonal motors; net yaw torque \SI{0.080}{N.m}; vertical $n_z = 4.1$; loads the saddle shape; FoS 1.5\\
+LC2b & adjacent pair at full thrust, other pair at zero & \SI{5.04}{N} on two adjacent motors; pitch or roll moment \SI{0.50}{N.m} at the first layout (\SI{0.53}{N.m} at the final \SI{52.5}{mm} lever); vertical $n_z = 4.1$; loads the rocking shape; FoS 1.5\\
+LC3a & firm landing, \SI{1.5}{m/s} onto grass, $s = \SI{10}{mm}$ & $n = 23$: battery \SI{22.5}{N}, motors \SI{3.1}{N}, flight controller \SI{3.4}{N}; ground reaction \SI{56.4}{N} on the floor; FoS 1.5\\
+LC3b & motor cut from \SI{0.3}{m} onto hard ground, $s = \SI{3}{mm}$ & $n = 200$: battery \SI{196}{N}, motors \SI{27}{N}; ground reaction \SI{491}{N}; survivability: only an arm may fail\\
+LC4 & arm strike & arm-tip failure load $F_\text{arm}$, worst of vertical, lateral and axial; joint and body sized for $1.5F_\text{arm}$\\
+FREQ & free-free modal analysis & first elastic mode at least \SI{290}{Hz}, goal \SI{417}{Hz}; components as point masses; six rigid-body modes excluded\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Two effects of order one per cent are left out of the load cases. A propeller imbalance of the assumed size gives \SI{0.18}{N} at hover 1P, and fatigue at about 870,000 cycles per hour of hover is assessed against the static stress level once that is known (\cref{sec:strength}).
+
+\subsection{Capacity design for the crash}\label{sec:loads-capacity}
+
+Sizing for a crash speed gives arbitrary forces, hundreds to thousands of newtons over millimetres, depending on what the aircraft hits. Capacity design avoids the question. The arm is made the weakest link, and the joint and the centre body are sized for 1.5 times the arm's own failure load at its tip. Whatever the impact, the arm fails first, the battery mount and the flight controller are protected, and the repair is one printed part. The kinetic energy at top speed is reported only to show that failure in a full-speed crash cannot be avoided. \Cref{sec:strength} checks the failure order on the printed geometry.
+
+\section{Supporting a free-flying structure}\label{sec:loads-supports}
+
+A flying aircraft has no supports, and every load case above is balanced by the inertia of the aircraft itself. A static finite-element analysis, however, needs supports: without them the stiffness matrix is singular and rigid-body motion is undetermined. Clamping the body would add stiffness and carry load that does not exist in flight, and an optimiser would route material to the clamp.
+
+The model therefore uses inertia relief. The solver computes the rigid-body accelerations, linear and angular, that balance the applied loads over the model's mass, and applies the matching inertial force to every mass, frame and point masses alike. The applied loads are the physical inputs, thrusts, torques and the ground force, and the load factors follow from the model's actual mass. A uniform gravity field is balanced by an equal and opposite acceleration under inertia relief and changes no stress, so no gravity load is applied.
+
+To make the stiffness matrix non-singular, six single restraints on three non-collinear points remove the rigid-body motion, a 3-2-1 arrangement: three translations at the joint of one arm, two at a second and one at a third. Because the loads are already in equilibrium with the inertial forces, these supports carry nothing, and every analysis reports their reactions as a check. In the production run they stayed below \SI{1e-6}{N}, against \SI{20}{N} of applied thrust. The modal analysis uses no supports at all: a free-free structure has six zero-frequency rigid-body modes, and the first elastic mode is the seventh.
+
+Inertia relief has one consequence that the results must state. The final thresholded model of the printed frame weighs \SI{283.5}{g} against the \SI{250}{g} design mass, so the same \SI{20.16}{N} of thrust accelerates it with a load factor of
+\begin{equation}
+n_z = \frac{20.16}{0.2835 \times 9.81} = 7.25,
+\end{equation}
+and the landing force of \SI{56.4}{N} gives $n = 20.3$. The forces on the motor mounts and the floor are the full design values; the inertial forces on the battery and the other masses are 12\,\% lower than at \SI{250}{g}. With a utilisation of 0.04 in the strength check (\cref{sec:strength}) this difference does not change any conclusion.
