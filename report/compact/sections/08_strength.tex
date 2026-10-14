@@ -1,7 +1,7 @@
 % 08_strength.tex
-\section{Strength and capacity}\label{sec:strength}
+\section{Strength assessment and failure hierarchy}\label{sec:strength}
 
-\subsection{Strength}
+\subsection{Static strength}
 
 Stresses come from the final thresholded model in the four design load cases. Each part is printed with its layers in the $xy$ plane, the tub on its landing face, so the global $z$ axis is the build direction and three checks apply to every solid element:
 
@@ -35,7 +35,7 @@ Every part passes in every case (\cref{fig:strength}). The highest utilisation i
 \caption{von Mises stress in the landing case on a scale from 0 to the 99.9th percentile of the whole frame, in plan, side and front view. On the scale of the 36.3\,MPa limit the whole frame is the lowest colour.}\label{fig:stress}
 \end{figure}
 
-\subsection{Failure order}
+\subsection{Capacity design and failure order}
 
 Capacity design asks the arm to fail before the joint, with a margin of 1.5, so that a crash costs one arm. A vertical tip force $F$ at the motor axis ($u_m = \SI{74.25}{mm}$ from the frame centre) bends each arm section at $u$ with a lever $u_m - u$, and the section fails at the force
 \begin{equation}

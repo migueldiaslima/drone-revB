@@ -1,7 +1,7 @@
 % 09_integration.tex
-\section{Integration and manufacture}\label{sec:integration}
+\section{Manufacturing and integration}\label{sec:integration}
 
-\subsection{Print geometry}
+\subsection{Print geometry and modal verification}
 
 The printed parts are built from the density field at an iso level of 0.3. The iso surface is smoothed and trimmed to the design envelope, and the fixed regions are restored from the exact CAD solids, so every hole, seat, bolt boss and motor pad is exact. The keel zone behind the tub is cleaned and replaced by the exact keels. Scripted checks on the print geometry confirm that each part is one piece, that no material intrudes into a keep-out (largest overlap \SI{0.215}{mm^3}, meshing noise) and that the parts do not overlap one another. The final thresholded check, run with the exact keels on the same iso level, gives a first elastic mode of \SI{431.0}{Hz} and every compliance at or below 0.91 of its cap (\cref{fig:modes}). Modes 8 and 10 are arm bending modes; modes 7 and 9 couple the arms with the tail of the antenna spine, which carries the \SI{2.24}{g} antenna; mode 11 is the spine tail itself, \SI{40}{Hz} above the requirement; mode 12 moves the whole frame with the lid plate.
 
@@ -30,7 +30,7 @@ A fit-test print of the tub, lid and four arms in PLA+ was assembled before the 
 \caption{Fit-test print of the frame in PLA+: tub, lid and four arms assembled, without components.}\label{fig:fittest}
 \end{figure}
 
-\subsection{Retainers}
+\subsection{Component retention}
 
 Components are held by designed seats and three small TPU 95A parts.
 
@@ -40,7 +40,7 @@ Components are held by designed seats and three small TPU 95A parts.
 \item The antenna holder (\SI{0.94}{g}) clips around both legs of the T antenna with C-clips that wrap \SI{277}{\degree} and is fixed to the keel pad by one M2 screw into a heat-set insert, with a peg for location. The antenna cable bends at a radius of \SI{7}{mm} on its way through the keel, more than six times its diameter.
 \end{itemize}
 
-\subsection{Mass and cost}
+\subsection{Mass and cost breakdown}
 
 \begin{table}[htbp]
 \centering\small

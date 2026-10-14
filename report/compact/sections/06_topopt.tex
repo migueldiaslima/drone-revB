@@ -1,7 +1,7 @@
 % 06_topopt.tex
 \section{Topology optimisation}\label{sec:topopt}
 
-\subsection{Formulation}
+\subsection{Problem formulation}
 
 Topology optimisation describes the part by a density $x_e$ between 0 and 1 in every finite element of the design region. Solid material has density 1; void has density close to 0. The stiffness of each element is interpolated so that intermediate densities are inefficient, which pushes the solution towards solid and void. In the classical SIMP form,
 \begin{equation}
@@ -17,7 +17,7 @@ The optimisation minimises the volume under the frequency requirement and one st
 \end{align}
 The frequency constraint applies to the first six elastic modes of the free-free structure (modes 1 to 6 are rigid-body motions). Each compliance $C_j$, twice the strain energy under load case $j$, is capped at twice its value for the solid design space, which bounds the deflection in every load case without weighting one against another. Strength is checked afterwards on the final geometry. A minimum member size of \SI{2.5}{mm}, six extrusion lines, keeps every member printable.
 
-\subsection{Model and runs}
+\subsection{Finite-element model and optimisation runs}
 
 The model is built in Abaqus/CAE and solved with Abaqus and Tosca Structure~\citep{abaqus_tosca}. The tub, lid and four arms are meshed with quadratic tetrahedra (C3D10) at \SI{1.0}{mm}, \num{765252} elements in total, with the transversely isotropic material of \cref{sec:material}. Components enter as point masses on distributing couplings at their seats (\SI{199.58}{g} in total). The arms are tied to the fins, the lid to the tub seat. Every static step uses inertia relief with three-point supports, and the support reactions are checked to stay below \SI{1e-6}{N} (\cref{fig:modelsetup}).
 
