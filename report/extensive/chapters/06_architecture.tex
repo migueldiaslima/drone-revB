@@ -1,4 +1,172 @@
 % 06_architecture.tex
 \chapter{Architecture, joint and design space}\label{sec:architecture}
 
-% to be written (see docs/report_brief.md section 6)
+Topology optimisation decides where material goes inside a region; it does not decide what the region is. This chapter sets everything the optimiser takes as given: the layout of motors and battery, the split into parts, the joint between arm and body, and the design space, made of the regions the optimiser may fill or empty, the regions it must keep and the regions it must leave empty.
+
+\section{Layout}\label{sec:arch-layout}
+
+\subsection{True X and wheelbase}
+
+The motors sit on a true X: four identical arms at \ang{45} to the axes. In a true X adjacent motors are $W/\sqrt2$ apart, with $W$ the wheelbase (the distance between opposite motor axes), so a propeller gap $g$ between adjacent discs of diameter $D$ requires
+\begin{equation}
+W = \sqrt2\,(D + g).
+\end{equation}
+For the \SI{88.9}{mm} propellers, gaps of 5, 10 and \SI{15}{mm} give wheelbases of 132.8, 139.9 and \SI{146.9}{mm}. The true X gives the shortest arms for a given gap, and arm length is expensive: \cref{sec:arch-arm} shows that the bending stiffness an arm needs for a given frequency grows with the cube of its free length. A squashed X (a longer front-to-back spacing) would add 24 to 54\,\% of arm stiffness on one pair of arms for an aspect ratio of 1.1 to 1.2, but its advantages, a clear camera view and different pitch and roll tuning, do not apply to this aircraft. The true X also makes the four arms identical, so one spare fits every position (R10).
+
+The final layout puts the motor axes at $(\pm52.5, \pm52.5)$\,mm, a wheelbase of
+\begin{equation}
+W = 2 \times 52.5\sqrt2 = \SI{148.5}{mm},
+\end{equation}
+and a gap of $105 - 88.9 = \SI{16.1}{mm}$ between adjacent discs. The first design space used \SI{140}{mm}; the second moved every corner outwards by \SI{3}{mm} in $x$ and $y$ to give the flight controller room for assembly (\cref{sec:iterations}), which kept the arms, the joint and the arm-to-motor geometry unchanged. The cost was a 6\,\% larger pitch and roll moment in LC2b and 12\,\% more motor contribution to the roll and pitch inertia.
+
+\subsection{Battery position}
+
+The battery can hang below the frame or sit on top. At \SI{140}{mm} each propeller disc overlaps the battery's corners in plan view (motor axis \SI{39.9}{mm} from the corner against a disc radius of \SI{44.45}{mm}), so a battery on top must either sit above the blades or push the wheelbase to at least \SI{155.6}{mm} for \SI{3}{mm} of clearance. Measured on a reference build with the same motors and propellers, the blades sweep between 13 and \SI{18.5}{mm} above the arm top face. A raised battery plate at 21.5 to \SI{24}{mm} clears the blade tops by \SI{3}{mm}, the battery by \SI{5.5}{mm}, and keeps the wheelbase short.
+
+The choice between a raised top mount and a bottom mount does not change the roll inertia much. A lumped-mass estimate,
+\begin{equation}
+I_\text{roll} = \sum_i m_i \left(y_i^2 + (z_i - z_\text{CG})^2\right) + \sum_i I_{\text{own},i},
+\end{equation}
+gives about 240 against \SI{250e-6}{kg.m^2} at equal wheelbase, 4\,\%; an earlier comparison that also widened the wheelbase to \SI{156}{mm} showed 18\,\%, almost all of it from the motors moving outwards, because the motors are the outermost masses. A low centre of gravity gives no pendulum stability on a fixed-pitch multirotor, because the thrust is fixed to the body. What the centre of gravity does change is coupling: an offset from the rotor plane couples translation into rotation through rotor drag. The raised top mount puts the centre of gravity at about $z = +21$\,mm, close to the blade plane, so the aircraft behaves the same upright and inverted. It also sends the punch-out load into the battery plate in compression and leaves the frame bottom free to take landings. The cost is a taller centre body and a GPS position away from the battery, at the rear.
+
+\subsection{Rejected: a ring between the motors}
+
+A ring joining the motors was considered and rejected. In the umbrella mode, the lowest mode of a true X with all four arm tips moving together, a ring between the tips only translates with them: it adds mass where the motion is largest and no stiffness, so it lowers that frequency. It stiffens the saddle, rocking and in-plane scissor modes, but an inner ring would sit under both propeller discs over about \SI{89}{mm} of its \SI{99}{mm} span per side, with about 2.2 times the download of an arm per millimetre of width. An outer ring, a propeller guard, avoids download but weighs an estimated 20 to \SI{30}{g} against a \SI{61.4}{g} frame budget and answers no requirement.
+
+\section{The arm}\label{sec:arch-arm}
+
+\subsection{First-order sizing}
+
+An arm carrying its motor and propeller is, to first order, a cantilever from a rigid body with a tip mass $m_\text{tip} = \SI{13.75}{g}$ (motor \SI{11.6}{g}, propeller \SI{1.75}{g}, screws \SI{0.4}{g}). Its first bending frequency fixes the tip stiffness, as in \cref{sec:material-index}, and with $k = 3EI/L^3$:
+\begin{equation}
+EI = \frac{(2\pi f)^2\, m_\text{tip}\, L^3}{3}.
+\end{equation}
+The required bending stiffness grows with the cube of the free length. The tip deflection under the maximum thrust follows from the same two equations and does not depend on the arm at all:
+\begin{equation}
+\delta = \frac{F}{k} = \frac{F}{m_\text{tip}(2\pi f)^2} = \frac{5.04}{0.01375 \times (2\pi \times 290)^2} = \SI{0.11}{mm}.
+\end{equation}
+An arm stiff enough for \SI{290}{Hz} deflects a tenth of a millimetre under full thrust, so the frequency requirement, not deflection, sizes the arm. For a solid arm \SI{8}{mm} wide with \SI{50}{mm} of free length, \SI{290}{Hz} needs a section 7 to \SI{11}{mm} tall for moduli of 8 to \SI{2}{GPa}; \SI{600}{Hz} needs 12 to \SI{18}{mm}; and a first mode above hover 3P with 20\,\% margin (\SI{870}{Hz}) would need 15 to \SI{23}{mm}. Height costs mass but no download, while width costs both (\cref{sec:sizing-width}), so printed arms favour tall, narrow or truss sections.
+
+\subsection{Upper bound: a solid arm}
+
+Before any optimisation, a beam model checks that the target is reachable. A fully solid arm corridor \SI{10}{mm} wide, tapering in depth from 15 to \SI{6}{mm} over its \SI{41.7}{mm} free length, with the tip mass and a clamped root, reaches \SI{736}{Hz} with the in-plane modulus and \SI{557}{Hz} with the across-layer modulus, for \SI{5.7}{g} of arm. The clamp and the rigid body make this an upper bound for the arm alone, but it shows that \SI{417}{Hz} is within reach of the material with margin to spare for the joint and the body.
+
+\subsection{Arm envelope}
+
+How deep the arm may be along its length decides how efficiently it reaches the target, because bending stiffness grows with the cube of depth. Three profiles of the arm's top face were compared with an energy method on a Timoshenko beam (\cref{tab:arch-profiles}), all \SI{10}{mm} wide with the bottom rising from $z = -15$ to $-6$\,mm and the motor keep-out edge \SI{30.2}{mm} from the root.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Arm top-face profiles: first frequency and mass at a width of \SI{10}{mm}, and the width that gives \SI{687}{Hz} (clamped root, solid sections).}\label{tab:arch-profiles}
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Profile & Frequency at \SI{10}{mm} & Mass at \SI{10}{mm} & Width for \SI{687}{Hz} (mass)\\
+\midrule
+C: flat top at $z = 0$ & \SI{687}{Hz} & \SI{5.7}{g} & \SI{10.0}{mm} (\SI{5.7}{g})\\
+B: ramp from $z = +10$ to 0 at the motor & \SI{999}{Hz} & \SI{7.7}{g} & \SI{4.6}{mm} (\SI{3.5}{g})\\
+A: flat at $z = +10$ to the motor, then step & \SI{1277}{Hz} & \SI{9.6}{g} & \SI{2.8}{mm} (\SI{2.7}{g})\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+For the same frequency, profile A needs \SI{2.7}{g} per arm against \SI{5.7}{g} for C. The envelope therefore takes the deepest profile the propellers allow: the top face at $z = +10$, \SI{3}{mm} below the lowest blade, from the root to the motor keep-out, then a step down to the motor pad with a fillet of radius \SI{3}{mm}. The envelope is up to \SI{20}{mm} wide at the root and \SI{10}{mm} at the pad, blended tangentially into the pad flange, with the clearances for the motor screw heads, the shaft clip and the motor wires kept free under the pad. The optimiser carves the actual profile inside it. A tapered width also helps the in-plane modes: a root \SI{16}{mm} wide tapering to \SI{10}{mm} raises the first frequency by 16\,\% and the in-plane stiffness by 2.8 times for \SI{1.9}{g} more.
+
+The underside of the arm rises from the body floor at $z = -15$ to $z = -6$ at the tip, \SI{9}{mm} of ground clearance, so the body is the landing point and the aircraft can tilt about \ang{12} before a motor touches the ground.
+
+\section{The arm joint}\label{sec:arch-joint}
+
+\subsection{Why bolt-on arms}
+
+A one-piece frame is lighter and needs no joint analysis. Bolt-on arms were chosen for three reasons: they define where a crash breaks the frame (R4), they make the repair one printed part that fits all four positions (R10), and the joint is the most demanding piece of airframe design in the project, a connection at the peak bending moment. The cost is the joint's mass and its modelling.
+
+\subsection{Four concepts}
+
+Four joints were drawn with M3 bolts and heat-set inserts.
+\begin{itemize}
+\item \textbf{Corner pocket and plug}: the arm root plugs into a pocket in the body corner. The plug ran through the flight-controller space and left a \SI{2}{mm} floor under the pocket, too thin for an insert. It does not fit beside the \SI{33}{mm} board.
+\item \textbf{Socket pocket}: a socket block added to the body corner holds a \SI{16}{mm} deep pocket, and two vertical bolts from the top clamp the plug. The root moment passes as a contact couple between the pocket roof and floor. It fits, but the arm root starts \SI{40}{mm} from the centre, which leaves a free length of only about \SI{30}{mm} and moves the joint outwards.
+\item \textbf{Fin and fork}: a vertical fin on the body corner; the arm root is a fork whose two prongs straddle the fin; two horizontal bolts pass through prong, fin and prong into an insert in the far prong. The root moment passes through the bolts in shear and through clamp friction.
+\item \textbf{Lap joint}: an arm flange slides into a recess under the body floor, held by two bolts from below. It is the lightest, with the shortest bolts, but when thrust lifts the arm the inner bolt pulls its insert across the layers, the weakest direction of the printed material, and the recess conflicts with the skid.
+\end{itemize}
+The fin and fork was chosen. It fits beside the flight controller, the deep fin continues the deep arm section into the body, the bolts work in shear, the inserts are loaded along the layer plane, and the bolts are reachable from the side below the propellers.
+
+\subsection{Sizing}
+
+The joint fails in bearing: the bolt pushes on the hole wall of the fin or the prongs. With no bearing data for the material, the bearing allowable is taken as the in-plane tensile strength, $S_{xy} = \SI{54.4}{MPa}$; confined bearing in printed parts is usually above the tensile strength, so this is conservative. The bearing force a hole of diameter $d$ in a wall of thickness $t$ carries is
+\begin{equation}
+F_b = S_{xy}\, d\, t.
+\end{equation}
+For an M3 bolt in a \SI{10}{mm} fin:
+\begin{equation}
+F_b = 54.4 \times 3 \times 10 = \SI{1632}{N}.
+\end{equation}
+The two prongs share the same bolt, so fin and prongs carry the same bearing force when $t_\text{fin} = 2t_\text{prong}$; with \SI{5}{mm} prongs the fork is \SI{20}{mm} wide and the joint is balanced. Two bolts stacked vertically at a spacing $s = \SI{13}{mm}$ resist a vertical bending moment with a couple:
+\begin{equation}
+M_j = F_b\, s = 1632 \times 13 = \SI{21216}{N.mm}.
+\end{equation}
+A fin of \SI{8}{mm} with \SI{6}{mm} prongs would give \SI{1306}{N} and \SI{16973}{N.mm}. In LC1 each bolt carries about \SI{12}{N}, so the joint is far from its capacity in flight; its size is set by the failure order. Capacity design asks the arm to fail at a tip force no more than $1/1.5$ of the joint's, which at the planning stage set a limit on the arm's section modulus at the fork exit:
+\begin{equation}
+Z \leq \frac{M_j}{1.5\, S_{xy}} = \frac{21216}{1.5 \times 54.4} = \SI{260}{mm^3}.
+\end{equation}
+This limit compares moments at one section. \Cref{sec:strength} shows that the correct comparison is between tip forces, each with its own lever, and checks it on the printed arm. Sideways, the fork resists the in-plane moment with its full \SI{20}{mm} width and the order holds by a factor of 8.5. The fin root itself must be at least 1.5 times as strong as the arm, a section modulus of at least \SI{390}{mm^3}. The bolts are steel M3 $\times$ 20, two per arm.
+
+\subsection{Detail rules}
+
+The load must pass only through the bolts and the clamped side faces, so every other contact is kept open by design. The slot ends in a full semicircle and the fin nose is rounded, with a \SI{0.5}{mm} gap at the nose; the fin root has fillets of radius \SI{5}{mm} and the prong tips are rounded to clear them by \SI{0.5}{mm}. The fin sides and the inner prong faces are flat and parallel with a gap of \SI{0.15}{mm} per side, closed by the bolt preload. The nose and fillet gaps must never close under the print tolerance stack-up of about $\pm\SI{0.2}{mm}$ per part, the play of a \SI{3.2}{mm} hole on a \SI{3}{mm} bolt, and the joint's own deflection; the side gap only has to allow assembly. Spot faces leave at least \SI{3}{mm} of material under each bolt head. The insert sits in the far prong, inserted from its outer face against a \SI{2}{mm} shoulder, so the bolt preload pushes the insert against the shoulder and never pulls it out.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.8\linewidth]{R4_joint}
+\caption{Fin and fork joint on the printed parts: the tub fin between the arm prongs, two M3 bolts stacked vertically.}\label{fig:arch-joint}
+\end{figure}
+
+\section{Tub and lid}\label{sec:arch-tub}
+
+The centre body is an open tub with a removable lid (\cref{fig:arch-exploded}). The flight controller is \SI{33}{mm} square, and windows large enough to pass it through a side wall would remove most of a wall. A lid gives a vertical insertion path, a straight tool path to every screw and solder pad, and keeps the battery plate as one stiff part. The tub is topology-optimised: floor, walls, fins, the rear keel and the GPS deck. The lid carries the battery plate and is held by four M2 countersunk screws into heat-set inserts in bosses on the front and rear walls. The GPS sits on a deck at the rear of the tub; the receiver, the GPS and the receiver antenna are held by three small TPU retainers (\cref{sec:retainers}), with no glue or tape anywhere.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.92\linewidth]{R2_exploded}
+\caption{Exploded view of the printed frame: tub, lid and four identical arms in PET-CF, retainers in TPU.}\label{fig:arch-exploded}
+\end{figure}
+
+The flight controller is soft-mounted on four through-bosses: M2 screws from below in \SI{1.5}{mm} counterbores, so the floor stays flush for the skid, with damping rings, grommets and anti-loosening nuts from above. The board is rotated so its USB-C port faces $-y$ and its battery pads face forward, which the flight software corrects with a board-alignment angle and a motor remap.
+
+\section{Design space}\label{sec:arch-designspace}
+
+\subsection{Three kinds of region}
+
+The optimiser needs three kinds of region (\cref{fig:arch-fixed}).
+\begin{itemize}
+\item \textbf{Design regions} are the envelope the optimiser may fill or empty: the tub inside its outline, the interior of the battery plate, and each arm inside its envelope.
+\item \textbf{Fixed regions} are material it must keep: motor pads and their screw bosses, the bolt bosses of the joint on fin and prongs, the flight-controller bosses, the battery-plate frame and strap band, the lid screw bosses and pads, the GPS deck with its pocket and cap bosses, and the antenna spine (\cref{sec:iterations}).
+\item \textbf{Keep-outs} are space it must leave empty: the propeller sweep plus \SI{3}{mm}, the motors, the flight-controller bay and its insertion prism, the space above the board for the receiver and the capacitor, the nut access columns, the strap passage, the cable channels and windows, and the USB plug path.
+\end{itemize}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.92\linewidth]{R6_fixed_regions}
+\caption{Fixed regions (orange) inside the design envelope of the tub and an arm.}\label{fig:arch-fixed}
+\end{figure}
+
+Interfaces are fixed only where they have a function. The battery plate keeps a \SI{3}{mm} perimeter frame and the strap band ($x$ within $\pm\SI{9}{mm}$), and its interior is design space. The motor pads keep the \SI{6}{mm} screw bosses and the motor contact ring of 16 to \SI{20.8}{mm}, and the rest of the pad is design space: material at the arm tip is where mass costs frequency most. The joint bosses are \SI{12}{mm} cylinders along the bolt axis through the full fork width, extended upwards over their width to the arm top, so that design and fixed faces meet cleanly and the extension above the upper bolt is the \SI{6}{mm} edge distance of the sizing.
+
+\subsection{Assembly in the design space}
+
+A design space that only says where each component sits lets the optimiser fill every path a component, a tool or a cable needs to get there. \Cref{sec:iterations} describes how this was found. The final design space was drawn around a thirteen-step assembly sequence: solder the power lead and capacitor on the bench; bolt the arms with their motors; seat the flight controller from above through an insertion prism; drive its screws from below and the nuts from above; solder the motor leads; fit the receiver cradle and the receiver; pass the power lead out through a front window and solder its connector outside; route the antenna and the GPS cable through their channels; close the lid; fit the GPS, its cap, the battery and the strap. Every component received an insertion path, a tool path and a cable path as keep-outs, and an automated clash test sweeps each component along its path. To give the board \SI{4}{mm} of clearance on every side, the centre body grew to $46\times46$\,mm with the bay at $\pm\SI{20.5}{mm}$, and the corners moved outwards as described in \cref{sec:arch-layout}.
+
+\subsection{Geometry checks at export}
+
+The design space is generated by a script from one set of parameters, so figures, optimisation model and reference geometry cannot drift apart. Before every export a set of scripted checks must pass, each named by what it checks.
+\begin{itemize}
+\item \textbf{File identity}: solid count, names, and design and fixed volumes of every file against the export record.
+\item \textbf{Boolean bookkeeping}: design plus fixed equals the envelope minus the keep-outs for every part; design and fixed do not overlap; no keep-out contains material; every fixed solid is kept by a load, a mass or a fixed link within its own part.
+\item \textbf{Face quality}: after a general fuse, no face smaller than \SI{0.5}{mm^2} or narrower than \SI{0.3}{mm}.
+\item \textbf{Tangency}: every new feature at least \SI{1.0}{mm} (one production element) from every other boundary, or crossing it at \ang{30} or more. Near-tangent boundaries produce slivers the mesher cannot fill.
+\item \textbf{Test meshing}: an independent mesher at 1.5 and \SI{1.0}{mm}, with every low-quality element located and explained.
+\item \textbf{Clearances}: component dummies against every part, the propeller sweep and each other, including the insertion sweeps, with nine named minimum clearances.
+\end{itemize}
+
+\subsection{Volumes}
+
+The final design space holds \SI{39538.5}{mm^3} of design and \SI{12796.3}{mm^3} of fixed material in the tub (seventeen fixed cells, among them the GPS deck at \SI{1218.6}{mm^3}), \SI{2357.0}{mm^3} of design and \SI{3417.1}{mm^3} of fixed material in the lid, and \SI{8036.9}{mm^3} of design and \SI{2933.5}{mm^3} of fixed material in each arm. At full density with all point masses, the model weighs \SI{332.16}{g}; the components, hardware and retainers enter as \SI{199.58}{g} of point masses. The lid rests on the tub rim over a seat of \SI{363.23}{mm^2} on the tub side.
