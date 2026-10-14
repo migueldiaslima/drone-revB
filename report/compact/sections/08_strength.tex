@@ -41,9 +41,9 @@ Capacity design asks the arm to fail before the joint, with a margin of 1.5, so 
 \begin{equation}
 F_\text{arm}(u) = \frac{S_{xy}\, Z(u)}{u_m - u},
 \end{equation}
-where $Z$ is its section modulus. The joint fails at its moment capacity divided by its own lever to the motor, $F_\text{joint} = \num{21216}/(u_m - u_j)$ with the bolts at $u_j = \SI{37.24}{mm}$. The weakest arm section, from the printed geometry, is just inside the motor pad at $u$ = 61 to \SI{62}{mm}, with $Z = \SI{131.9}{mm^3}$, and the ratio of the two forces is
+where $Z$ is its section modulus. The joint fails at its moment capacity divided by its own lever to the motor, $F_\text{joint} = \num{21216}/(u_m - u_j)$ with the bolts at $u_j = \SI{37.24}{mm}$. The weakest arm section, from the printed geometry, is just inside the motor pad at $u$ = 61 to \SI{62}{mm}, with $Z = \SI{131.9}{mm^3}$ on a lever of \SI{13.25}{mm}, so $Z/(u_m - u) = \SI{9.96}{mm^2}$. The ratio of the two failure forces is
 \begin{equation}
-\frac{F_\text{arm}}{F_\text{joint}} = \frac{54.4 \times 9.96 \times 37.00}{\num{21216}} = 0.95.
+\frac{F_\text{arm}}{F_\text{joint}} = \frac{S_{xy}\, Z/(u_m - u)}{\num{21216}/(u_m - u_j)} = \frac{54.4 \times 9.96 \times 37.00}{\num{21216}} = 0.95.
 \end{equation}
 Arm and joint fail at about the same force (\cref{fig:capacity}), so the failure location is not controlled; a margin of 1.5 needs a ratio of 0.67 or less. This follows from first principles: a frequency-optimised arm puts its depth where the moment is largest, so only the slim section near the motor competes with the joint, and inside the joint the fin and the prongs were sized with equal bearing area. Sideways the order holds with a factor of 8.5, and the fin root keeps \SI{957.2}{mm^3} against the \SI{390}{mm^3} it needs.
 

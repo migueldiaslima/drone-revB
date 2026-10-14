@@ -9,7 +9,7 @@ E(x_e) = x_e^{\,p}\,E_0, \qquad m(x_e) = x_e\, m_0, \qquad p = 3,
 \end{equation}
 so half-density material carries half the mass but only one eighth of the stiffness~\citep{bendsoe_sigmund}. Tosca's interpolation, measured from its output tables, keeps the mass linear and the stiffness at about 0.19 times the density at low density, rising to the cube near solid.
 
-The problem was posed as the real goal of the frame:
+The optimisation minimises the volume under the frequency requirement and one stiffness cap per load case:
 \begin{align}
 \min_{\vect{x}} \quad & V(\vect{x}) \nonumber\\
 \text{subject to} \quad & f_i(\vect{x}) \ge \SI{417}{Hz}, \quad i = 7,\dots,12,\\
@@ -21,7 +21,7 @@ The frequency constraint applies to the first six elastic modes of the free-free
 
 The model is built in Abaqus/CAE and solved with Abaqus and Tosca Structure~\citep{abaqus_tosca}. The tub, lid and four arms are meshed with quadratic tetrahedra (C3D10) at \SI{1.0}{mm}, \num{765252} elements in total, with the transversely isotropic material of \cref{sec:material}. Components enter as point masses on distributing couplings at their seats (\SI{199.58}{g} in total). The arms are tied to the fins, the lid to the tub seat. Every static step uses inertia relief with three-point supports, and the support reactions are checked to stay below \SI{1e-6}{N}.
 
-The runs were staged so that each one removed one risk before the expensive one: a reference job comparing solver versions within \SI{0.5}{\percent}, a three-cycle smoke test, a coarse run to see the first shape and the mode behaviour, and the production run at \SI{1.0}{mm} on a 64-core server. The production run took 28 cycles in 7\,h\,34\,min, about 15.5 minutes per cycle on 60 threads, and reduced the design volume from \num{74242} to \SI{33100}{mm^3}, \SI{55.4}{\percent} less (\cref{fig:history}). The frequency constraint became active at cycle 4 and stayed active; between cycles 15 and 22 the optimiser overshot, with the first elastic mode down to \SI{325.1}{Hz}, and recovered by cycle 23.
+The runs were staged so that each one removed one risk before the expensive one: a reference job comparing solver versions within \SI{0.5}{\percent}, a three-cycle smoke test, a coarse run to see the first shape and the mode behaviour, and the production run at \SI{1.0}{mm} on a 64-core server. The production run took 28 cycles in 7\,h\,34\,min, about 15.5 minutes per cycle on 60 threads, and reduced the design volume from \num{74242} to \SI{33100}{mm^3}, \SI{55.4}{\percent} less (\cref{fig:history}). The frequency constraint became active at cycle 4; between cycles 15 and 22 the optimiser overshot, with the first elastic mode down to \SI{325.1}{Hz}, and recovered by cycle 23.
 
 \begin{figure}[htbp]
 \centering

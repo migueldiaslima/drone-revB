@@ -15,7 +15,7 @@ The rule was then applied part by part. A lid boss on the keel carried the tie t
 
 With the deck on the tub the connectivity check passed at every iso level from 0.3 to 0.5, yet the thresholded model failed: the first elastic mode was a GPS deck mode at \SI{146.8}{Hz}. In the optimisation the deck was carried at \SI{461.7}{Hz} by a wide block of keel material with densities mostly below 0.15. Such material is penalised in stiffness but still contributes, and no threshold keeps it, so the printed deck hung from two thin straps.
 
-Five supports were tested on the saved density field without a new optimisation (\cref{tab:keels}). A local low threshold failed, so the optimiser had not formed a structure there at all. Two full side webs passed. The adopted design cleans the keel zone of all design material and adds two shapes drawn by hand: twin tapered keels hanging from the deck (A), whose depth grows towards the rear wall where their bending moment is largest, and a thin web under the antenna sleeve (B) that braces the antenna mount (\cref{fig:keels}).
+Five supports were tested on the saved density field without a new optimisation (\cref{tab:keels}). A local low threshold failed, so the optimiser had not formed a structure there at all. Two full side webs passed. Web B alone does not reach the deck and fails. The adopted design cleans the keel zone of all design material and adds two shapes drawn by hand: twin tapered keels hanging from the deck (A), whose depth grows towards the rear wall where their bending moment is largest, and a thin web under the antenna sleeve (B) that braces the antenna mount (\cref{fig:keels}).
 
 \begin{table}[htbp]
 \centering\small
@@ -27,6 +27,7 @@ Support & Model mass & First elastic mode & LC3a compliance / cap & Result\\
 As optimised, iso 0.4 & \SI{281.3}{g} & \SI{146.8}{Hz} & 1.20 & fail\\
 Local iso 0.15 in the keel & \SI{281.5}{g} & \SI{380.6}{Hz} & 0.99 & fail\\
 Two side webs & \SI{283.4}{g} & \SI{430.7}{Hz} & 0.93 & pass\\
+Keel zone cleaned, web B only & \SI{281.1}{g} & \SI{7.8}{Hz} & 28.05 & fail\\
 Keel zone cleaned, keels A & \SI{282.2}{g} & \SI{420.7}{Hz} & 0.95 & pass\\
 Keel zone cleaned, keels A and web B & \SI{282.3}{g} & \SI{428.4}{Hz} & 0.94 & pass\\
 \bottomrule
