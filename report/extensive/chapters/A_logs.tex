@@ -1,4 +1,146 @@
 % A_logs.tex
 \chapter{Decision log, numbers and assumptions}\label{sec:logs}
 
-% to be written (see docs/report_brief.md section 6)
+\section{Decision log}\label{sec:logs-decisions}
+
+The decisions that shaped the frame, in the order they were taken, numbered for this report. Each records what was decided, the options weighed and the reason.
+
+\small
+\begin{xltabular}{\linewidth}{@{}r>{\raggedright\arraybackslash}p{0.36\linewidth}X@{}}
+\toprule
+No. & Decision & Options and reason\\
+\midrule
+\endfirsthead
+\toprule
+No. & Decision & Options and reason\\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+1 & Baseline battery: four-cell \SI{850}{mAh}, \SI{100}{g} & The pack that is bought and flown; a lighter high-voltage \SI{1100}{mAh} pack is reported for information only\\
+2 & Printer: Bambu Lab P1S & The available printer; it sets the printability gate of the material study\\
+3 & Material chosen by an open trade study over all candidate filaments & Shows the selection logic in full; the chosen filament is assumed bought\\
+4 & Component masses from manufacturers' data & Faster than weighing; labelled as data-sheet values in the budget\\
+5 & Commercial carbon frame as a reference, not a target & Printed thermoplastic cannot match continuous-fibre plate on specific stiffness; the comparison quantifies the gap and the cost saving\\
+6 & Physical testing reduced to a test plan & Effort goes to design, optimisation and analysis\\
+7 & Mass requirement: take-off mass below \SI{250}{g} with GPS, without payload; frame budget \SI{61.4}{g} & EU open category A1; its \SI{19}{m/s} speed limit is acknowledged and left to the flight firmware\\
+8 & Factor of safety 1.5 on printed allowables & Conventional aircraft ultimate factor\\
+9 & Flight time and thrust-to-weight are outputs, not requirements & Set by the components; the frame acts on them only through mass, which the mass requirement controls; ten grams cost less flight time than the model's uncertainty\\
+10 & Camera payload excluded from the baseline & Keeps the work focused on the frame; next step\\
+11 & Hover power model $a n^3 + b n$, with $a n^3 + c$ as the conservative bound & Only these two pass the efficiency-trend test; the chosen one has physical terms and the better fit\\
+12 & Arm root moment from the full thrust, without the motor's inertia relief & The relief disappears in asymmetric manoeuvres and when the aircraft is restrained\\
+13 & Motor thermal check by rating comparison; heat deflection gate of \SI{70}{\celsius} on the material & Hover draws about 7\,\% of the motor's rated peak; the frame-relevant question is the mount temperature against the material\\
+14 & True X layout, wheelbase \SI{148.5}{mm}, propeller gap \SI{16.1}{mm} & Shortest arms for a given gap; four identical arms; the wheelbase grew from \SI{140}{mm} to give the flight controller assembly room without changing the arms\\
+15 & Battery on top, on a raised plate above the blade tips & Centre of gravity near the rotor plane, punch-out load into the plate in compression, frame bottom free for landings; roll inertia within 4\,\% of a bottom mount\\
+16 & Structural direction: printed centre body topology-optimised, tall narrow tapered arms & Puts printing where it is strong, in three-dimensional nodes and deep sections; narrow arms keep the download low\\
+17 & No ring between the motors & Adds no stiffness to the umbrella mode and lowers it; an inner ring doubles the download per millimetre; an outer guard weighs 20 to \SI{30}{g}\\
+18 & Body floor level with the arm bottoms; strap across the battery width through a tunnel & The root moment passes into the body over the full arm depth; the strap stays out of the propeller clearance\\
+19 & Voids for components and wiring, then insertion, tool and cable paths for every component & Without them the optimiser fills the space and the paths; checked by sweeps in a clash test\\
+20 & Crash case by capacity design: arm the weakest link, joint and body sized for 1.5 times its failure load & A crash speed gives arbitrary forces; capacity design fixes where failure occurs\\
+21 & First free-free elastic mode at least \SI{290}{Hz}, goal \SI{417}{Hz} & The goal halves the response at hover 1P and leaves margin for modelling error, at about twice the stiffness of the minimum\\
+22 & Landing: firm landing as a design case, motor cut as a survivability check; thin sacrificial skid & Ground pressure is negligible; the deceleration of each mass loads the structure\\
+23 & Arm underside rising to \SI{9}{mm} of ground clearance at the tip & The body is the landing point; about \ang{12} of tilt before a motor touches\\
+24 & Material: Siraya Fibreheart PET-CF, unannealed; design values with a 0.85 knockdown & Best cost and performance after independent tests removed the leading candidate's across-layer advantage; passes the heat gate unannealed\\
+25 & Skid: TPU, sliding into a dovetail in the floor, no screws & Landing presses it on, scraping acts along the dovetail; replaceable without tools\\
+26 & Optimiser: Abaqus with Tosca Structure & Documented frequency constraint with mode handling; the same model serves the strength check\\
+27 & Free-flying cases with inertia relief and 3-2-1 supports & A clamp carries load that does not exist in flight and attracts material; determinate supports carry nothing\\
+28 & Formulation: minimum volume, modes 7 to 12 at least \SI{417}{Hz}, one compliance cap per case & States the real goal; one limit per case removes the weighting problem\\
+29 & The printed part is the smoothed optimised surface, with exact fixed regions restored & A manual rebuild loses the load paths and is not more printable\\
+30 & Transversely isotropic material, build direction $z$ & Arms bend in the layer plane, walls and joints load across it\\
+31 & Arm envelope at the full depth the propellers allow & For the same frequency the deep profile needs half the arm mass\\
+32 & Fin-and-fork joint with two horizontal M3 bolts & Fits beside the flight controller, continues the deep arm into the body, bolts in shear, inserts along the layers\\
+33 & Joint detail rules: load through bolts and clamped faces only, gaps sized by function & Defines the load path; nose and fillet gaps never close under tolerances\\
+34 & Joint sizing: fin \SI{10}{mm}, prongs \SI{5}{mm}, bolts \SI{13}{mm} apart & Fin and prongs balanced in bearing; capacity \SI{21216}{N.mm}\\
+35 & Failure order and fin-root strength checked on the optimised geometry & The optimised arm is unknown until the optimisation ends\\
+36 & Interfaces fixed only where they function: plate frame and strap band, motor screw bosses and contact ring & Material at the arm tip costs frequency most\\
+37 & Joint bosses as through-cylinders extended to the arm top & Removes slivers that the mesher cannot fill; one split rule for the whole model\\
+38 & Minimum member size \SI{2.5}{mm}, mesh \SI{1.0}{mm} & Six extrusion lines; the restriction needs more than twice the element size\\
+39 & Identical arms enforced by a cyclic symmetry restriction & One spare fits all four positions; the body stays free because the loads are not symmetric\\
+40 & Runs staged: reference, smoke test, coarse run, production & Each stage removes one risk before the expensive run\\
+41 & Caps at twice the solid compliance on the same mesh & A finer mesh is more flexible; caps from a coarser mesh would be too tight\\
+42 & Mass requirement not met at \SI{417}{Hz}; accepted; frequency sweep deferred & The design space needs about three times the mass allowance at this frequency\\
+43 & Acceptance on the thresholded model at the print level; mode check as a diagnostic & The mode check detected grey material, not spurious modes, and stopped runs that passed once thresholded\\
+44 & Open tub with a removable lid & A vertical insertion path and straight tool paths; windows large enough for the board would remove a wall\\
+45 & Components held by designed seats and retainers, no glue or tape & Maintainable and repeatable assembly\\
+46 & Flight controller on through-bosses, screws from below, nuts from above & Blind bosses had no tool path\\
+47 & Lid tied over its whole seat; flatness \SI{0.1}{mm} required & With bosses only a lid mode fell below the goal; the battery and the screws press the lid on the rim in every load case\\
+48 & Antenna spine and the connectivity rule & A boss touching only design material was cut loose\\
+49 & GPS deck on the tub, keel boss deleted & The lid had been holding tub material; each part now carries its own\\
+50 & Keel zone cleaned, hand-drawn keels and web; the stiffness rule & The deck was connected but carried by grey material that no threshold keeps\\
+51 & Print at iso 0.3, tub floor-down & Thicker thin members for \SI{3.57}{g}; layers in the $xy$ plane\\
+52 & Vertical failure order reported as not met; redesign by a prong fuse or a fuse section & Arm and joint fail at about the same force; no time for a geometry change and a new check\\
+\end{xltabular}
+\normalsize
+
+\section{Numbers}\label{sec:logs-numbers}
+
+The numbers quoted in this report, with their source.
+
+\small
+\begin{xltabular}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.48\linewidth}>{\raggedright\arraybackslash}p{0.22\linewidth}X@{}}
+\toprule
+Quantity & Value & Method\\
+\midrule
+\endfirsthead
+\toprule
+Quantity & Value & Method\\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+Fixed component mass & \SI{168.6}{g} & data sheets\\
+Thrust constant; thrust coefficient & \SI{3.088e-7}{g/RPM^2}; 0.1425 & least squares, bench data\\
+Download fraction, \SI{8}{mm} arm & 3.0\,\% (2.2 to 3.9) & actuator disc and plate drag\\
+Hover thrust per motor; speed & \SI{64.4}{g}; 14,440\,RPM & at \SI{250}{g}\\
+Hover 1P and 3P; full-throttle 1P and 3P & 241, \SI{722}{Hz}; 679, \SI{2038}{Hz} & speed / 60\\
+Hover power per motor; aircraft & \SI{18.3}{W}; \SI{74}{W}, \SI{5.0}{A} & fitted model\\
+Hover flight time & \SI{8.2}{min} (6.6 to 9.0) & usable energy over power\\
+Cost of one gram; of \SI{1}{mm} of arm width & \SI{-0.036}{min}; \SI{-0.035}{min} & sensitivity\\
+Maximum thrust; motor torque; load factor & \SI{5.04}{N}; \SI{0.040}{N.m}; 8.2 & bench, torque constant\\
+Thrust-to-weight with battery sag & 5.4 to 7.3 & coupled voltage and current\\
+Top speed; kinetic energy & \SI{30}{m/s} (27 to 36); \SI{114}{J} & tilt balance\\
+Landing load factors & 23 (firm), 200 (motor cut) & spring energy balance\\
+Design values, PET-CF & $E$ 5058 / \SI{2890}{MPa}; $S$ 54.4 / \SI{23.9}{MPa} & data sheet and independent tests $\times$ 0.85\\
+Solid arm corridor, first frequency & 736 / \SI{557}{Hz} & beam model, clamped\\
+Joint capacity & \SI{1632}{N} per bolt; \SI{21216}{N.mm} & bearing at $S_{xy}$\\
+Final design space: tub, lid, arm (design / fixed) & 39,538.5 / 12,796.3; 2,357.0 / 3,417.1; 8,036.9 / 2,933.5\,mm$^3$ & generator\\
+Point masses in the model & \SI{199.58}{g} & components, hardware, retainers\\
+Production run & 28 cycles, 7\,h\,34\,min; volume $-55.4$\,\% & 765,252 C3D10 elements\\
+Print-set masses & tub 47.21, lid 6.61, arm 8.85, frame \SI{89.22}{g} & iso 0.3, restored\\
+Final thresholded check & modes 7 to 12: 431.0 to \SI{533.4}{Hz}; compliance / cap 0.64 to 0.91 & exact keels\\
+Strength & utilisation at most 0.04 & 99.9th percentile and clusters\\
+Capacity & ratio 0.95; fin root \SI{957.2}{mm^3} & sections of the printed arm\\
+\end{xltabular}
+\normalsize
+
+\section{Assumptions}\label{sec:logs-assumptions}
+
+\small
+\begin{xltabular}{\linewidth}{@{}r>{\raggedright\arraybackslash}p{0.38\linewidth}X@{}}
+\toprule
+No. & Assumption & Why acceptable; effect if wrong\\
+\midrule
+\endfirsthead
+\toprule
+No. & Assumption & Why acceptable; effect if wrong\\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+1 & The manufacturer's bench data represent the selected motors and propellers on the selected ESC & Same motor and propeller, internally consistent; hover, flight time and loads scale with it\\
+2 & Below the slowest bench point thrust keeps $T = k n^2$ and power follows the fitted model & $k$ constant within 2\,\% over the data; hover speed about $\pm1$\,\%\\
+3 & Battery internal resistance 20 to \SI{40}{\milli\ohm} & No measurement possible with the charger; affects sag and full-throttle thrust only\\
+4 & Hardware and wiring $12 \pm \SI{5}{g}$ & Not itemised by any manufacturer; take-off mass $\pm2$\,\%\\
+5 & Air density \SI{1.225}{kg/m^3} & Sea level; about 2\,\% lower at the flying site\\
+6 & Avionics \SI{1.0}{W} (0.5 to 1.5); usable capacity 80\,\% (75 to 85); cell voltage \SI{3.70}{V} (3.6 to 3.8) & Within the flight-time band\\
+7 & Download: $C_d = 1.2$, wake factor 1.4 (1.2 to 1.6), blocked length $R - \SI{5}{mm}$ & Plate drag in the near wake; hover power $\pm1$\,\%\\
+8 & Drag areas and a linear fall of thrust with advance ratio & No propeller data against airspeed; top speed $\pm15$\,\%\\
+9 & Landing stopping distances: 10 to \SI{15}{mm} on grass, \SI{3}{mm} on hard ground & Order of magnitude; load factor scales with $1/s$\\
+10 & Motor-mount temperature \SI{60}{\celsius} & Not measured; materials near \SI{70}{\celsius} would move across the gate\\
+11 & Poisson's ratio 0.35 and shear moduli from the isotropic relation & No measured values; frequency $-3$ to $+2$\,\% for $G$ from 700 to \SI{1500}{MPa}\\
+12 & Compliance caps at twice the solid compliance stand in for strength & Checked by the strength analysis, utilisation 0.04\\
+13 & Bearing allowable equal to $S_{xy}$ & Confined bearing is usually higher; a coupon test would replace it\\
+14 & Compression strength equal to tension; shear between layers against $S_z$ & Conservative for compression; no measured shear value\\
+15 & TPU density \SI{1.21}{g/cm^3} for retainer masses & Retainers are inside the point masses\\
+\end{xltabular}
+\normalsize
