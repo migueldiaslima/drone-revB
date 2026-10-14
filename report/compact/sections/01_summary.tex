@@ -1,4 +1,22 @@
 % 01_summary.tex
 \section{Summary}\label{sec:summary}
 
-% to be written
+This project designs, analyses and verifies a printed airframe for a 3.5-inch quadcopter built around a fixed set of commercial components: four T-Motor P1604 3800\,KV motors with Gemfan 3520 three-blade propellers, a SpeedyBee F405 AIO flight controller with a 40\,A four-in-one ESC, a 4S 850\,mAh battery, an ELRS receiver and a GPS module with compass. The frame is printed in Siraya Fibreheart PET-CF, a polyester reinforced with short carbon fibres, and consists of a centre body (the tub), a lid that carries the battery, and four identical bolt-on arms.
+
+The work follows one chain. First-principles sizing of the propulsion gives the thrust, power and flight time of the aircraft and the loads the frame must carry. A material merit index for a stiffness-limited arm selects the filament. The architecture and an explicit design space follow from the components and the assembly sequence. Topology optimisation in Abaqus and Tosca then removes every gram the frame does not need, subject to a frequency requirement and one stiffness limit per load case. Every result is verified on the thresholded, printable geometry before it is accepted, and the final part is checked for strength, failure order and printability.
+
+\begin{keybox}
+\small
+\begin{tabularx}{\linewidth}{@{}Xr@{}}
+Frame mass (tub \SI{47.21}{\gram}, lid \SI{6.61}{\gram}, four arms \SI{8.85}{\gram} each) & \SI{89.22}{\gram}\\
+First elastic mode of the printed geometry (requirement \SI{417}{\hertz}) & \SI{431.0}{\hertz}\\
+Highest stress utilisation, four load cases, factor of safety 1.5 included & 0.04\\
+Design volume removed by the optimiser & \SI{55.4}{\percent}\\
+Filament cost of one frame at \SI{40}{EUR/kg} & about \SI{3.6}{EUR}\\
+Take-off mass (target below \SI{250}{\gram}) & about \SI{289}{\gram}\\
+\end{tabularx}
+\end{keybox}
+
+The frame meets its stiffness and strength requirements with a large margin. It does not meet the 250\,g take-off mass target: holding the first elastic mode at 417\,Hz with a printed polymer costs about 28\,g more frame than the budget allowed. The stress utilisation of 0.04 shows the cause directly: the frequency requirement, not strength, sizes this frame. A second finding concerns crash behaviour: in a vertical overload the arm and the joint fail at about the same force, so the failure location is not yet controlled. Both findings, their first-principles explanation and the redesign that follows from them are in \cref{sec:results}.
+
+This document is a compact version of a full report that records the complete development, the theory behind each step and every decision taken.

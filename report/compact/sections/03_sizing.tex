@@ -1,4 +1,47 @@
 % 03_sizing.tex
 \section{Sizing and loads}\label{sec:sizing}
 
-% to be written
+\subsection{Thrust, power and flight time}
+
+A propeller is a rotating wing, so its thrust scales with the square of its speed. Dimensional analysis gives $T = C_T \rho n^2 D^4$, and for one propeller in one air density this reduces to $T = k\,n^2$. A least-squares fit through the origin of the manufacturer's bench table for the P1604 with the 3520 propeller gives $k = \SI{3.088e-7}{\gram/\rpm\squared}$ ($C_T = 0.1425$), with a largest residual of \SI{1.5}{\percent}.
+
+At hover the four rotors carry the weight plus the download, the downwash pressing on the arms below the discs. For an 8\,mm arm the download is about \SI{3}{\percent} of the rotor thrust, so at 250\,g each motor must produce
+\begin{equation}
+T_\text{hover} = \frac{250/4}{1 - 0.03} = \SI{64.4}{\gram},
+\end{equation}
+which the thrust law turns into 14,440\,RPM.
+
+Momentum theory sets the least power that can produce this thrust. Treating the rotor as an actuator disc of area $A$ that accelerates air of density $\rho$,
+\begin{equation}
+P_\text{ideal} = \frac{T^{3/2}}{\sqrt{2\rho A}},
+\end{equation}
+which is \SI{4.1}{\watt} per motor at hover. The electrical power is higher because the propeller, the motor and the ESC each lose part of it. A two-term fit to the bench data, $P = a\,n^3 + b\,n$ (aerodynamic power plus a loss proportional to speed), gives \SI{18.3}{\watt} per motor and \SI{74}{\watt} for the aircraft. With \SI{80}{\percent} of the 850\,mAh pack usable, the hover flight time is \SI{8.2}{min}, with a band of 6.6 to 9.0\,min across the plausible models and battery states.
+
+The same model prices the frame. Each gram of take-off mass costs \SI{0.036}{min} of hover, and each millimetre of arm width costs \SI{0.035}{min} across four arms through the download. Width costs flight time and height does not, so the arms should be narrow and tall. This shaped both the design space and the material choice.
+
+\subsection{Load cases}
+
+The datasheet maximum thrust of \SI{5.04}{\newton} per motor gives the punch-out load factor, the ratio of total thrust to weight:
+\begin{equation}
+n_z = \frac{4 T_\text{max}}{m g} = \frac{4 \times 5.04}{0.250 \times 9.81} = 8.2.
+\end{equation}
+Every mass in the aircraft then pushes on its mount with $n_z$ times its weight: \SI{8.06}{\newton} for the battery. Landings follow from an energy balance on a contact that behaves like a spring: a body arriving at speed $v$ and stopping over a distance $s$ sees a peak load factor $n = 2h/s$, with $h = v^2/2g$.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Load cases. The first four drive the optimisation; the last two are survivability checks.}\label{tab:loadcases}
+\begin{tabularx}{\linewidth}{@{}llX@{}}
+\toprule
+Case & Event & Loads\\
+\midrule
+LC1 & punch-out, all motors at full thrust & \SI{5.04}{\newton} and \SI{0.040}{\newton\metre} per motor, $n_z = 8.2$ on every mass\\
+LC2a & diagonal pair at full thrust & net yaw torque \SI{0.080}{\newton\metre}, $n_z = 4.1$\\
+LC2b & adjacent pair at full thrust & pitch or roll moment \SI{0.50}{\newton\metre}\\
+LC3a & firm landing, \SI{1.5}{m/s} onto grass, $s = \SI{10}{mm}$ & $n = 23$: battery \SI{22.5}{\newton}, each motor \SI{3.1}{\newton}\\
+LC3b & motor cut from \SI{0.3}{m} onto hard ground, $s = \SI{3}{mm}$ & $n = 200$: survivability, only an arm may fail\\
+LC4 & arm strike & arm sized as the weakest link; joint and body for 1.5 times its failure load\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The aircraft flies free, so these load sets are balanced by inertia: the structure is analysed with inertia relief and three non-collinear statically determinate supports, whose reactions must come out at zero as a check.

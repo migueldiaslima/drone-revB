@@ -1,4 +1,28 @@
 % 02_requirements.tex
 \section{Requirements and approach}\label{sec:requirements}
 
-% to be written
+The project has three goals: a printed structure that costs less than a commercial carbon frame for the same components, an honest measure of what fused-filament printing can achieve for a quadcopter airframe, and a complete case of design, analysis and verification. The FlyFishRC Volador VX3.5, a carbon-fibre frame sold for \SI{37.91}{EUR} and flown with the same components, is the reference point.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Requirements that drive the frame.}\label{tab:requirements}
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+Requirement & Value and reason\\
+\midrule
+Take-off mass & below \SI{250}{\gram} without payload, the EU open category A1 limit for privately built aircraft~\citep{eu_2019_947}; frame budget \SI{61.4}{\gram}\\
+Stiffness & first free-free elastic mode at least \SI{290}{\hertz} (1.2 times the hover rotor frequency), goal \SI{417}{\hertz}\\
+Strength & no failure and no permanent deformation under limit loads, factor of safety 1.5 on printed allowables\\
+Crash behaviour & in an overload the arm fails before the joint and the centre body (capacity design), so a crash costs one printed arm\\
+Temperature & heat deflection temperature at least \SI{70}{\celsius} at the motor mounts\\
+Interfaces & motors $9\times9$\,mm M2, flight controller $25.5\times25.5$\,mm soft-mounted, battery $59\times30\times32$\,mm with a strap\\
+Manufacture & every part printable on a Bambu Lab P1S without supports inside functional holes; one arm design fits all four positions\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The 417\,Hz goal sits at the geometric middle of the two rotor excitations at hover. Each propeller turns at 14,440\,RPM, so the once-per-revolution forcing (1P) is at 241\,Hz and the blade-passing forcing of three blades (3P) at 722\,Hz. The first elastic mode should sit far from both, measured as a ratio:
+\begin{equation}
+f_\text{goal} = \sqrt{f_\text{1P}\, f_\text{3P}} = \sqrt{241 \times 722} \approx \SI{417}{\hertz},
+\end{equation}
+which leaves a factor of 1.73 to each side. Endurance and thrust-to-weight ratio are outputs: the components set them, and the frame acts on them only through its mass.

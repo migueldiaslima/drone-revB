@@ -1,4 +1,38 @@
 % 05_architecture.tex
 \section{Architecture and design space}\label{sec:architecture}
 
-% to be written
+\subsection{Layout}
+
+The motors sit on a true X with a wheelbase of \SI{148.5}{mm}, which leaves \SI{16.1}{mm} between adjacent propeller discs. A true X gives the shortest arms for a given propeller gap, and the stiffness an arm needs for a given frequency grows with the cube of its free length, so every millimetre of arm is expensive. The battery sits on top, on a plate whose underside is \SI{24}{mm} above the arm top face, clear of the blades (13 to \SI{18.5}{mm}). This keeps the wheelbase short and puts the centre of gravity close to the rotor plane.
+
+The frame has six printed parts (\cref{fig:exploded}). The tub is an open centre body that holds the flight controller on soft mounts and carries the fins for the arms. The lid closes the tub, carries the battery and the battery strap, and is held by four M2 screws into heat-set inserts. Four identical arms bolt to the tub. The GPS sits on a deck at the rear of the tub, and three small TPU retainers hold the receiver, the GPS and the receiver antenna.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.92\linewidth]{R2_exploded}
+\caption{Exploded view of the printed frame: tub, lid and four identical arms in PET-CF, retainers in TPU.}\label{fig:exploded}
+\end{figure}
+
+\subsection{Arm joint}
+
+Four joint concepts were drawn and compared: a corner pocket, a socket, a fin and fork, and a lap joint. The fin and fork was the only one that fits beside a 33\,mm flight controller and keeps the deep arm section continuous into the body. A \SI{10}{mm} fin on each tub corner sits between the two \SI{5}{mm} prongs of the arm root, and two steel M3 bolts stacked \SI{13}{mm} apart pass through prong, fin and prong into a heat-set insert (\cref{fig:joint}). Bearing at the bolt holes governs: the joint carries \SI{1632}{N} per bolt and a vertical moment of \SI{21,216}{N.mm}. Because the four arms are identical, one spare fits every position, and the optimisation enforces this with a cyclic symmetry constraint on the arm design.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.8\linewidth]{R4_joint}
+\caption{Fin and fork joint: the tub fin between the arm prongs, two M3 bolts stacked vertically.}\label{fig:joint}
+\end{figure}
+
+\subsection{Design space}
+
+The optimiser needs three kinds of region. Design regions are the envelope it may fill or empty. Fixed regions are material it must keep: motor pads and screw bosses, bolt bosses of the joint, flight-controller bosses, the battery-plate frame and strap band, the lid screw bosses and the GPS deck. Keep-outs are space it must leave empty: the propeller sweep plus \SI{3}{mm}, the flight-controller bay, the cable channels and the USB access.
+
+The first design space defined where every component sits. The optimised frame met every structural requirement at \SI{76.8}{g}, but an assembly check showed the flight controller could not be installed: the optimiser had filled every path a part, a tool or a cable needs to get in. The second design space was drawn around an assembly sequence of thirteen steps. Every component received an insertion path, a tool path and a cable path as keep-outs, each checked by a sweep in an automated clash test, and the centre body grew to $46\times46$\,mm to give the flight controller \SI{4}{mm} of clearance on every side. Before each export a set of scripted geometry checks confirms file identity, Boolean bookkeeping between design and fixed regions, face quality, tangency, test meshing and clearances (\cref{fig:fixed}).
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.92\linewidth]{R6_fixed_regions}
+\caption{Fixed regions (orange) inside the design envelope of the tub and an arm.}\label{fig:fixed}
+\end{figure}
+
+The lid is tied to the tub over its whole seat, not only at the screws. A reference analysis with the lid held at the screw bosses alone put a lid plate mode, coupled to the battery mass, at \SI{405.1}{Hz}, below the requirement; with the seat in contact the same mode moved to \SI{571.3}{Hz}. Full contact is the real state when the seat is flat, because the battery inertia and the screw preload press the lid down in every load case, so the printed lid underside and tub rim carry a flatness requirement of \SI{0.1}{mm}.
