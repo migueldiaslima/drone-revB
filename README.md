@@ -6,7 +6,7 @@ Quadcopter frame rev B (3.5 inch true X, PET-CF, topology-optimised with Abaqus/
 
 | Folder | Content |
 |---|---|
-| `docs/` | All project docs (copies of the claude.ai project "Drone Rework"). `journal_quadcopter.md` is the master record |
+| `docs/` | All project docs, plus the Stage 2 theory document `stage2_sizing_model_first_principles_rev34.md` / `.pdf` (Chapters 0 to 10, Appendices A and B, references; Claude Docs rev 34) (copies of the claude.ai project "Drone Rework"). `journal_quadcopter.md` is the master record |
 | `geometry/v04B/` | Current export, v04-B revision 2: TUB, LID, ARM_xx, KEEPOUTS, COMPONENTS (STEP), reference points, volumes and gate results |
 | `geometry/v03B_arms/` | v03-B arm STEPs (D-054 split), kept for reference |
 | `scripts/geometry_main/` | Main-chat generators and gates (CadQuery, gmsh, renders) |
