@@ -51,7 +51,13 @@ The slim section fails at $F_\text{arm} = 54.4 \times 9.96 = \SI{542}{N}$, and t
 \begin{equation}
 \frac{F_\text{arm}}{F_\text{joint}} = \frac{S_{xy}\, Z/(u_m - u)}{M_j/(u_m - u_j)} = \frac{54.4 \times 9.96 \times 37.00}{21216} = 0.95.
 \end{equation}
-By this estimate the arm is marginally the weaker element, but 0.95 lies inside the scatter of both estimates: the joint's bearing allowable is assumed equal to $S_{xy}$, and the arm is taken to fail at first-fibre stress. Which one fails in a vertical overload is not controlled. A margin of 1.5 needs a ratio of 0.67 or less. The vertical failure order (R4) is not met.
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{plot_capacity}
+\caption{Left: section modulus of the printed arm for vertical bending along its length. Right: the vertical tip force that fails each section, against the joint capacity. The slim section near the motor pad fails at \SI{542}{N}, the joint at \SI{573}{N}.}\label{fig:cap-capacity}
+\end{figure}
+
+By this estimate (\cref{fig:cap-capacity}) the arm is marginally the weaker element, but 0.95 lies inside the scatter of both estimates: the joint's bearing allowable is assumed equal to $S_{xy}$, and the arm is taken to fail at first-fibre stress. Which one fails in a vertical overload is not controlled. A margin of 1.5 needs a ratio of 0.67 or less. The vertical failure order (R4) is not met.
 
 Sideways the order holds with a factor of 8.5, because the fork resists in-plane bending with its full width. The fin root on the tub keeps a section modulus of \SI{957.2}{mm^3} where it leaves the body corner and at least \SI{792.4}{mm^3} along its length, against the \SI{390}{mm^3} it needs, so a joint failure would be in bearing at the bolt holes, not across the fin root.
 
