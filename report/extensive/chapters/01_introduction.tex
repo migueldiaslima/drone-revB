@@ -1,4 +1,63 @@
 % 01_introduction.tex
 \chapter{Introduction}\label{sec:introduction}
 
-% to be written (see docs/report_brief.md section 6)
+This report documents the design, analysis and verification of a printed airframe for a 3.5-inch quadcopter. The components are fixed: motors, propellers, flight controller, receiver, battery and GPS module were selected first, and the frame is the only part left open. It is printed in fused filament on a Bambu Lab P1S and must carry every load the components produce, keep its first elastic mode clear of the rotor excitations and fit every component with a defined assembly sequence.
+
+The report is written as a complete record. Every number is either read from a data sheet, measured on a reference build, or derived in the text from the physics that produces it. The theory chapters build each result from its basic definition upwards, with a worked example in the project's own numbers, so that a reader can check every step without other sources.
+
+\section{Goals}\label{sec:intro-goals}
+
+The project has three goals.
+\begin{enumerate}
+\item A printed structure that costs less than a commercial carbon-fibre frame for the same components.
+\item An honest measure of what fused-filament printing can achieve for a quadcopter airframe: where it matches carbon plates, where it falls short, and why.
+\item A complete practical case of design, analysis and verification: requirements from first principles, a material chosen by a merit index, a topology-optimised structure, and checks on the geometry that is actually printed.
+\end{enumerate}
+
+The FlyFishRC Volador VX3.5~\citep{volador}, a frame of T700 carbon plates sold for \SI{37.91}{EUR}, serves as the commercial reference frame. It is a benchmark for mass, stiffness and cost. It is not a target the printed frame is expected to beat: a thermoplastic reinforced with short fibres has a much lower specific stiffness than continuous-fibre carbon plate, and the comparison exists to quantify that gap and the cost saving that comes with it.
+
+\section{Selected components}\label{sec:intro-components}
+
+\Cref{tab:intro-components} lists the components the frame is designed around. Masses are the manufacturers' quoted values; the hardware allowance (screws, battery strap, power lead and capacitor) is an estimate.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Selected components. The fixed components without the GPS weigh \SI{168.6}{g}.}\label{tab:intro-components}
+\begin{tabularx}{\linewidth}{@{}llXr@{}}
+\toprule
+Function & Component & Key data & Mass\\
+\midrule
+Motors (4) & T-Motor Pacer P1604 3800\,KV & stator $16\times4$\,mm, bell dia 20.8 $\times$ \SI{15.5}{mm}, mount $9\times9$\,mm M2 & $4\times\SI{11.6}{g}$\\
+Propellers (4) & Gemfan Hurricane 3520 & three blades, diameter \SI{88.9}{mm} (3.5\,in), pitch 2.0\,in & $4\times\SI{1.75}{g}$\\
+Flight controller & SpeedyBee F405 AIO 40A & four-in-one ESC, 40\,A continuous, board $33\times33$\,mm, holes $25.5\times25.5$\,mm M2 & \SI{13.6}{g}\\
+Receiver & SpeedyBee Nano 2.4\,GHz ELRS & board $10.4\times18.4$\,mm, single T antenna & \SI{1.6}{g}\\
+Battery & Tattu R-Line V5.0 4S 850\,mAh & \SI{14.8}{V} nominal, $59\times30\times32$\,mm & \SI{100.0}{g}\\
+GPS & Flywoo GOKU GM10 Nano V3 & with compass, $12\times17\times5$\,mm & \SI{2.6}{g}\\
+Hardware & screws, strap, lead, capacitor & estimate, $\pm\SI{5}{g}$ & \SI{12}{g}\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+With the reference frame (\SI{70.5}{g}) and an \SI{8}{g} allowance for a GPS, the same components give a take-off mass of \SI{259.1}{g}. Every gram the frame saves therefore matters twice: for flight time, and for the \SI{250}{g} limit of the EU open category that \cref{sec:requirements} sets as the mass requirement.
+
+\section{Method}\label{sec:intro-method}
+
+The work follows one chain, in which each step hands a number to the next.
+\begin{enumerate}
+\item \textbf{Requirements} (\cref{sec:requirements}): what the frame must do, stated with values and with the reason for each value.
+\item \textbf{Sizing from first principles} (\cref{sec:sizing}): thrust, rotor speed, power and flight time from momentum theory and the manufacturer's bench data, and the cost of each gram and each millimetre of arm width in flight time.
+\item \textbf{Loads} (\cref{sec:loads}): full-throttle forces and torques, load factors, landings and the rotor frequencies that excite the frame.
+\item \textbf{Material} (\cref{sec:material}): a merit index for a stiffness-limited arm, gates for heat and printability, and design values checked against independent tests.
+\item \textbf{Architecture and design space} (\cref{sec:architecture}): layout, the arm joint, and the regions the optimiser may fill, must keep and must leave empty.
+\item \textbf{Topology optimisation} (\cref{sec:topopt_theory,sec:optimisation_model}): the theory, the model, the solver set-up and the production run.
+\item \textbf{Verification} (\cref{sec:iterations,sec:verification}): the optimised density field thresholded into a printable body, checked again for every requirement, and the design-space changes that the checks forced.
+\item \textbf{Strength and capacity} (\cref{sec:strength}): stresses on the printed geometry against the allowables, and the failure order between arm and joint.
+\item \textbf{Integration} (\cref{sec:retainers}): the small parts that hold the receiver, the GPS and the antenna.
+\end{enumerate}
+\Cref{sec:results} compares the results with the requirements, states the shortfalls with their first-principles cause and sets out the next steps. \Cref{sec:logs} holds the decision log, the numbers and the assumptions; \cref{sec:workflow} describes the scripts and the workflow that produced them.
+
+\section{Conventions}\label{sec:intro-conventions}
+
+The model uses millimetres, newtons, tonnes and seconds, so stresses are in megapascals. The global axes are $x$ forward, $y$ left and $z$ up, with the origin at the frame centre and $z = 0$ on the top face of the arms, where the motors sit. The four corners are named by the signs of their coordinates: pp ($+x+y$), pm ($+x-y$), mp ($-x+y$) and mm ($-x-y$). Every part is printed with its layers in the $xy$ plane, so the build direction is the global $z$ axis throughout.
+
+Masses are in grams. Bench data for propellers quote thrust in grams as well; this is gram-force, the weight of one gram, \SI{9.81e-3}{N}. Tables keep grams, and every physical formula uses newtons.

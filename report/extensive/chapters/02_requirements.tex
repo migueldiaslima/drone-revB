@@ -1,4 +1,61 @@
 % 02_requirements.tex
 \chapter{Requirements}\label{sec:requirements}
 
-% to be written (see docs/report_brief.md section 6)
+The frame produces no thrust and stores no energy: it only carries. Every requirement on it therefore comes from somewhere else, from regulation, from the components it carries, from the way the aircraft flies and from the printer that makes it. This chapter states each requirement with its value and the reason for that value. The chapters that follow derive the numbers the requirements depend on.
+
+\section{Requirements table}\label{sec:req-table}
+
+\begin{table}[htbp]
+\centering\small
+\caption{Frame requirements. Verification by analysis unless stated; the test column lists what a physical test would add.}\label{tab:req-list}
+\begin{tabularx}{\linewidth}{@{}l>{\raggedright\arraybackslash}p{0.2\linewidth}X>{\raggedright\arraybackslash}p{0.19\linewidth}@{}}
+\toprule
+No. & Requirement & Value and reason & Verification\\
+\midrule
+R1 & Take-off mass & below \SI{250}{g} in flight configuration with GPS, without payload; frame budget \SI{61.4}{g}. The EU open category A1 admits privately built aircraft below \SI{250}{g}~\citep{eu_2019_947}, and every load scales with mass & mass budget; weighing\\
+R2 & Stiffness & first free-free elastic mode at least \SI{290}{Hz} (hard), goal \SI{417}{Hz}, both set by the rotor excitations (\cref{sec:req-frequency}) & modal analysis of the printed geometry; tap test, gyro spectrum in flight\\
+R3 & Strength & no failure and no permanent deformation under limit loads; factor of safety 1.5 on printed allowables that include the print-orientation weakness & stress analysis of the printed geometry\\
+R4 & Crash behaviour & in an overload the arm fails before the joint and the centre body, with a margin of 1.5 on the failure force, so a crash costs one printed arm & capacity analysis\\
+R5 & Temperature & heat deflection temperature at \SI{0.45}{MPa} at least \SI{70}{\celsius}, \SI{10}{\celsius} above an assumed motor-mount temperature of \SI{60}{\celsius} & material data; infrared measurement after flight\\
+R6 & Interfaces & motors $9\times9$\,mm M2; flight controller $25.5\times25.5$\,mm M2 on soft mounts; battery $59\times30\times32$\,mm with one strap; propeller tip clearance; positions for receiver antenna and GPS & CAD checks\\
+R7 & Assembly & every component has an insertion path, a tool path and a cable path; no glue or tape & clash test of the assembly sequence\\
+R8 & Manufacture & every part prints on the P1S ($256\times256\times256$\,mm) without supports inside functional holes; minimum member size of six extrusion lines & print-geometry checks; slicer\\
+R9 & Cost & filament cost of one frame well below the \SI{37.91}{EUR} of the reference frame & slicer mass and filament price\\
+R10 & Repairability & a broken arm is replaced without reprinting the centre body and without desoldering; one arm design fits all four positions & design review\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Outputs that are not requirements}\label{sec:req-outputs}
+
+Flight time and thrust-to-weight ratio are aircraft performance figures, and both were considered as requirements. Neither became one. The motors, propellers and battery set them, and the frame acts on them only through its mass, which R1 already controls. A floor on flight time would also not discriminate between designs: \cref{sec:sizing} shows that ten grams of frame cost about \SI{0.36}{min} of hover, while the uncertainty band of the flight-time estimate spans \SI{2.4}{min} (6.6 to \SI{9.0}{min}). Both figures are reported as outputs, with their uncertainty and their sensitivity to frame mass, and the thrust-to-weight ratio enters the loads as the manoeuvre load factor.
+
+Top speed is also an output. The A1 category adds a speed limit of \SI{19}{m/s}, which an operator sets in the flight firmware; the study uses the full capability of the components, because top speed drives the crash energy and not the frame sizing at this scale.
+
+A camera payload (\SI{10.2}{g}) was excluded from the baseline. Adding it to the mass, loads and analysis is a next step.
+
+\section{The frequency requirement}\label{sec:req-frequency}
+
+The rotors shake the frame at two dominant frequencies. Once per revolution (1P), any imbalance of a propeller pushes the hub sideways and back. Three times per revolution (3P), each of the three blades passes over the arm and its pressure field pulses the arm. At hover each propeller turns at 14,440\,RPM (\cref{sec:sizing}), so
+\begin{equation}
+f_\text{1P} = \frac{14{,}440}{60} = \SI{241}{Hz}, \qquad f_\text{3P} = 3 \times 241 = \SI{722}{Hz}.
+\end{equation}
+A structure driven near one of its natural frequencies responds far more than under the same force applied slowly. For a lightly damped mode at frequency $f_n$ driven at $f$, the ratio of the dynamic to the static response is
+\begin{equation}
+A = \frac{1}{\sqrt{\left(1 - r^2\right)^2 + \left(2\zeta r\right)^2}}, \qquad r = \frac{f}{f_n},
+\end{equation}
+with $\zeta$ the damping ratio. \Cref{sec:loads} derives this and draws the Campbell diagram; here it sets two numbers.
+
+The hard requirement keeps the first elastic mode 1.2 times above hover 1P, \SI{290}{Hz}. A margin of 20\,\% is the usual minimum separation, and it already leaves the mode below 3P.
+
+The goal places the first elastic mode at the geometric middle of the two excitations, where the ratio to each is the same:
+\begin{equation}
+f_\text{goal} = \sqrt{f_\text{1P}\, f_\text{3P}} = \sqrt{241 \times 722} = \SI{417}{Hz}.
+\end{equation}
+The ratio to each side is $417/241 = 722/417 = 1.73$. At 3\,\% damping the amplification of 1P falls from 3.2 at \SI{290}{Hz} to 1.5 at \SI{417}{Hz}, and the margin covers modelling error: a \SI{20}{\percent} error in the printed modulus moves a frequency by about \SI{10}{\percent}, because frequency grows with the square root of stiffness. The cost is stiffness. Frequency scales with the square root of stiffness at a given mass, so moving a mode from 290 to \SI{417}{Hz} needs about $(417/290)^2 = 2.1$ times the stiffness.
+
+The optimisation was run at the \SI{417}{Hz} goal first, with a sweep towards \SI{290}{Hz} planned for the case that the mass budget was exceeded. \Cref{sec:results} returns to that sweep.
+
+\section{Factor of safety}\label{sec:req-fos}
+
+The factor of safety of 1.5 is the conventional ultimate factor of aircraft structures (CS-25.303), borrowed here as a convention. It applies to limit loads that are themselves upper bounds: full thrust at the full-charge voltage, and landing load factors from stopping distances at the short end of their range. The allowables already carry a knockdown of 0.85 for scatter and print settings (\cref{sec:material}), so the factor is not stacked on an unknown.
