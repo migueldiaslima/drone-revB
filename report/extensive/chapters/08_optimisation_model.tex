@@ -70,6 +70,14 @@ Each arm joins the tub through two bolts that clamp the arm prongs onto the tub 
 
 The lid is tied to the tub over its whole seat. A check on the solid model of the second design-space iteration showed why this matters: with the lid held only at its screw bosses, the lid plate and the battery on it formed a soft mass on the frame, the first lid mode (\SI{405.1}{Hz}) fell inside the frequency band and pulled the arm saddle mode down from \SIrange{449.7}{389.8}{Hz}. With the seat tied, every mode in the band was an arm mode above \SI{449}{Hz} and the lid modes started at \SI{571}{Hz}. The seat tie requires the lid underside and the tub rim to be printed flat within \SI{0.1}{mm}, so that the screws and the battery inertia hold the lid in full contact.
 
+\Cref{fig:optimisation_model-surfaces} shows the 30 coupling and tie surfaces with their reference points. The optimisation model and the thresholded model of \cref{sec:verification} share the mesh and these surfaces; the figure draws them on the final solid body.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{su_th_setup}
+\caption{Coupling and tie surfaces (surface nodes, drawn through the solid) and the twelve reference points: four motors, four arm joints, battery, flight controller, GPS and antenna. The arm joint couplings carry the three supports of the static steps. Left from above, right from below; the battery reference point lies above the lid at its centre of gravity.}\label{fig:optimisation_model-surfaces}
+\end{figure}
+
 \section{Steps, loads and supports}\label{sec:optimisation_model-steps}
 
 The model has one frequency step and four static load steps, each solved from the unloaded state so that the load cases do not add up.
@@ -198,6 +206,14 @@ The history has three phases.
 \item Cycles 23 to 28: the design settles with every constraint within about \SI{1}{\percent} of its bound.
 \end{itemize}
 
+\Cref{fig:optimisation_model-snapshots} shows the iso-density surface at 0.3 for the four saved cycles. Cycle 0 is the full design space, since the run starts from density 1. At cycle 10 the design volume is already \SI{33}{\percent} lower (\num{49844} against \SI{74242}{mm^3}), but the surface has hardly changed: the optimiser first lowers the density almost everywhere, and the material stays above 0.3. Between cycles 10 and 20 the density on the arms and around the motor pads falls below 0.3 and the surface opens there. Cycles 20 and 28 differ little, although the volume went down and back up in between, which agrees with the history: the overshoot was undone in the same places it occurred.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{su_iso_snapshots}
+\caption{Production run: iso-density surface at 0.3 (whole frame, fixed regions included) at cycles 0, 10, 20 and 28, from above (top) and from below (bottom).}\label{fig:optimisation_model-snapshots}
+\end{figure}
+
 At the last cycle the six frequencies were \num{416.7}, \num{417.2}, \num{418.4}, \num{423.7}, \num{461.7} and \SI{496.5}{Hz}, and the strain energies were 1.58, 1.40, 1.60 and 2.02 times their cycle-0 values (LC1, LC2a, LC2b, LC3a). The first frequency lies \SI{0.3}{Hz} under the bound and the LC3a strain energy \SI{1}{\percent} over its cap. These are values of the grey density field; whether the printable part meets the requirements is decided on the thresholded model (\cref{sec:verification}), where the first elastic frequency of the printed geometry is \SI{431.0}{Hz}.
 
 The mode check at cycle 28 found modes 7 to 10 to be arm bending modes with their largest motion at the motor seats. Mode 11 (\SI{461.7}{Hz}) moved most at the rear corner of the GPS deck and mode 12 (\SI{496.5}{Hz}) at the rear underside of the keel, both in a region of mean density about 0.5: the deck itself is fixed material, but the material under it was grey. Of the \num{765252} elements, \num{259292} (\SI{33.9}{\percent}) ended below density 0.3. Cut at an iso-density of 0.3 the kept volume, fixed regions included, was \SI{63912}{mm^3} (\SI{83.1}{g}); at 0.5 it was \SI{61947}{mm^3} (\SI{80.5}{g}). The \SI{1965}{mm^3} between the two levels, \SI{2.6}{g}, measures how much grey material the design holds. The grey support under the GPS deck is the subject of \cref{sec:iterations}.
@@ -228,4 +244,5 @@ The mode check at cycle 28 found modes 7 to 10 to be arm bending modes with thei
 % Mode check cycle 28, mean density 0.5, 259,292 elements (33.9 % computed), 63,912 / 61,947 mm^3, 83.1 / 80.5 g,
 %   1,965 mm^3 and 2.6 g computed: S10
 % Printed-geometry first frequency 431.0 Hz: S13
+% Snapshot cycles 0, 10, 20, 28; volume 49,844 at cycle 10 (33 % below 74,242, computed): S12; 30 surfaces, 12 reference points: S14
 % =========================================================================================================

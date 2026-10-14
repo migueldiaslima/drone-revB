@@ -1,6 +1,6 @@
 # Sources of the numbers in report/extensive/chapters/08_optimisation_model.tex
 
-Labels S1 to S13 are used in the comment block at the end of the chapter. Kept outside the report folder so that internal IDs and file names do not travel with the Overleaf zip.
+Labels S1 to S14 are used in the comment block at the end of the chapter. Kept outside the report folder so that internal IDs and file names do not travel with the Overleaf zip.
 
 | Label | Source |
 |---|---|
@@ -17,5 +17,6 @@ Labels S1 to S13 are used in the comment block at the end of the chapter. Kept o
 | S11 | `docs/stage6_hpc_H2_report.md` (F-15 threads, mode-check rule 0.8 / 0.3, grey arms 0.2 to 0.35) |
 | S12 | `data/report/h4r4_history.csv` (cycle-by-cycle values: 444.3 Hz cycle 0, 421.2 Hz cycle 4, volume steps 1,633 to 3,464 mm^3 per cycle in cycles 0 to 14, 325.1 Hz cycle 15, SE/cap 1.06 at cycles 17 to 19) |
 | S13 | build log item 65, `docs/stage6_v04B_H4_report.md` "T-4 on the print geometry" (431.0 Hz) |
+| S14 | figure run on the final thresholded model (2026-10-14): `export.log` (30 tie and coupling surfaces, 12 reference-point node sets, element counts per part); figures `su_th_setup.png` and `su_iso_snapshots.png` from `scripts/figures/fig_th_figs.py` and `fig_iso_snapshots.py` (PR #44) on `th_figs.npz` and the iso 0.3 STLs of cycles 0, 10, 20, 28 |
 
 Computed in the text: nu31 = 0.35 x 2890 / 5058 = 0.20; 259,292 / 765,252 = 33.9 %; 63,912 - 61,947 = 1,965 mm^3, x 1.30e-3 g/mm^3 = 2.6 g; 417^2 = 1.7e5 Hz^2.
