@@ -22,7 +22,7 @@ Not in the repo (size): odb, inp, par, cae, stl. Those live on nexus (`/tmp/mdia
 
 | Item | State |
 |---|---|
-| Journal | v0.59 (D-001 to D-090) |
+| Journal | v0.60 (D-001 to D-090) |
 | Build log | items 1 to 69, DV-1 to DV-28 |
 | H4 (v04-B rev 2) | converged at cycle 31; TH04b_ni passes, TH04a_ni fails as expected (N-06-17, N-06-18); antenna boss island F-036 |
 | v04-B revision 3 (D-084, antenna spine) | exported to `geometry/v04B_r3/`, gates G0 to G5 pass (`docs/stage6_v04B_r3_export_note.md`); boss 5 island in H4 cycle 31 (F-037) |
@@ -31,6 +31,7 @@ Not in the repo (size): odb, inp, par, cae, stl. Those live on nexus (`/tmp/mdia
 | Keels A and B (D-087) | exact solids in `geometry/v04B_r4_keels/` (`docs/stage6_v04B_r4_keels_export_note.md`) |
 | Receiver cradle, GPS cap | v2 in `geometry/retainers/` (`docs/retainer_rx_cradle_note.md`, `docs/retainer_gps_cap_note.md`) |
 | Stages 6 and 7 | closed 2026-10-14: print set iso 0.3 (frame 89.22 g), strength PASS (about 25 x), D-050 not met (F-040, D-090); `docs/stage6_v04B_H4_report.md`, `docs/stage7_strength_report.md` |
+| Reports | done 2026-10-14: compact (17 pages, sent) and extensive (123 pages) in `report/`; build zips with `bash report/make_overleaf.sh` |
 
 ## Open tasks
 

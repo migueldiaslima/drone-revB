@@ -1,5 +1,5 @@
 % 01_summary.tex
-\section{Summary}\label{sec:summary}
+\section{Executive summary}\label{sec:summary}
 
 This project designs, analyses and verifies a printed airframe for a 3.5-inch quadcopter built around a fixed set of commercial components: four T-Motor P1604 3800\,KV motors with Gemfan 3520 three-blade propellers, a SpeedyBee F405 AIO flight controller with a 40\,A four-in-one ESC, a 4S 850\,mAh battery, an ELRS receiver and a GPS module with compass. The frame is printed in Siraya Fibreheart PET-CF, a polyester reinforced with short carbon fibres, and consists of a centre body (the tub), a lid that carries the battery, and four identical bolt-on arms.
 
@@ -19,4 +19,4 @@ Take-off mass (target below \SI{250}{\gram}) & about \SI{289}{\gram}\\
 
 The frame meets its stiffness and strength requirements with a large margin. It does not meet the 250\,g take-off mass target: holding the first elastic mode at 417\,Hz with a printed polymer costs about 28\,g more frame than the budget allowed. The stress utilisation of 0.04 shows the cause directly: the frequency requirement, not strength, sizes this frame. A second finding concerns crash behaviour: in a vertical overload the arm and the joint fail at about the same force, so the failure location is not yet controlled. Both findings, their first-principles explanation and the redesign that follows from them are in \cref{sec:results}.
 
-This document is a compact version of a full report that records the complete development, the theory behind each step and every decision taken.
+This document is a condensed version of a full technical report, which contains the complete derivations and numerical calculations behind every result summarised here (propulsion sizing, loads, material selection, topology optimisation theory, model set-up, verification and strength), the development history and a log of every design decision.

@@ -1,7 +1,7 @@
 % 03_sizing.tex
-\section{Sizing and loads}\label{sec:sizing}
+\section{Propulsion sizing and load definition}\label{sec:sizing}
 
-\subsection{Thrust, power and flight time}
+\subsection{Thrust, power and endurance}
 
 A propeller is a rotating wing, so its thrust scales with the square of its speed. Dimensional analysis gives $T = C_T \rho n^2 D^4$, and for one propeller in one air density this reduces to $T = k\,n^2$. A least-squares fit through the origin of the manufacturer's bench table for the P1604 with the 3520 propeller gives $k = \SI{3.088e-7}{\gram/\rpm\squared}$ ($C_T = 0.1425$), with a largest residual of \SI{1.5}{\percent}.
 
@@ -19,7 +19,7 @@ which is \SI{4.1}{\watt} per motor at hover. The electrical power is higher beca
 
 The same model prices the frame. Each gram of take-off mass costs \SI{0.036}{min} of hover, and each millimetre of arm width costs \SI{0.035}{min} across four arms through the download. Width costs flight time and height does not, so the arms should be narrow and tall. This shaped both the design space and the material choice.
 
-\subsection{Load cases}
+\subsection{Design load cases}
 
 The datasheet maximum thrust of \SI{5.04}{\newton} per motor gives the punch-out load factor, the ratio of total thrust to weight:
 \begin{equation}

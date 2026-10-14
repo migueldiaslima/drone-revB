@@ -1,17 +1,17 @@
 % 07_iterations.tex
-\section{Design iterations from verification}\label{sec:iterations}
+\section{Verification and design-space iterations}\label{sec:iterations}
 
 The optimiser returns a density field, not a part. The printed part is the region above an iso level of that field, so every result is verified on its thresholded form: elements above the iso level are solid, all others are set to near-zero stiffness, and the modes and compliances are recomputed. Three findings came out of this check, and each changed the design space.
 
-\subsection{An island at the antenna mount}
+\subsection{Disconnected fixed region at the antenna mount}
 
 The receiver antenna was first held by a small fixed boss under the rear keel. In the optimisation that boss touched only design material and carried no load and no mass, because the antenna mass sat in a lumped point mass at the flight controller. Nothing required a path to it, so Tosca removed the keel material around it. Thresholded, the boss was a loose part with six rigid-body modes between 45 and 200\,Hz. The fix routed the antenna cable through a fixed sleeve that runs from the bay into the keel, ends in a pad under the keel and joins the rear lid boss, so the mount can no longer be cut loose, and the antenna mass now acts on that pad. This became a design-space rule: every fixed region either touches other fixed material or carries a load, a tie or a mass that needs a solid path.
 
-\subsection{An island held by the other part}
+\subsection{Inter-part dependency of fixed regions}
 
 The rule was then applied part by part. A lid boss on the keel carried the tie to the lid, and in the assembled model the lid held it. Checked on the tub alone, the boss was an island: the optimiser had used the lid as its support and removed the keel behind it. The GPS deck, then part of the lid, also hung from the lid. The deck moved to the tub, on top of the keel, and the keel boss was deleted, so the GPS mass needs a load path through the tub and the lid no longer supports anything it does not own.
 
-\subsection{Connected, but grey}
+\subsection{Intermediate-density support of the GPS deck}
 
 With the deck on the tub the connectivity check passed at every iso level from 0.3 to 0.5, yet the thresholded model failed: the first elastic mode was a GPS deck mode at \SI{146.8}{Hz}. In the optimisation the deck was carried at \SI{461.7}{Hz} by a wide block of keel material with densities mostly below 0.15. Such material is penalised in stiffness but still contributes, and no threshold keeps it, so the printed deck hung from two thin straps.
 

@@ -1,6 +1,6 @@
 # Quadcopter frame rev B: project journal
 
-Journal version: v0.59 (2026-10-14, Stage 7 recorded; Stages 6 and 7 closed; report next)
+Journal version: v0.60 (2026-10-14, reports written; compact report sent)
 Owner: Miguel Dias de Lima. Maintained by Claude, decisions by Miguel.
 Rule: after any compaction or new session, resume from Section 1. The journal overrides chat memory. The report may only quote numbers from Section 4.
 
@@ -8,9 +8,9 @@ Rule: after any compaction or new session, resume from Section 1. The journal ov
 
 ## 1. Current state
 
-- **Stage**: report (about 15 pages, LaTeX). Stages 0 to 7 closed (Stage 6 and 7 on 2026-10-14).
-- **Done**: Stage 7 closed: strength PASS with about 25 x margin (N-07-01), D-050 not met and the up-down failure location not controlled (N-07-02, F-040, D-090), D-051 fin root PASS. Stage 6 closed: print set at iso 0.3, frame 89.22 g, T-4 PASS (N-06-23). Stage 5 closed: Siraya Fibreheart PET-CF (D-038), TPU 95A HF skid in a dovetail slide-in (D-039). Feasibility check N-06-01: a fully solid arm corridor reaches 736 Hz (clamped root, X-Y modulus).
-- **Next**: write the report from Section 4 numbers (claude/stage6_v04B_H4_report.md, claude/stage7_strength_report.md). Open items carried into the report as limitations or future work: R-01 mass (F-039), up-down capacity ordering and the joint redesign (F-040, D-090), brief (f) list of Stage 7; practical: Q-58, Q-59, Q-63 (GPS), Q-60 (first cradle fit), TPU skid.
+- **Stage**: reports done (2026-10-14). Stages 0 to 7 closed. Compact report (17 pages, `report/compact/`) final and sent; extensive report (123 pages, `report/extensive/`, all chapters by both chats) complete. Brief: `docs/report_brief.md`; style: `docs/writing_style_guide.md`; Overleaf zips: `bash report/make_overleaf.sh`; plots: `scripts/figures/report_plots.py`; renders: `scripts/figures/render_blender.py`.
+- **Done**: Stage 7 closed: strength PASS with about 25 x margin (N-07-01), D-050 not met and the up-down failure location not controlled (N-07-02, F-040, D-090), D-051 fin root PASS. Stage 6 closed: print set at iso 0.3, frame 89.22 g, T-4 PASS (N-06-23). PLA+ fit-test print of TUB, LID and four arms assembled (Miguel, 2026-10-14; photos in `report/figures/photo_fit_*.jpg`).
+- **Next (Miguel to choose)**: (1) PET-CF print, weighing, lid seat flatness, Q-60 cradle floor, Q-63 GPS module; tap test against 431.0 Hz; (2) joint redesign, prong fuse (D-090 option 1), then TH; (3) D-035 frequency sweep (350 / 290 Hz) against R-01; (4) flight with gyro spectrum and logged hover; (5) camera payload (R-02). Open practical items: Q-58, Q-59, Q-60, Q-63, TPU skid.
 - **Project goals (Miguel, 2026-10-03)**: a cheaper printed structure for the same components; assess the limits of FFF printing for a quadcopter frame; use the frame as a full practical case of design, analysis and validation. The Volador carbon frame is a reference point, not a target expected to be beaten (D-011).
 - **Deferred to the end**: GPS module choice and flight firmware (ArduPilot recalled, to confirm) (D-007).
 
@@ -97,6 +97,7 @@ Rule: after any compaction or new session, resume from Section 1. The journal ov
 
 ### Changelog
 
+- 2026-10-14: v0.60: report stage closed: compact report (sent) and extensive report written per docs/report_brief.md; fit-test print in PLA+ recorded; Section 1 next steps. No new IDs.
 - 2026-10-14: v0.59: Stage 7 recorded from the set-up chat (build log items 66 to 69, claude/stage7_strength_report.md): N-07-01 (strength, route A, PASS), N-07-02 (D-050, lever-corrected ordering 0.95, D-051 PASS); F-040 and D-090 corrected (fork exit u 43.74, weakest arm section near the motor pad); Stages 6 and 7 closed.
 - 2026-10-13: v0.58: Stage 6 post-processing recorded from the set-up chat (build log items 62 to 65, H4 report): D-089 (print level iso 0.3; fillet pass B of D-081 dropped; set-up DV-27 keel cell clean-up, DV-28), N-06-23 (print set masses, T-4 TH_r4b_i30_final PASS, T-6); F-039 (frame 89.22 g against the 61.4 g budget, R-01); Stage 7 brief (claude/stage7_brief.md, route A).
 - 2026-10-13: v0.57: GPS cap v2 (TPU 95A HF, 0.58 g, press pins dia 3.325 into the dia 3.2 boss holes instead of screws and inserts (Miguel), claude/retainer_gps_cap_note.md, s07_gps_cap.py); Q-63 opened (GM10 height and antenna position).
