@@ -21,12 +21,18 @@ $\sqrt{\tau_{xz}^2+\tau_{yz}^2}$ & shear between layers, checked against the lay
 
 A thresholded mesh has stepped surfaces, and single elements at re-entrant steps show stress peaks that the smooth printed part does not have. The acceptance rule therefore uses the volume-weighted 99.9th percentile per part and load case, and in addition lists every connected cluster of elements above a limit, which passes only if it is on the surface and smaller than \SI{1}{mm^3}. A real hot spot of a few cubic millimetres cannot hide below the percentile this way. Elements touching a coupling or a tie are excluded and reported separately.
 
-Every part passes in every case. The highest utilisation is 0.04, in the lid under the landing case, with a 99.9th-percentile von Mises stress of \SI{1.42}{MPa} and a maximum of \SI{2.43}{MPa}. No element exceeds any limit and no cluster exists; the excluded elements stay below \SI{2.24}{MPa} (\cref{fig:stress}). The margin of about 25 confirms that the frequency requirement sized the frame.
+Every part passes in every case (\cref{fig:strength}). The highest utilisation is 0.04, in the lid under the landing case, with a 99.9th-percentile von Mises stress of \SI{1.42}{MPa} and a maximum of \SI{2.43}{MPa}. No element exceeds any limit and no cluster exists; the excluded elements stay below \SI{2.24}{MPa}. The margin of about 25 confirms that the frequency requirement sized the frame. The stress field shows the load paths (\cref{fig:stress}): the landing case loads the floor between the flight-controller bosses, the walls at the fins and the arm roots.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\linewidth]{su_stage7_vm_LC3a}
-\caption{von Mises stress in the landing case, top row on the scale of the limit, bottom row on the scale of the 99.9th percentile to show the load paths.}\label{fig:stress}
+\includegraphics[width=0.9\linewidth]{plot_strength}
+\caption{Highest volume-weighted 99.9th-percentile utilisation of each part over the four load cases, for the three checks. A value of 1 would reach the allowable divided by 1.5.}\label{fig:strength}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{su_stage7_vm_paths}
+\caption{von Mises stress in the landing case on a scale from 0 to the 99.9th percentile of the whole frame, in plan, side and front view. On the scale of the 36.3\,MPa limit the whole frame is the lowest colour.}\label{fig:stress}
 \end{figure}
 
 \subsection{Failure order}
@@ -39,6 +45,12 @@ where $Z$ is its section modulus. The joint fails at its moment capacity divided
 \begin{equation}
 \frac{F_\text{arm}}{F_\text{joint}} = \frac{54.4 \times 9.96 \times 37.00}{\num{21216}} = 0.95.
 \end{equation}
-Arm and joint fail at about the same force, so the failure location is not controlled; a margin of 1.5 needs a ratio of 0.67 or less. This follows from first principles: a frequency-optimised arm puts its depth where the moment is largest, so only the slim section near the motor competes with the joint, and inside the joint the fin and the prongs were sized with equal bearing area. Sideways the order holds with a factor of 8.5, and the fin root keeps \SI{957.2}{mm^3} against the \SI{390}{mm^3} it needs.
+Arm and joint fail at about the same force (\cref{fig:capacity}), so the failure location is not controlled; a margin of 1.5 needs a ratio of 0.67 or less. This follows from first principles: a frequency-optimised arm puts its depth where the moment is largest, so only the slim section near the motor competes with the joint, and inside the joint the fin and the prongs were sized with equal bearing area. Sideways the order holds with a factor of 8.5, and the fin root keeps \SI{957.2}{mm^3} against the \SI{390}{mm^3} it needs.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{plot_capacity}
+\caption{Left: section modulus of the printed arm for vertical bending along its length. Right: the vertical tip force that fails each section, against the joint capacity. The slim section near the motor pad fails at 542\,N, the joint at 573\,N.}\label{fig:capacity}
+\end{figure}
 
 The redesign is to unbalance the joint so that the arm is always the fuse: prongs about 1.5 times weaker in bearing than the fin, for example \SI{3.3}{mm} prongs against the \SI{10}{mm} fin, or a defined fuse section near the motor with $Z$ at or below about \SI{90}{mm^3}, each followed by a frequency check.
