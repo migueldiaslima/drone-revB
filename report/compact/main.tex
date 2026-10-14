@@ -1,0 +1,27 @@
+\documentclass[a4paper,11pt,parskip=half]{scrartcl}
+\input{../common/preamble}
+\input{../common/macros}
+\usepackage[top=22mm,bottom=24mm,left=22mm,right=22mm]{geometry}
+\title{A frequency-driven airframe}
+\subtitle{First-principles sizing and topology optimisation of a 3.5-inch quadcopter frame in PET-CF\\[4pt]
+  \normalsize 3.5-inch quadcopter frame, Siraya PET-CF, Abaqus/Tosca}
+\author{Miguel Dias de Lima\\ \small migueldiaslima@gmail.com}
+\date{October 2026}
+\titlehead{\centering\includegraphics[width=0.9\linewidth]{R1_assembly}}
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+\clearpage
+\input{sections/01_summary}
+\input{sections/02_requirements}
+\input{sections/03_sizing}
+\input{sections/04_material}
+\input{sections/05_architecture}
+\input{sections/06_topopt}
+\input{sections/07_iterations}
+\input{sections/08_strength}
+\input{sections/09_integration}
+\input{sections/10_results}
+\bibliographystyle{unsrtnat}
+\bibliography{../common/references}
+\end{document}

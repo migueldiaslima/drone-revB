@@ -1,0 +1,44 @@
+% preamble.tex - shared by both reports (pdfLaTeX, ASCII source)
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[final]{microtype}
+\usepackage[british]{babel}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{graphicx}
+\usepackage{booktabs,tabularx,array,multirow}
+\usepackage{xcolor}
+\usepackage{siunitx}
+\usepackage{caption,subcaption}
+\usepackage{enumitem}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{tcolorbox}
+\usepackage{float}
+\usepackage[hidelinks]{hyperref}
+\usepackage[nameinlink,capitalise,noabbrev]{cleveref}
+
+\graphicspath{{../figures/}{figures/}}
+\definecolor{accent}{RGB}{176,74,20}      % burnt orange, matches the TPU parts in the renders
+\definecolor{ink}{RGB}{40,44,52}
+\definecolor{boxbg}{RGB}{246,244,240}
+\addtokomafont{disposition}{\color{ink}}
+\addtokomafont{caption}{\small}
+\setkomafont{captionlabel}{\small\bfseries}
+\captionsetup{width=0.94\linewidth}
+\setlist{itemsep=2pt,topsep=4pt}
+
+\sisetup{
+  per-mode = symbol,
+  group-separator = {,},
+  group-minimum-digits = 4,
+  range-phrase = { to },
+  list-final-separator = { and },
+}
+\DeclareSIUnit\gram{g}
+\DeclareSIUnit\rpm{RPM}
+
+% theory box: one idea, worked through slowly
+\newtcolorbox{theorybox}[1]{colback=boxbg,colframe=accent,boxrule=0.6pt,arc=1pt,
+  left=6pt,right=6pt,top=4pt,bottom=4pt,fonttitle=\bfseries\sffamily,title={#1}}
+% key-number box
+\newtcolorbox{keybox}{colback=boxbg,colframe=ink,boxrule=0.4pt,arc=1pt,left=6pt,right=6pt,top=4pt,bottom=4pt}
